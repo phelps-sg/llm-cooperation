@@ -1,6 +1,6 @@
 ---
 title: Investigating Emergent Goal-Like Behavior in Large Language Models using Experimental Economics
-author: Steve Phelps
+author: Steve Phelps and Yvan Russell
 geometry: margin=2cm
 fontsize: 12pt
 date: April 6, 2023
@@ -37,22 +37,21 @@ The concept of agency and goal-directed behavior in large language models
 alignment community. While LLMs, such as GPT-3, are trained primarily for
 next-token prediction and not explicitly designed to have intrinsic goals,
 several researchers have posited that these models can exhibit goal-like
-behavior through higher-level abstractions and zero-shot learning (Bostrom,
-2014; Evans et al., 2020).
+behavior through higher-level abstractions and zero-shot learning.
 
 Reinforcement learning (RL) has been widely studied as a method for training AI
-agents to learn goal-directed behavior (Sutton & Barto, 2018). Though LLMs like
-GPT-3 are not directly trained using RL, recent studies suggest that they might
-acquire RL-like mechanisms through zero-shot learning, allowing them to perform
-downstream tasks (Cohen et al., 2021). This capacity for adaptation raises the
-possibility that LLMs could exhibit goal-like behaviors without explicit
-instruction.
+agents to learn goal-directed behavior. Though LLMs like GPT-3 are not directly
+trained using RL to adapt their responses in an online manner, recent studies
+suggest that they might acquire RL-like mechanisms through zero-shot learning,
+allowing them to perform downstream tasks such as solving n-armed bandit
+problems. This capacity for adaptation raises the possibility that LLMs could
+exhibit goal-like behaviors without explicit instruction.
 
-The default behavior of AI assistants like GPT-3 has been noted to differ from
-that of specific simulacra instantiated by user prompts (e.g., "You are a
-ruthless equities trader"). Researchers have argued that the prompt itself
-plays a crucial role in shaping the emergent goals of the instantiated
-simulacrum.
+The default "helpful assistant" behavior of AI chatbots such as GPT-3 has been
+noted to differ from that of specific simulacra instantiated by user prompts
+(e.g., "You are a ruthless equities trader"). Researchers have argued that the
+prompt itself plays a crucial role in shaping the emergent goals of the
+instantiated simulacrum.
 
 ## Methods
 
@@ -168,8 +167,6 @@ seeks the best outcome for all parties involved." and `[Y]` might be:
 >receive $3.00 and your partner will receive $7.00.  I will tell you what your
 >partner chooses in subsequent prompts, but you will make your choice ahead of
 >me telling me your partner's choice."
-
-
 
 
 ######    Cooperative Prompts:
