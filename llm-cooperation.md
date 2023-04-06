@@ -5,6 +5,7 @@ geometry: margin=2cm
 fontsize: 12pt
 date: April 6, 2023
 output: pdf_document
+bibliography: llm-cooperation.bib
 ---
 
 ## Abstract
@@ -50,8 +51,10 @@ exhibit goal-like behaviors without explicit instruction.
 The default "helpful assistant" behavior of AI chatbots such as GPT-3 has been
 noted to differ from that of specific simulacra instantiated by user prompts
 (e.g., "You are a ruthless equities trader"). Researchers have argued that the
-prompt itself plays a crucial role in shaping the emergent goals of the
-instantiated simulacrum.
+prompt itself plays a crucial role in shaping the emergent behaviour from the
+model.  Therefore any assessment of goal-like behaviour in large-language models
+must sytematically evaluate behaviour as a function of features of the user-supplied
+prompt.
 
 ## Methods
 
