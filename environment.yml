@@ -10,6 +10,8 @@ dependencies:
   - pandas
   - numpy
   - scipy
+  - pytest
+  - pytest-mock
   - pip
   - pip:
     - -e ./
