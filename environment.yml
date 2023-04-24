@@ -13,6 +13,7 @@ dependencies:
   - pytest
   - pytest-mock
   - mypy
+  - pylint
   - pre-commit
   - pip
   - pip:
