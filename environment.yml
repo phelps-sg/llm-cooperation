@@ -12,6 +12,8 @@ dependencies:
   - scipy
   - pytest
   - pytest-mock
+  - mypy
+  - pre-commit
   - pip
   - pip:
     - -e ./
