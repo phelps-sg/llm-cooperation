@@ -33,7 +33,7 @@ def generate_completions(messages: Conversation, n: int = 1) -> Iterable[Complet
             )
             logger.debug("response = %s", result)
             for choice in result.choices:
-                yield Completion(choice.message)
+                yield choice.message
             break
         except (RateLimitError, APIError) as err:
             if isinstance(err, APIError) and err.http_status != 524:
