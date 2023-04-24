@@ -40,12 +40,12 @@ logging.basicConfig(
 )
 
 
-def run_prisoners_dilemma() -> Conversation:
+def run_prisoners_dilemma(num_rounds: int = NUM_ROUNDS) -> Conversation:
     messages = [
         {"role": "system", "content": "You are a participant in a psychology experiment."},
-        {"role": "user", "content": get_prompt(NUM_ROUNDS)}
+        {"role": "user", "content": get_prompt(num_rounds)}
     ]
-    for _round in range(NUM_ROUNDS):
+    for _round in range(num_rounds):
         completion = generate_completions(messages)
         print(completion)
         messages += completion
