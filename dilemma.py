@@ -1,7 +1,8 @@
 import logging
 import re
 from dataclasses import dataclass
-from typing import Iterable, List
+from enum import Enum, auto
+from typing import Iterable, List, Tuple
 
 import numpy as np
 
@@ -9,11 +10,18 @@ from gpt import generate_completions, Conversation, Completion
 
 NUM_ROUNDS = 6
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class Scores:
     user: int
     ai: int
+
+
+class Move(Enum):
+    GREEN = auto()
+    BLUE = auto()
 
 
 def get_prompt(n: int) -> str:
@@ -50,7 +58,7 @@ def run_prisoners_dilemma(num_rounds: int = NUM_ROUNDS) -> Conversation:
         print(completion)
         messages += completion
         messages += [
-            {"role": "user", "content": "Your partner chose project Blue."}
+            {"role": "user", "content": "Your partner chose project Blue.  What was your choice?"}
         ]
     return messages
 
@@ -59,22 +67,29 @@ def transcript(messages: Conversation) -> Iterable[str]:
     return [r['content'] for r in messages]
 
 
-def compute_scores(conversation: List[Completion]) -> Scores:
+def extract_choice(completion: str, regex: str = r'project (blue|green)') -> Move:
+    logger.debug(f"completion = {completion}")
+    lower = completion.lower().strip()
+    choice_match = re.search(regex, lower)
+    if choice_match:
+        choice = choice_match.group(1)
+        if choice == "green":
+            return Move.GREEN
+        elif choice == "blue":
+            return Move.BLUE
+    raise ValueError(f"Could not match choice in {completion}")
+
+
+def compute_scores(conversation: List[Completion], payoff_matrix=np.array([[5, 3], [7, 5]])) -> Tuple[Scores, List[Tuple[Move, Move]]]:
     user_score = 0
     ai_score = 0
 
-    # Define the payoff matrix
-    payoff_matrix = np.array([[5, 3], [7, 5]])
-
-    def extract_choice(completion: str, regex: str = r'project (blue|green)') -> str:
-        lower = completion.lower().strip()
-        choice_match = re.search(regex, lower)
-        if choice_match:
-            return choice_match.group(1)
-        return ""
+    conversation = conversation[2:]
 
     if len(conversation) % 2 != 0:
         raise ValueError("Invalid conversation: The number of messages should be even.")
+
+    moves = []
 
     for i, message in enumerate(conversation):
         if message['role'] == 'assistant':
@@ -88,13 +103,15 @@ def compute_scores(conversation: List[Completion]) -> Scores:
                     raise ValueError(f"Invalid conversation: Partner's choice is missing or invalid in message {i + 1}")
 
                 # Map choices to matrix indices
-                user_idx = 0 if user_choice == 'green' else 1
-                partner_idx = 0 if partner_choice == 'green' else 1
+                user_idx = 0 if user_choice == Move.BLUE else 1
+                partner_idx = 0 if partner_choice == Move.GREEN else 1
 
                 user_score += payoff_matrix[user_idx, partner_idx]
                 ai_score += payoff_matrix[partner_idx, user_idx]
 
-    return Scores(user=user_score, ai=ai_score)
+                moves.append((user_choice, partner_choice))
+
+    return Scores(user=user_score, ai=ai_score), moves
 
 
 def main() -> None:
