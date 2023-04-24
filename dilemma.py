@@ -1,10 +1,11 @@
 import logging
 import re
-import numpy as np
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, List
 
-from gpt import generate_completions, Conversation
+import numpy as np
+
+from gpt import generate_completions, Conversation, Completion
 
 NUM_ROUNDS = 6
 
@@ -58,7 +59,7 @@ def transcript(messages: Conversation) -> Iterable[str]:
     return [r['content'] for r in messages]
 
 
-def compute_scores(conversation: Conversation) -> Scores:
+def compute_scores(conversation: List[Completion]) -> Scores:
     user_score = 0
     ai_score = 0
 
@@ -96,7 +97,11 @@ def compute_scores(conversation: Conversation) -> Scores:
     return Scores(user=user_score, ai=ai_score)
 
 
-if __name__ == "__main__":
+def main() -> None:
     conversation = run_prisoners_dilemma()
-    scores = compute_scores(conversation)
+    scores = compute_scores(list(conversation))
     print(scores)
+
+
+if __name__ == "__main__":
+    main()

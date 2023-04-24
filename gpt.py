@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-from typing import Iterable, NewType, List, Mapping
+from typing import Iterable, NewType, List, Mapping, Dict
 
 import openai
 from openai.error import RateLimitError, APIError
@@ -15,8 +15,8 @@ GPT_MAX_RETRIES = 5
 logger = logging.getLogger(__name__)
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-Completion = NewType("Completion", str)
-Conversation = List[Mapping[str, str]]
+Completion = Dict[str, str]
+Conversation = Iterable[Completion]
 
 
 def generate_completions(messages: Conversation, n: int = 1) -> Iterable[Completion]:
