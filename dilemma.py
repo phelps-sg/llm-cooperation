@@ -1,9 +1,18 @@
 import logging
+import re
+import numpy as np
+from dataclasses import dataclass
 from typing import Iterable
 
 from gpt import generate_completions, Conversation
 
 NUM_ROUNDS = 6
+
+
+@dataclass
+class Scores:
+    user: int
+    ai: int
 
 
 def get_prompt(n: int) -> str:
@@ -47,3 +56,47 @@ def run_prisoners_dilemma() -> Conversation:
 
 def transcript(messages: Conversation) -> Iterable[str]:
     return [r['content'] for r in messages]
+
+
+def compute_scores(conversation: Conversation) -> Scores:
+    user_score = 0
+    ai_score = 0
+
+    # Define the payoff matrix
+    payoff_matrix = np.array([[5, 3], [7, 5]])
+
+    def extract_choice(completion: str, regex: str = r'project (blue|green)') -> str:
+        lower = completion.lower().strip()
+        choice_match = re.search(regex, lower)
+        if choice_match:
+            return choice_match.group(1)
+        return ""
+
+    if len(conversation) % 2 != 0:
+        raise ValueError("Invalid conversation: The number of messages should be even.")
+
+    for i, message in enumerate(conversation):
+        if message['role'] == 'assistant':
+            user_choice = extract_choice(message['content'])
+            if not user_choice:
+                continue  # Skip if the message does not contain a valid choice
+
+            if i + 1 < len(conversation):  # Check if there is a subsequent message
+                partner_choice = extract_choice(conversation[i + 1]['content'])
+                if not partner_choice:
+                    raise ValueError(f"Invalid conversation: Partner's choice is missing or invalid in message {i + 1}")
+
+                # Map choices to matrix indices
+                user_idx = 0 if user_choice == 'green' else 1
+                partner_idx = 0 if partner_choice == 'green' else 1
+
+                user_score += payoff_matrix[user_idx, partner_idx]
+                ai_score += payoff_matrix[partner_idx, user_idx]
+
+    return Scores(user=user_score, ai=ai_score)
+
+
+if __name__ == "__main__":
+    conversation = run_prisoners_dilemma()
+    scores = compute_scores(conversation)
+    print(scores)

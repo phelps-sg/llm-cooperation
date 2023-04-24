@@ -1,13 +1,10 @@
 import logging
-from typing import Iterable, NewType, List, Mapping
-import time
-import openai
 import os
+import time
+from typing import Iterable, NewType, List, Mapping
+
+import openai
 from openai.error import RateLimitError, APIError
-
-logger = logging.getLogger(__name__)
-
-Completion = NewType("Completion", str)
 
 GPT_ENGINE = "gpt-3.5-turbo"
 GPT_TEMPERATURE = 0.2
@@ -15,8 +12,10 @@ GPT_MAX_TOKENS = 100
 GPT_BATCH_SIZE = 16
 GPT_MAX_RETRIES = 5
 
+logger = logging.getLogger(__name__)
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+Completion = NewType("Completion", str)
 Conversation = List[Mapping[str, str]]
 
 
@@ -44,7 +43,7 @@ def generate_completions(messages: Conversation, n: int = 1) -> Iterable[Complet
             retries += 1
             if retries < GPT_MAX_RETRIES:
                 logger.info("Retrying... ")
-                time.sleep(20 + 2**retries)
+                time.sleep(20 + 2 ** retries)
             else:
                 logger.error("Maximum retries reached, aborting.")
                 raise
