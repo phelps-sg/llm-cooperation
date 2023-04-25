@@ -5,6 +5,7 @@ from enum import Enum, auto
 from typing import Iterable, List, Tuple, Callable, Dict
 
 import numpy as np
+from numpy.typing import NDArray
 
 import gpt
 
@@ -68,6 +69,7 @@ def move_as_str(move: Choice) -> str:
         return "Project Blue"
     elif move == Choice.C:
         return "Project Green"
+    raise ValueError(f"Invalid choice {move}")
 
 
 def run_prisoners_dilemma(
@@ -111,7 +113,7 @@ def extract_choice(completion: str, regex: str = r"project (blue|green)") -> Cho
     raise ValueError(f"Could not match choice in {completion}")
 
 
-def payoffs(player1: Choice, player2: Choice, payoff_matrix: np.array) -> Tuple[int, int]:
+def payoffs(player1: Choice, player2: Choice, payoff_matrix: NDArray) -> Tuple[int, int]:
     def i(m: Choice) -> int:
         return m.value - 1
 
