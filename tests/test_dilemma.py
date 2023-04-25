@@ -15,7 +15,7 @@ from dilemma import (
     S,
     P,
     R,
-    move_as_str,
+    move_as_str, Moves,
 )
 
 
@@ -72,10 +72,10 @@ def test_compute_scores():
     scores, moves = compute_scores(conversation)
     assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)
     assert moves == [
-        (Move.D, Move.C),
-        (Move.C, Move.D),
-        (Move.D, Move.D),
-        (Move.C, Move.D),
+        Moves(Move.D, Move.C),
+        Moves(Move.C, Move.D),
+        Moves(Move.D, Move.D),
+        Moves(Move.C, Move.D),
     ]
 
 

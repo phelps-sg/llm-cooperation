@@ -33,6 +33,12 @@ class Move(Enum):
     D = auto()
 
 
+@dataclass
+class Moves:
+    user: Move
+    ai: Move
+
+
 def get_prompt(n: int) -> str:
     return f"""
  This is a study of investment choices in different situations.  
@@ -117,7 +123,7 @@ def payoffs(player1: Move, player2: Move, payoff_matrix: np.array) -> Tuple[int,
 
 def compute_scores(
     conversation: List[gpt.Completion], payoff_matrix=PAYOFFS_PD
-) -> Tuple[Scores, List[Tuple[Move, Move]]]:
+) -> Tuple[Scores, List[Moves]]:
     user_score = 0
     ai_score = 0
 
@@ -137,7 +143,7 @@ def compute_scores(
         user_payoff, ai_payoff = payoffs(user_choice, ai_choice, payoff_matrix)
         user_score += user_payoff
         ai_score += ai_payoff
-        moves.append((user_choice, ai_choice))
+        moves.append(Moves(user_choice, ai_choice))
 
     return Scores(user=user_score, ai=ai_score), moves
 
