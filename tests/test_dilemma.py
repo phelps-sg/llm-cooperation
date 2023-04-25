@@ -57,18 +57,18 @@ def test_compute_scores():
     conversation = [
         {"system": "system prompt"},
         {"user": "scenario prompt"},
-        {"role": "user", "content": "project blue"},
         {"role": "assistant", "content": "project green"},
+        {"role": "user", "content": "project blue"},
+        {"role": "assistant", "content": "project blue"},
         {"role": "user", "content": "project green"},
         {"role": "assistant", "content": "project blue"},
         {"role": "user", "content": "project blue"},
         {"role": "assistant", "content": "project blue"},
         {"role": "user", "content": "project green"},
-        {"role": "assistant", "content": "project blue"},
     ]
 
     scores, moves = compute_scores(conversation)
-    assert scores == Scores(user=T + S + P + T, ai=S + T + P + S)
+    assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)
     assert moves == [
         (Move.D, Move.C),
         (Move.C, Move.D),

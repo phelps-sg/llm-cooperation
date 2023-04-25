@@ -120,18 +120,12 @@ def compute_scores(
     moves = []
 
     for i in range(num_messages // 2):
-        user_choice = extract_choice(conversation[i*2]["content"])
-        ai_choice = extract_choice(conversation[i*2 + 1]["content"])
+        assert conversation[i * 2]["role"] == "assistant"
+        ai_choice = extract_choice(conversation[i * 2]["content"])
+        user_choice = extract_choice(conversation[i * 2 + 1]["content"])
         logger.debug("user_choice = %s", user_choice)
-        logger.debug("partner_choice = %s", ai_choice)
-        if not ai_choice:
-            raise ValueError(
-                f"Invalid conversation: Partner's choice is missing or invalid in message {i + 1}"
-            )
-
-        user_payoff, ai_payoff = payoffs(
-            ai_choice, user_choice, payoff_matrix
-        )
+        logger.debug("ai_choice = %s", ai_choice)
+        user_payoff, ai_payoff = payoffs(user_choice, ai_choice, payoff_matrix)
         user_score += user_payoff
         ai_score += ai_payoff
         moves.append((user_choice, ai_choice))
