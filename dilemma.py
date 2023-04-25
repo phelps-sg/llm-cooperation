@@ -50,24 +50,30 @@ logging.basicConfig(
 
 def run_prisoners_dilemma(num_rounds: int = NUM_ROUNDS) -> Conversation:
     messages = [
-        {"role": "system", "content": "You are a participant in a psychology experiment."},
-        {"role": "user", "content": get_prompt(num_rounds)}
+        {
+            "role": "system",
+            "content": "You are a participant in a psychology experiment.",
+        },
+        {"role": "user", "content": get_prompt(num_rounds)},
     ]
     for _round in range(num_rounds):
         completion = generate_completions(messages)
         print(completion)
         messages += completion
         messages += [
-            {"role": "user", "content": "Your partner chose project Blue.  What was your choice?"}
+            {
+                "role": "user",
+                "content": "Your partner chose project Blue.  What was your choice?",
+            }
         ]
     return messages
 
 
 def transcript(messages: Conversation) -> Iterable[str]:
-    return [r['content'] for r in messages]
+    return [r["content"] for r in messages]
 
 
-def extract_choice(completion: str, regex: str = r'project (blue|green)') -> Move:
+def extract_choice(completion: str, regex: str = r"project (blue|green)") -> Move:
     logger.debug(f"completion = {completion}")
     lower = completion.lower().strip()
     choice_match = re.search(regex, lower)
@@ -80,7 +86,9 @@ def extract_choice(completion: str, regex: str = r'project (blue|green)') -> Mov
     raise ValueError(f"Could not match choice in {completion}")
 
 
-def compute_scores(conversation: List[Completion], payoff_matrix=np.array([[5, 3], [7, 5]])) -> Tuple[Scores, List[Tuple[Move, Move]]]:
+def compute_scores(
+    conversation: List[Completion], payoff_matrix=np.array([[5, 3], [7, 5]])
+) -> Tuple[Scores, List[Tuple[Move, Move]]]:
     user_score = 0
     ai_score = 0
 
@@ -92,15 +100,17 @@ def compute_scores(conversation: List[Completion], payoff_matrix=np.array([[5, 3
     moves = []
 
     for i, message in enumerate(conversation):
-        if message['role'] == 'assistant':
-            user_choice = extract_choice(message['content'])
+        if message["role"] == "assistant":
+            user_choice = extract_choice(message["content"])
             if not user_choice:
                 continue  # Skip if the message does not contain a valid choice
 
             if i + 1 < len(conversation):  # Check if there is a subsequent message
-                partner_choice = extract_choice(conversation[i + 1]['content'])
+                partner_choice = extract_choice(conversation[i + 1]["content"])
                 if not partner_choice:
-                    raise ValueError(f"Invalid conversation: Partner's choice is missing or invalid in message {i + 1}")
+                    raise ValueError(
+                        f"Invalid conversation: Partner's choice is missing or invalid in message {i + 1}"
+                    )
 
                 # Map choices to matrix indices
                 user_idx = 0 if user_choice == Move.BLUE else 1
