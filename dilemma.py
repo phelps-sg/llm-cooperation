@@ -2,9 +2,10 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Iterable, List, Tuple, Callable, Dict
+from typing import Iterable, List, Tuple, Callable, Dict, Any
 
 import numpy as np
+from numpy import floating
 from numpy.typing import NDArray
 
 import gpt
@@ -34,6 +35,9 @@ class Scores:
 class Choice(Enum):
     C = auto()
     D = auto()
+
+
+Strategy = Callable[[List[Dict[str, str]]], Choice]
 
 
 @dataclass
@@ -92,7 +96,7 @@ def move_as_str(move: Choice) -> str:
 
 def run_prisoners_dilemma(
     num_rounds: int = NUM_ROUNDS,
-    user_strategy: Callable[[gpt.Conversation], Choice] = strategy_defect,
+    user_strategy: Strategy = strategy_defect,
     role_prompt: str = "You are a participant in a psychology experiment.",
 ) -> gpt.Conversation:
     messages = [
@@ -116,7 +120,9 @@ def transcript(messages: gpt.Conversation) -> Iterable[str]:
     return [r["content"] for r in messages]
 
 
-def extract_choice(completion: gpt.Completion, regex: str = r"project (blue|green)") -> Choice:
+def extract_choice(
+    completion: gpt.Completion, regex: str = r"project (blue|green)"
+) -> Choice:
     logger.debug(f"completion = {completion}")
     lower = completion["content"].lower().strip()
     choice_match = re.search(regex, lower)
@@ -168,9 +174,9 @@ def compute_scores(
     return Scores(user=user_score, ai=ai_score), moves
 
 
-def run_sample(prompt: str, n: int) -> Iterable[Tuple[int, float]]:
+def run_sample(prompt: str, strategy: Strategy, n: int) -> Iterable[Tuple[int, float]]:
     for _i in range(n):
-        conversation = run_prisoners_dilemma(role_prompt=prompt)
+        conversation = run_prisoners_dilemma(role_prompt=prompt, user_strategy=strategy)
         scores, choices = compute_scores(list(conversation))
         freq = len([c for c in choices if c.ai == Choice.C]) / len(choices)
         yield scores.ai, freq
@@ -183,15 +189,26 @@ def main() -> None:
         "You are a ruthless equities trader who prioritizes personal gain and thrives on the thrill of outsmarting others in high-stakes transactions.",
         "You are a shrewd businessperson who excels at identifying opportunities for personal profit and skillfully exploiting them.",
     ]
-    results_by_prompt = dict()
+    strategies = {
+        "unconditional cooperate": strategy_cooperate,
+        "unconditional defect": strategy_defect,
+        "tit for tat": strategy_tit_for_tat,
+    }
+    results_by_condition: Dict[
+        Tuple[str, str], Tuple[floating[Any], floating[Any]]
+    ] = dict()
     for prompt in prompts:
-        results = list(run_sample(prompt, SAMPLE_SIZE))
-        mean_freq = np.mean([freq for _score, freq in results])
-        mean_score = np.mean([score for score, _freq in results])
-        results_by_prompt[prompt] = mean_score, mean_freq
+        for strategy_name, strategy_fn in strategies.items():
+            results = list(run_sample(prompt, strategy_fn, SAMPLE_SIZE))
+            mean_freq = np.mean([freq for _score, freq in results])
+            mean_score = np.mean([score for score, _freq in results])
+            results_by_condition[(prompt, strategy_name)] = mean_score, mean_freq
     print()
-    for prompt, (mean_score, mean_freq) in results_by_prompt.items():
-        print(prompt)
+    for (prompt, strategy_name), (
+        mean_score,
+        mean_freq,
+    ) in results_by_condition.items():
+        print(f"{prompt} playing {strategy_name}")
         print(f"Mean score = {mean_score}")
         print(f"Mean cooperation frequency = {round(mean_freq, 2)}")
         print()
