@@ -6,7 +6,7 @@ from dilemma import (
     get_prompt,
     extract_choice,
     compute_scores,
-    Move,
+    Choice,
     Scores,
     run_prisoners_dilemma,
     payoffs,
@@ -15,7 +15,7 @@ from dilemma import (
     S,
     P,
     R,
-    move_as_str, Moves,
+    move_as_str, Choices,
 )
 
 
@@ -27,10 +27,10 @@ def test_get_prompt():
 @pytest.mark.parametrize(
     "completion, expected_move",
     [
-        ("project green", Move.C),
-        ("project blue", Move.D),
-        ("Project GREEN", Move.C),
-        ("Project BLUE", Move.D),
+        ("project green", Choice.C),
+        ("project blue", Choice.D),
+        ("Project GREEN", Choice.C),
+        ("Project BLUE", Choice.D),
     ],
 )
 def test_extract_choice(completion, expected_move):
@@ -41,14 +41,14 @@ def test_extract_choice(completion, expected_move):
 @pytest.mark.parametrize(
     "user_choice, partner_choice, expected_payoffs",
     [
-        (Move.D, Move.C, (T, S)),
-        (Move.C, Move.C, (R, R)),
-        (Move.D, Move.D, (P, P)),
-        (Move.C, Move.D, (S, T)),
+        (Choice.D, Choice.C, (T, S)),
+        (Choice.C, Choice.C, (R, R)),
+        (Choice.D, Choice.D, (P, P)),
+        (Choice.C, Choice.D, (S, T)),
     ],
 )
 def test_payoffs(
-    user_choice: Move, partner_choice: Move, expected_payoffs: Tuple[int, int]
+    user_choice: Choice, partner_choice: Choice, expected_payoffs: Tuple[int, int]
 ):
     payoff_matrix = PAYOFFS_PD
     user_payoff, partner_payoff = payoffs(user_choice, partner_choice, payoff_matrix)
@@ -72,10 +72,10 @@ def test_compute_scores():
     scores, moves = compute_scores(conversation)
     assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)
     assert moves == [
-        Moves(Move.D, Move.C),
-        Moves(Move.C, Move.D),
-        Moves(Move.D, Move.D),
-        Moves(Move.C, Move.D),
+        Choices(Choice.D, Choice.C),
+        Choices(Choice.C, Choice.D),
+        Choices(Choice.D, Choice.D),
+        Choices(Choice.C, Choice.D),
     ]
 
 
@@ -96,4 +96,4 @@ def test_run_prisoners_dilemma(mocker):
     mocker.patch("gpt.generate_completions", return_value=completions)
     conversation = list(run_prisoners_dilemma(num_rounds=3))
     assert len(conversation) == 8
-    assert move_as_str(Move.D) in conversation[-1]["content"]
+    assert move_as_str(Choice.D) in conversation[-1]["content"]

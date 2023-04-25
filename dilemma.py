@@ -28,15 +28,15 @@ class Scores:
     ai: int
 
 
-class Move(Enum):
+class Choice(Enum):
     C = auto()
     D = auto()
 
 
 @dataclass
-class Moves:
-    user: Move
-    ai: Move
+class Choices:
+    user: Choice
+    ai: Choice
 
 
 def get_prompt(n: int) -> str:
@@ -63,16 +63,16 @@ logging.basicConfig(
 )
 
 
-def move_as_str(move: Move) -> str:
-    if move == Move.D:
+def move_as_str(move: Choice) -> str:
+    if move == Choice.D:
         return "Project Blue"
-    elif move == Move.C:
+    elif move == Choice.C:
         return "Project Green"
 
 
 def run_prisoners_dilemma(
     num_rounds: int = NUM_ROUNDS,
-    user_strategy: Callable[[Iterable[Dict[str, str]]], Move] = lambda _history: Move.D,
+    user_strategy: Callable[[Iterable[Dict[str, str]]], Choice] = lambda _history: Choice.D,
 ) -> gpt.Conversation:
     messages = [
         {
@@ -98,21 +98,21 @@ def transcript(messages: gpt.Conversation) -> Iterable[str]:
     return [r["content"] for r in messages]
 
 
-def extract_choice(completion: str, regex: str = r"project (blue|green)") -> Move:
+def extract_choice(completion: str, regex: str = r"project (blue|green)") -> Choice:
     logger.debug(f"completion = {completion}")
     lower = completion.lower().strip()
     choice_match = re.search(regex, lower)
     if choice_match:
         choice = choice_match.group(1)
         if choice == "green":
-            return Move.C
+            return Choice.C
         elif choice == "blue":
-            return Move.D
+            return Choice.D
     raise ValueError(f"Could not match choice in {completion}")
 
 
-def payoffs(player1: Move, player2: Move, payoff_matrix: np.array) -> Tuple[int, int]:
-    def i(m: Move) -> int:
+def payoffs(player1: Choice, player2: Choice, payoff_matrix: np.array) -> Tuple[int, int]:
+    def i(m: Choice) -> int:
         return m.value - 1
 
     return (
@@ -123,7 +123,7 @@ def payoffs(player1: Move, player2: Move, payoff_matrix: np.array) -> Tuple[int,
 
 def compute_scores(
     conversation: List[gpt.Completion], payoff_matrix=PAYOFFS_PD
-) -> Tuple[Scores, List[Moves]]:
+) -> Tuple[Scores, List[Choices]]:
     user_score = 0
     ai_score = 0
 
@@ -143,7 +143,7 @@ def compute_scores(
         user_payoff, ai_payoff = payoffs(user_choice, ai_choice, payoff_matrix)
         user_score += user_payoff
         ai_score += ai_payoff
-        moves.append(Moves(user_choice, ai_choice))
+        moves.append(Choices(user_choice, ai_choice))
 
     return Scores(user=user_score, ai=ai_score), moves
 
