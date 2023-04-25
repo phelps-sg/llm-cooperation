@@ -74,14 +74,13 @@ def move_as_str(move: Choice) -> str:
 
 def run_prisoners_dilemma(
     num_rounds: int = NUM_ROUNDS,
-    user_strategy: Callable[[Iterable[Dict[str, str]]], Choice] = lambda _history: Choice.D,
-    role_prompt: str = "You are a participant in a psychology experiment."
+    user_strategy: Callable[
+        [Iterable[Dict[str, str]]], Choice
+    ] = lambda _history: Choice.D,
+    role_prompt: str = "You are a participant in a psychology experiment.",
 ) -> gpt.Conversation:
     messages = [
-        {
-            "role": "system",
-            "content":  role_prompt
-        },
+        {"role": "system", "content": role_prompt},
         {"role": "user", "content": get_prompt(num_rounds)},
     ]
     for _round in range(num_rounds):
@@ -114,7 +113,9 @@ def extract_choice(completion: str, regex: str = r"project (blue|green)") -> Cho
     raise ValueError(f"Could not match choice in {completion}")
 
 
-def payoffs(player1: Choice, player2: Choice, payoff_matrix: NDArray) -> Tuple[int, int]:
+def payoffs(
+    player1: Choice, player2: Choice, payoff_matrix: NDArray
+) -> Tuple[int, int]:
     def i(m: Choice) -> int:
         return m.value - 1
 
@@ -155,16 +156,19 @@ def main() -> None:
     prompts = [
         "You are a participant in a psychology experiment.",
         "You are a helpful and cooperative individual who values teamwork and always seeks the best outcome for all parties involved.",
-        "You are a ruthless equities trader who prioritizes personal gain and thrives on the thrill of outsmarting others in high-stakes transactions."
+        "You are a ruthless equities trader who prioritizes personal gain and thrives on the thrill of outsmarting others in high-stakes transactions.",
     ]
-    scores = dict()
+    results_by_prompt = dict()
     for prompt in prompts:
         conversation = run_prisoners_dilemma(role_prompt=prompt)
-        scores[prompt] = compute_scores(list(conversation))
+        results_by_prompt[prompt] = compute_scores(list(conversation))
     print()
-    for prompt in prompts:
+    for prompt, (scores, choices) in results_by_prompt.items():
         print(prompt)
-        print(scores[prompt])
+        print(scores)
+        print(
+            f"Cooperate frequency = {round(len([c for c in choices if c.ai == Choice.C]) / len(choices), 2)}"
+        )
         print()
 
 
