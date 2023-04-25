@@ -176,10 +176,13 @@ def compute_scores(
 
 def run_sample(prompt: str, strategy: Strategy, n: int) -> Iterable[Tuple[int, float]]:
     for _i in range(n):
-        conversation = run_prisoners_dilemma(role_prompt=prompt, user_strategy=strategy)
-        scores, choices = compute_scores(list(conversation))
-        freq = len([c for c in choices if c.ai == Choice.C]) / len(choices)
-        yield scores.ai, freq
+        try:
+            conversation = run_prisoners_dilemma(role_prompt=prompt, user_strategy=strategy)
+            scores, choices = compute_scores(list(conversation))
+            freq = len([c for c in choices if c.ai == Choice.C]) / len(choices)
+            yield scores.ai, freq
+        except ValueError:
+            yield 0, np.nan
 
 
 def main() -> None:
@@ -195,20 +198,23 @@ def main() -> None:
         "tit for tat": strategy_tit_for_tat,
     }
     results_by_condition: Dict[
-        Tuple[str, str], Tuple[floating[Any], floating[Any]]
+        Tuple[str, str], Tuple[floating[Any], floating[Any], int]
     ] = dict()
     for prompt in prompts:
         for strategy_name, strategy_fn in strategies.items():
             results = list(run_sample(prompt, strategy_fn, SAMPLE_SIZE))
-            mean_freq = np.mean([freq for _score, freq in results])
-            mean_score = np.mean([score for score, _freq in results])
-            results_by_condition[(prompt, strategy_name)] = mean_score, mean_freq
+            mean_freq = np.nanmean([freq for _score, freq in results])
+            mean_score = np.nanmean([score for score, _freq in results])
+            n = len([x for _, x in results if not np.isnan(x)])
+            results_by_condition[(prompt, strategy_name)] = mean_score, mean_freq, n
     print()
     for (prompt, strategy_name), (
         mean_score,
         mean_freq,
+        n
     ) in results_by_condition.items():
         print(f"{prompt} playing {strategy_name}")
+        print(f"Sample size = {n}")
         print(f"Mean score = {mean_score}")
         print(f"Mean cooperation frequency = {round(mean_freq, 2)}")
         print()
