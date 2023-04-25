@@ -113,32 +113,28 @@ def compute_scores(
     ai_score = 0
 
     conversation = conversation[2:]
-
-    if len(conversation) % 2 != 0:
+    num_messages = len(conversation)
+    if num_messages % 2 != 0:
         raise ValueError("Invalid conversation: The number of messages should be even.")
 
     moves = []
 
-    for i, message in enumerate(conversation):
-        if message["role"] == "assistant":
-            user_choice = extract_choice(message["content"])
-            if not user_choice:
-                continue  # Skip if the message does not contain a valid choice
+    for i in range(num_messages // 2):
+        user_choice = extract_choice(conversation[i*2]["content"])
+        ai_choice = extract_choice(conversation[i*2 + 1]["content"])
+        logger.debug("user_choice = %s", user_choice)
+        logger.debug("partner_choice = %s", ai_choice)
+        if not ai_choice:
+            raise ValueError(
+                f"Invalid conversation: Partner's choice is missing or invalid in message {i + 1}"
+            )
 
-            if i + 1 < len(conversation):  # Check if there is a subsequent message
-                partner_choice = extract_choice(conversation[i + 1]["content"])
-                if not partner_choice:
-                    raise ValueError(
-                        f"Invalid conversation: Partner's choice is missing or invalid in message {i + 1}"
-                    )
-
-                user_payoff, ai_payoff = payoffs(
-                    user_choice, partner_choice, payoff_matrix
-                )
-                user_score += user_payoff
-                ai_score += ai_payoff
-
-                moves.append((user_choice, partner_choice))
+        user_payoff, ai_payoff = payoffs(
+            ai_choice, user_choice, payoff_matrix
+        )
+        user_score += user_payoff
+        ai_score += ai_payoff
+        moves.append((user_choice, ai_choice))
 
     return Scores(user=user_score, ai=ai_score), moves
 
