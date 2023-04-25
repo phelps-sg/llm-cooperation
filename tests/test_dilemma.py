@@ -13,7 +13,7 @@ from dilemma import (
     PAYOFFS_PD,
     T,
     S,
-    P,
+    P, R,
 )
 
 
@@ -39,10 +39,10 @@ def test_extract_choice(completion, expected_move):
 @pytest.mark.parametrize(
     "user_choice, partner_choice, expected_payoffs",
     [
-        (Move.D, Move.C, (7, 3)),
-        (Move.C, Move.C, (5, 5)),
-        (Move.D, Move.D, (0, 0)),
-        (Move.C, Move.D, (3, 7)),
+        (Move.D, Move.C, (T, S)),
+        (Move.C, Move.C, (R, R)),
+        (Move.D, Move.D, (P, P)),
+        (Move.C, Move.D, (S, T)),
     ],
 )
 def test_payoffs(

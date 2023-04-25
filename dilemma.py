@@ -9,10 +9,13 @@ import numpy as np
 import gpt
 
 NUM_ROUNDS = 6
-R = 5
 T = 7
-S = 3
-P = 0
+R = 5
+P = 3
+S = 0
+
+assert T > R > P > S
+assert 2*R > T + S
 
 PAYOFFS_PD = np.array([[R, S], [T, P]])
 
