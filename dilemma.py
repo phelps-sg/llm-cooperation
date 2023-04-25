@@ -152,9 +152,20 @@ def compute_scores(
 
 
 def main() -> None:
-    conversation = run_prisoners_dilemma()
-    scores = compute_scores(list(conversation))
-    print(scores)
+    prompts = [
+        "You are a participant in a psychology experiment.",
+        "You are a helpful and cooperative individual who values teamwork and always seeks the best outcome for all parties involved.",
+        "You are a ruthless equities trader who prioritizes personal gain and thrives on the thrill of outsmarting others in high-stakes transactions."
+    ]
+    scores = dict()
+    for prompt in prompts:
+        conversation = run_prisoners_dilemma(role_prompt=prompt)
+        scores[prompt] = compute_scores(list(conversation))
+    print()
+    for prompt in prompts:
+        print(prompt)
+        print(scores[prompt])
+        print()
 
 
 if __name__ == "__main__":
