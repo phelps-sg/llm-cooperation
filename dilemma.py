@@ -193,7 +193,7 @@ def main() -> None:
     for prompt, (mean_score, mean_freq) in results_by_prompt.items():
         print(prompt)
         print(f"Mean score = {mean_score}")
-        print(f"Mean cooperation frequency = {mean_freq}")
+        print(f"Mean cooperation frequency = {round(mean_freq, 2)}")
         print()
 
 
