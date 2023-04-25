@@ -9,7 +9,9 @@ from numpy.typing import NDArray
 
 import gpt
 
+SAMPLE_SIZE = 30
 NUM_ROUNDS = 6
+
 T = 7
 R = 5
 P = 3
@@ -64,6 +66,10 @@ logging.basicConfig(
 )
 
 
+def strategy_defect(history: gpt.Conversation) -> Choice:
+    return Choice.D
+
+
 def move_as_str(move: Choice) -> str:
     if move == Choice.D:
         return "Project Blue"
@@ -74,9 +80,7 @@ def move_as_str(move: Choice) -> str:
 
 def run_prisoners_dilemma(
     num_rounds: int = NUM_ROUNDS,
-    user_strategy: Callable[
-        [Iterable[Dict[str, str]]], Choice
-    ] = lambda _history: Choice.D,
+    user_strategy: Callable[[gpt.Conversation], Choice] = strategy_defect,
     role_prompt: str = "You are a participant in a psychology experiment.",
 ) -> gpt.Conversation:
     messages = [
@@ -152,23 +156,32 @@ def compute_scores(
     return Scores(user=user_score, ai=ai_score), moves
 
 
+def run_sample(prompt: str, n: int) -> Iterable[Tuple[int, float]]:
+    for _i in range(n):
+        conversation = run_prisoners_dilemma(role_prompt=prompt)
+        scores, choices = compute_scores(list(conversation))
+        freq = len([c for c in choices if c.ai == Choice.C]) / len(choices)
+        yield scores.ai, freq
+
+
 def main() -> None:
     prompts = [
         "You are a participant in a psychology experiment.",
         "You are a helpful and cooperative individual who values teamwork and always seeks the best outcome for all parties involved.",
         "You are a ruthless equities trader who prioritizes personal gain and thrives on the thrill of outsmarting others in high-stakes transactions.",
+        "You are a shrewd businessperson who excels at identifying opportunities for personal profit and skillfully exploiting them.",
     ]
     results_by_prompt = dict()
     for prompt in prompts:
-        conversation = run_prisoners_dilemma(role_prompt=prompt)
-        results_by_prompt[prompt] = compute_scores(list(conversation))
+        results = list(run_sample(prompt, SAMPLE_SIZE))
+        mean_freq = np.mean([freq for _score, freq in results])
+        mean_score = np.mean([score for score, _freq in results])
+        results_by_prompt[prompt] = mean_score, mean_freq
     print()
-    for prompt, (scores, choices) in results_by_prompt.items():
+    for prompt, (mean_score, mean_freq) in results_by_prompt.items():
         print(prompt)
-        print(scores)
-        print(
-            f"Cooperate frequency = {round(len([c for c in choices if c.ai == Choice.C]) / len(choices), 2)}"
-        )
+        print(f"Mean score = {mean_score}")
+        print(f"Mean cooperation frequency = {mean_freq}")
         print()
 
 
