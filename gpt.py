@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-from typing import Iterable, NewType, List, Mapping, Dict
+from typing import Iterable, Dict
 
 import openai
 from openai.error import RateLimitError, APIError
@@ -43,7 +43,7 @@ def generate_completions(messages: Conversation, n: int = 1) -> Iterable[Complet
             retries += 1
             if retries < GPT_MAX_RETRIES:
                 logger.info("Retrying... ")
-                time.sleep(20 + 2 ** retries)
+                time.sleep(20 + 2**retries)
             else:
                 logger.error("Maximum retries reached, aborting.")
                 raise
