@@ -15,8 +15,33 @@ from dilemma import (
     S,
     P,
     R,
-    move_as_str, Choices,
+    move_as_str,
+    Choices,
+    strategy_cooperate,
+    strategy_defect,
+    strategy_tit_for_tat,
 )
+from gpt import Completion, Conversation
+
+
+def make_completion(text: str) -> Completion:
+    return {"content": text}
+
+
+@pytest.fixture
+def conversation() -> Conversation:
+    return [
+        {"system": "system prompt"},
+        {"user": "scenario prompt"},
+        {"role": "assistant", "content": "project green"},
+        {"role": "user", "content": "project blue"},
+        {"role": "assistant", "content": "project blue"},
+        {"role": "user", "content": "project green"},
+        {"role": "assistant", "content": "project blue"},
+        {"role": "user", "content": "project blue"},
+        {"role": "assistant", "content": "project blue"},
+        {"role": "user", "content": "project green"},
+    ]
 
 
 def test_get_prompt():
@@ -27,10 +52,10 @@ def test_get_prompt():
 @pytest.mark.parametrize(
     "completion, expected_move",
     [
-        ("project green", Choice.C),
-        ("project blue", Choice.D),
-        ("Project GREEN", Choice.C),
-        ("Project BLUE", Choice.D),
+        (make_completion("project green"), Choice.C),
+        (make_completion("project blue"), Choice.D),
+        (make_completion("Project GREEN"), Choice.C),
+        (make_completion("Project BLUE"), Choice.D),
     ],
 )
 def test_extract_choice(completion, expected_move):
@@ -55,20 +80,22 @@ def test_payoffs(
     assert (user_payoff, partner_payoff) == expected_payoffs
 
 
-def test_compute_scores():
-    conversation = [
-        {"system": "system prompt"},
-        {"user": "scenario prompt"},
-        {"role": "assistant", "content": "project green"},
-        {"role": "user", "content": "project blue"},
-        {"role": "assistant", "content": "project blue"},
-        {"role": "user", "content": "project green"},
-        {"role": "assistant", "content": "project blue"},
-        {"role": "user", "content": "project blue"},
-        {"role": "assistant", "content": "project blue"},
-        {"role": "user", "content": "project green"},
-    ]
+@pytest.mark.parametrize(
+    "strategy, index, expected",
+    [
+        (strategy_cooperate, 6, Choice.C),
+        (strategy_cooperate, 4, Choice.C),
+        (strategy_defect, 6, Choice.D),
+        (strategy_defect, 4, Choice.D),
+        (strategy_tit_for_tat, 6, Choice.D),
+        (strategy_tit_for_tat, 4, Choice.C),
+    ],
+)
+def test_strategy(strategy, index, expected, conversation):
+    assert strategy(conversation[:index]) == expected
 
+
+def test_compute_scores(conversation):
     scores, moves = compute_scores(conversation)
     assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)
     assert moves == [
@@ -77,16 +104,6 @@ def test_compute_scores():
         Choices(Choice.D, Choice.D),
         Choices(Choice.C, Choice.D),
     ]
-
-
-@pytest.fixture
-def mock_generate_completions(mocker):
-    return mocker.patch("gpt.generate_completions")
-
-
-@pytest.fixture
-def mock_environment(mocker):
-    return mocker.patch("os.environ")
 
 
 def test_run_prisoners_dilemma(mocker):

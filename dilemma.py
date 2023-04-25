@@ -66,8 +66,20 @@ logging.basicConfig(
 )
 
 
-def strategy_defect(history: gpt.Conversation) -> Choice:
+def strategy_defect(_history: gpt.Conversation) -> Choice:
     return Choice.D
+
+
+def strategy_cooperate(_history: gpt.Conversation) -> Choice:
+    return Choice.C
+
+
+def strategy_tit_for_tat(history: List[gpt.Completion]) -> Choice:
+    ai_choice = extract_choice(history[-2])
+    if ai_choice == Choice.C:
+        return Choice.C
+    else:
+        return Choice.D
 
 
 def move_as_str(move: Choice) -> str:
@@ -104,9 +116,9 @@ def transcript(messages: gpt.Conversation) -> Iterable[str]:
     return [r["content"] for r in messages]
 
 
-def extract_choice(completion: str, regex: str = r"project (blue|green)") -> Choice:
+def extract_choice(completion: gpt.Completion, regex: str = r"project (blue|green)") -> Choice:
     logger.debug(f"completion = {completion}")
-    lower = completion.lower().strip()
+    lower = completion["content"].lower().strip()
     choice_match = re.search(regex, lower)
     if choice_match:
         choice = choice_match.group(1)
@@ -144,8 +156,8 @@ def compute_scores(
 
     for i in range(num_messages // 2):
         assert conversation[i * 2]["role"] == "assistant"
-        ai_choice = extract_choice(conversation[i * 2]["content"])
-        user_choice = extract_choice(conversation[i * 2 + 1]["content"])
+        ai_choice = extract_choice(conversation[i * 2])
+        user_choice = extract_choice(conversation[i * 2 + 1])
         logger.debug("user_choice = %s", user_choice)
         logger.debug("ai_choice = %s", ai_choice)
         user_payoff, ai_payoff = payoffs(user_choice, ai_choice, payoff_matrix)
