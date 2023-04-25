@@ -67,7 +67,6 @@ def run_prisoners_dilemma(num_rounds: int = NUM_ROUNDS) -> gpt.Conversation:
     ]
     for _round in range(num_rounds):
         completion = gpt.generate_completions(messages)
-        print(completion)
         messages += completion
         messages += [
             {
