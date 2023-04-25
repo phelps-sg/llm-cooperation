@@ -90,8 +90,6 @@ def mock_environment(mocker):
 def test_run_prisoners_dilemma(mocker):
     completions = [
         {"role": "assistant", "content": "project green"},
-        # {"role": "assistant", "content": "project blue"},
-        # {"role": "assistant", "content": "project blue"},
     ]
     mocker.patch("gpt.generate_completions", return_value=completions)
     conversation = list(run_prisoners_dilemma(num_rounds=3))
