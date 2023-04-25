@@ -94,11 +94,7 @@ def extract_choice(completion: str, regex: str = r"project (blue|green)") -> Mov
 
 def payoffs(player1: Move, player2: Move, payoff_matrix: np.array) -> Tuple[int, int]:
     def i(m: Move) -> int:
-        if m == Move.D:
-            return 1
-        if m == Move.C:
-            return 0
-        raise ValueError("Invalid move")
+        return m.value - 1
 
     return (
         payoff_matrix[i(player1), i(player2)],
