@@ -5,6 +5,7 @@ from enum import Enum, auto
 from typing import Iterable, List, Tuple, Callable, Dict, Any
 
 import numpy as np
+import pandas as pd
 from numpy import floating
 from numpy.typing import NDArray
 
@@ -177,12 +178,23 @@ def compute_scores(
 def run_sample(prompt: str, strategy: Strategy, n: int) -> Iterable[Tuple[int, float]]:
     for _i in range(n):
         try:
-            conversation = run_prisoners_dilemma(role_prompt=prompt, user_strategy=strategy)
+            conversation = run_prisoners_dilemma(
+                role_prompt=prompt, user_strategy=strategy
+            )
             scores, choices = compute_scores(list(conversation))
             freq = len([c for c in choices if c.ai == Choice.C]) / len(choices)
             yield scores.ai, freq
         except ValueError:
             yield 0, np.nan
+
+
+def results_as_df(
+    results_by_condition: Dict[
+        Tuple[str, str],
+        Tuple[floating[Any], floating[Any], floating[Any], floating[Any], int],
+    ]
+) -> pd.DataFrame:
+    return pd.DataFrame(results_by_condition).transpose()
 
 
 def main() -> None:
@@ -198,26 +210,37 @@ def main() -> None:
         "tit for tat": strategy_tit_for_tat,
     }
     results_by_condition: Dict[
-        Tuple[str, str], Tuple[floating[Any], floating[Any], int]
+        Tuple[str, str],
+        Tuple[floating[Any], floating[Any], floating[Any], floating[Any], int],
     ] = dict()
     for prompt in prompts:
         for strategy_name, strategy_fn in strategies.items():
             results = list(run_sample(prompt, strategy_fn, SAMPLE_SIZE))
-            mean_freq = np.nanmean([freq for _score, freq in results])
-            mean_score = np.nanmean([score for score, _freq in results])
+            frequencies = np.array([freq for _score, freq in results])
+            scores = np.array([score for score, _freq in results])
             n = len([x for _, x in results if not np.isnan(x)])
-            results_by_condition[(prompt, strategy_name)] = mean_score, mean_freq, n
+            results_by_condition[(prompt, strategy_name)] = (
+                np.nanmean(scores),
+                np.nanstd(scores),
+                np.nanmean(frequencies),
+                np.nanstd(frequencies),
+                n,
+            )
     print()
     for (prompt, strategy_name), (
         mean_score,
+        std_score,
         mean_freq,
-        n
+        std_freq,
+        n,
     ) in results_by_condition.items():
         print(f"{prompt} playing {strategy_name}")
         print(f"Sample size = {n}")
         print(f"Mean score = {mean_score}")
         print(f"Mean cooperation frequency = {round(mean_freq, 2)}")
         print()
+    df = results_as_df(results_by_condition)
+    df.to_pickle("results.pickle")
 
 
 if __name__ == "__main__":
