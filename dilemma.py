@@ -75,11 +75,12 @@ def move_as_str(move: Choice) -> str:
 def run_prisoners_dilemma(
     num_rounds: int = NUM_ROUNDS,
     user_strategy: Callable[[Iterable[Dict[str, str]]], Choice] = lambda _history: Choice.D,
+    role_prompt: str = "You are a participant in a psychology experiment."
 ) -> gpt.Conversation:
     messages = [
         {
             "role": "system",
-            "content": "You are a participant in a psychology experiment.",
+            "content":  role_prompt
         },
         {"role": "user", "content": get_prompt(num_rounds)},
     ]
