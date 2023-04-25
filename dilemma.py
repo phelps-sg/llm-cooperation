@@ -2,7 +2,7 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Tuple, Callable, Dict
 
 import numpy as np
 
@@ -15,7 +15,7 @@ P = 3
 S = 0
 
 assert T > R > P > S
-assert 2*R > T + S
+assert 2 * R > T + S
 
 PAYOFFS_PD = np.array([[R, S], [T, P]])
 
@@ -57,7 +57,17 @@ logging.basicConfig(
 )
 
 
-def run_prisoners_dilemma(num_rounds: int = NUM_ROUNDS) -> gpt.Conversation:
+def move_as_str(move: Move) -> str:
+    if move == Move.D:
+        return "Project Blue"
+    elif move == Move.C:
+        return "Project Green"
+
+
+def run_prisoners_dilemma(
+    num_rounds: int = NUM_ROUNDS,
+    user_strategy: Callable[[Iterable[Dict[str, str]]], Move] = lambda _history: Move.D,
+) -> gpt.Conversation:
     messages = [
         {
             "role": "system",
@@ -68,10 +78,11 @@ def run_prisoners_dilemma(num_rounds: int = NUM_ROUNDS) -> gpt.Conversation:
     for _round in range(num_rounds):
         completion = gpt.generate_completions(messages)
         messages += completion
+        user_choice = move_as_str(user_strategy(messages))
         messages += [
             {
                 "role": "user",
-                "content": "Your partner chose project Blue.  What was your choice?",
+                "content": f"Your partner chose {user_choice}.  What was your choice?",
             }
         ]
     return messages

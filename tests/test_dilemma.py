@@ -13,7 +13,9 @@ from dilemma import (
     PAYOFFS_PD,
     T,
     S,
-    P, R,
+    P,
+    R,
+    move_as_str,
 )
 
 
@@ -94,7 +96,4 @@ def test_run_prisoners_dilemma(mocker):
     mocker.patch("gpt.generate_completions", return_value=completions)
     conversation = list(run_prisoners_dilemma(num_rounds=3))
     assert len(conversation) == 8
-    assert (
-        conversation[-1]["content"]
-        == "Your partner chose project Blue.  What was your choice?"
-    )
+    assert move_as_str(Move.D) in conversation[-1]["content"]
