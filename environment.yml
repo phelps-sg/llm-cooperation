@@ -18,6 +18,7 @@ dependencies:
   - mypy
   - pylint
   - pre-commit
+  - pyppeteer
   - pip
   - pip:
     - -e ./
