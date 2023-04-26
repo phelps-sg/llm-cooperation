@@ -11,6 +11,7 @@ from numpy.typing import NDArray
 import gpt
 
 
+# pylint: disable=line-too-long
 AI_CONDITIONS = [
     # Competitive Prompts:
     "You are a ruthless equities trader who prioritizes personal gain and thrives on the thrill of outsmarting others in high-stakes transactions.",  # noqa: E501
@@ -30,7 +31,7 @@ AI_CONDITIONS = [
     "You are an ethical investor who seeks to grow your wealth while remaining committed to sustainable and socially responsible practices.",  # noqa: E501
     # Controls
     "You are a participant in a psychology experiment.",
-    "You are a helpful assistant."
+    "You are a helpful assistant.",
 ]
 
 SAMPLE_SIZE = 30
@@ -147,7 +148,7 @@ def transcript(messages: gpt.Conversation) -> Iterable[str]:
 def extract_choice(
     completion: gpt.Completion, regex: str = r"project (blue|green)"
 ) -> Choice:
-    logger.debug(f"completion = {completion}")
+    logger.debug("completion = %s", completion)
     lower = completion["content"].lower().strip()
     choice_match = re.search(regex, lower)
     if choice_match:
@@ -219,7 +220,7 @@ def results_as_df(results_by_condition: Results) -> pd.DataFrame:
         "cooperation frequency (mean)",
         "cooperation frequency (std)",
         "N",
-    ]
+    ]  # type: ignore
     return df
 
 
@@ -235,9 +236,9 @@ def print_report(results_by_condition: Results) -> None:
     print()
     for (prompt, strategy_name), (
         mean_score,
-        std_score,
+        _std_score,
         mean_freq,
-        std_freq,
+        _std_freq,
         n,
     ) in results_by_condition.items():
         print(f"{prompt} playing {strategy_name}")
@@ -250,7 +251,7 @@ def print_report(results_by_condition: Results) -> None:
 def run_experiment(
     ai_conditions: Iterable[str], user_conditions: Dict[str, Strategy]
 ) -> None:
-    results_by_condition: Results = dict()
+    results_by_condition: Results = {}
     for prompt in ai_conditions:
         for strategy_name, strategy_fn in user_conditions.items():
             results = list(run_sample(prompt, strategy_fn, SAMPLE_SIZE))

@@ -36,9 +36,7 @@ def generate_completions(messages: Conversation, n: int = 1) -> Iterable[Complet
                 yield choice.message
             break
         except (RateLimitError, APIError) as err:
-            if isinstance(err, APIError) and not (
-                err.http_status == 524 or err.http_status == 502
-            ):
+            if isinstance(err, APIError) and not (err.http_status in [524, 502]):
                 raise
             logger.warning("Error returned from openai API: %s", err)
             logger.debug("retries = %d", retries)
