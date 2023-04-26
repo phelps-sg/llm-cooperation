@@ -6,6 +6,7 @@ dependencies:
   - blackd
   - ipython
   - jupyter
+  - jupytext
   - nbconvert
   - openai
   - pandas
