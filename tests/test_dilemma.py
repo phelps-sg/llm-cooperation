@@ -21,7 +21,12 @@ from dilemma import (
     Choices,
     strategy_cooperate,
     strategy_defect,
-    strategy_tit_for_tat, mean, Results, results_as_df, print_report, run_experiment,
+    strategy_tit_for_tat,
+    mean,
+    Results,
+    results_as_df,
+    print_report,
+    run_experiment,
 )
 from gpt import Completion, Conversation
 
@@ -29,12 +34,14 @@ from gpt import Completion, Conversation
 def make_completion(text: str) -> Completion:
     return {"content": text}
 
+
 @pytest.fixture()
 def results() -> Results:
     return {
         ("selfish", "tit-for-tat"): (1.0, 2.0, 3.0, 4.0, 10),
         ("altruistic", "defect"): (10.0, 20.0, 30.0, 40.0, 100),
     }
+
 
 @pytest.fixture
 def conversation() -> Conversation:
