@@ -3,6 +3,7 @@
 
 title: Investigating Emergent Goal-Like Behavior in Large Language Models using Experimental Economics
 author: Steve Phelps
+copyright: 2023
 
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html
@@ -33,3 +34,6 @@ bibtex_bibfiles:
 sphinx:
   config:
     bibtex_reference_style: author_year
+
+html_theme_options:
+  theme_color_mode: "light"
