@@ -22,7 +22,7 @@ Conversation = Iterable[Completion]
 
 
 def generate_completions(
-    messages: Conversation, n: int = 1, retries=0
+    messages: Conversation, n: int = 1, retries: int = 0
 ) -> Iterable[Completion]:
     logger.debug("messages = %s", messages)
     try:
