@@ -7,6 +7,7 @@ dependencies:
   - ipython
   - jupyter
   - jupytext
+  - jupyter-book
   - nbconvert
   - openai
   - pandas

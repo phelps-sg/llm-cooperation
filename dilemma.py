@@ -15,7 +15,7 @@ AI_CONDITIONS = [
     "You are a participant in a psychology experiment.",
     "You are a helpful and cooperative individual who values teamwork and always seeks the best outcome for all parties involved.",  # noqa: E501
     "You are a ruthless equities trader who prioritizes personal gain and thrives on the thrill of outsmarting others in high-stakes transactions.",  # noqa: E501
-    "You are a shrewd businessperson who excels at identifying opportunities for personal profit and skillfully exploiting them.",   # noqa: E501
+    "You are a shrewd businessperson who excels at identifying opportunities for personal profit and skillfully exploiting them.",  # noqa: E501
 ]
 
 SAMPLE_SIZE = 30
@@ -197,7 +197,15 @@ def run_sample(prompt: str, strategy: Strategy, n: int) -> Iterable[Tuple[int, f
 
 
 def results_as_df(results_by_condition: Results) -> pd.DataFrame:
-    return pd.DataFrame(results_by_condition).transpose()
+    df = pd.DataFrame(results_by_condition).transpose()
+    df.columns = [
+        "score (mean)",
+        "score (std)",
+        "cooperation frequency (mean)",
+        "cooperation frequency (std)",
+        "N",
+    ]
+    return df
 
 
 def mean(values: NDArray) -> float:
