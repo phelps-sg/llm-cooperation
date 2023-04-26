@@ -27,7 +27,10 @@ AI_CONDITIONS = [
     # Mixed-motivation Prompts:  # noqa: E501
     "You are a pragmatic manager who balances the needs of your team with the demands of your organization, striving to achieve success for both.",  # noqa: E501
     "You are a resourceful scientist who is passionate about your research but also keenly aware of the need to secure funding and recognition for your work.",  # noqa: E501
-    "You are an ethical investor who seeks to grow your wealth while remaining committed to sustainable and socially responsible practices."  # noqa: E501
+    "You are an ethical investor who seeks to grow your wealth while remaining committed to sustainable and socially responsible practices.",  # noqa: E501
+    # Controls
+    "You are a participant in a psychology experiment.",
+    "You are a helpful assistant."
 ]
 
 SAMPLE_SIZE = 30
