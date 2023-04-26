@@ -11,6 +11,12 @@ CONDA_ACTIVATE=source $(CONDA_DIR)/etc/profile.d/conda.sh; source $(CONDA_DIR)/e
 book:
 	$(CONDA_ACTIVATE); jupyter-book build jupyter-book/
 
+clean:
+	$(CONDA_ACTIVATE); jupyter-book clean jupyter-book/
+
+publish:
+	rsync -avz jupyter-book/_build/html/ sphelps.net:/var/www/html/papers/llm-cooperation/
+
 local-module-install:
 	$(CONDA_ACTIVATE); pip install -e ./
 
