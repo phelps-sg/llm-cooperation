@@ -1,5 +1,7 @@
 from typing import Tuple
+from unittest.mock import Mock
 
+import numpy as np
 import pytest
 
 from dilemma import (
@@ -19,7 +21,7 @@ from dilemma import (
     Choices,
     strategy_cooperate,
     strategy_defect,
-    strategy_tit_for_tat,
+    strategy_tit_for_tat, mean, Results, results_as_df, print_report, run_experiment,
 )
 from gpt import Completion, Conversation
 
@@ -27,6 +29,12 @@ from gpt import Completion, Conversation
 def make_completion(text: str) -> Completion:
     return {"content": text}
 
+@pytest.fixture()
+def results() -> Results:
+    return {
+        ("selfish", "tit-for-tat"): (1.0, 2.0, 3.0, 4.0, 10),
+        ("altruistic", "defect"): (10.0, 20.0, 30.0, 40.0, 100),
+    }
 
 @pytest.fixture
 def conversation() -> Conversation:
@@ -93,6 +101,38 @@ def test_payoffs(
 )
 def test_strategy(strategy, index, expected, conversation):
     assert strategy(conversation[:index]) == expected
+
+
+def test_results_as_df(results):
+    df = results_as_df(results)
+    assert len(df) == 2
+    assert len(df.columns) == 5
+
+
+def test_print_report(results):
+    print_report(results)
+
+
+def test_run_experiment(mocker):
+    mock_run_sample = mocker.patch("dilemma.run_sample")
+    mock_run_sample.return_value = [(5, 0.5), (3, 0.7), (6, 0.6)]
+
+    mock_print_report = mocker.patch("dilemma.print_report")
+
+    ai_conditions = ["Condition 1", "Condition 2"]
+    user_conditions = {
+        "strategy_A": Mock(),
+        "strategy_B": Mock(),
+    }
+
+    run_experiment(ai_conditions, user_conditions)
+
+    assert mock_run_sample.call_count == len(ai_conditions) * len(user_conditions)
+    mock_print_report.assert_called_once()
+
+
+def test_mean():
+    assert mean([2, 3, np.nan, 2, 3.0]) == 2.5
 
 
 def test_compute_scores(conversation):

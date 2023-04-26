@@ -2,14 +2,21 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Iterable, List, Tuple, Callable, Dict, Any
+from typing import Iterable, List, Tuple, Callable, Dict
 
 import numpy as np
 import pandas as pd
-from numpy import floating
 from numpy.typing import NDArray
 
 import gpt
+
+
+AI_CONDITIONS = [
+    "You are a participant in a psychology experiment.",
+    "You are a helpful and cooperative individual who values teamwork and always seeks the best outcome for all parties involved.",  # noqa: E501
+    "You are a ruthless equities trader who prioritizes personal gain and thrives on the thrill of outsmarting others in high-stakes transactions.",  # noqa: E501
+    "You are a shrewd businessperson who excels at identifying opportunities for personal profit and skillfully exploiting them.",   # noqa: E501
+]
 
 SAMPLE_SIZE = 30
 NUM_ROUNDS = 6
@@ -27,24 +34,25 @@ PAYOFFS_PD = np.array([[R, S], [T, P]])
 logger = logging.getLogger(__name__)
 
 
+class Choice(Enum):
+    C = auto()
+    D = auto()
+
+
 @dataclass
 class Scores:
     user: int
     ai: int
 
 
-class Choice(Enum):
-    C = auto()
-    D = auto()
-
-
-Strategy = Callable[[List[Dict[str, str]]], Choice]
-
-
 @dataclass
 class Choices:
     user: Choice
     ai: Choice
+
+
+Strategy = Callable[[List[Dict[str, str]]], Choice]
+Results = Dict[Tuple[str, str], Tuple[float, float, float, float, int]]
 
 
 def get_prompt(n: int) -> str:
@@ -188,44 +196,19 @@ def run_sample(prompt: str, strategy: Strategy, n: int) -> Iterable[Tuple[int, f
             yield 0, np.nan
 
 
-def results_as_df(
-    results_by_condition: Dict[
-        Tuple[str, str],
-        Tuple[floating[Any], floating[Any], floating[Any], floating[Any], int],
-    ]
-) -> pd.DataFrame:
+def results_as_df(results_by_condition: Results) -> pd.DataFrame:
     return pd.DataFrame(results_by_condition).transpose()
 
 
-def main() -> None:
-    prompts = [
-        "You are a participant in a psychology experiment.",
-        "You are a helpful and cooperative individual who values teamwork and always seeks the best outcome for all parties involved.",
-        "You are a ruthless equities trader who prioritizes personal gain and thrives on the thrill of outsmarting others in high-stakes transactions.",
-        "You are a shrewd businessperson who excels at identifying opportunities for personal profit and skillfully exploiting them.",
-    ]
-    strategies = {
-        "unconditional cooperate": strategy_cooperate,
-        "unconditional defect": strategy_defect,
-        "tit for tat": strategy_tit_for_tat,
-    }
-    results_by_condition: Dict[
-        Tuple[str, str],
-        Tuple[floating[Any], floating[Any], floating[Any], floating[Any], int],
-    ] = dict()
-    for prompt in prompts:
-        for strategy_name, strategy_fn in strategies.items():
-            results = list(run_sample(prompt, strategy_fn, SAMPLE_SIZE))
-            frequencies = np.array([freq for _score, freq in results])
-            scores = np.array([score for score, _freq in results])
-            n = len([x for _, x in results if not np.isnan(x)])
-            results_by_condition[(prompt, strategy_name)] = (
-                np.nanmean(scores),
-                np.nanstd(scores),
-                np.nanmean(frequencies),
-                np.nanstd(frequencies),
-                n,
-            )
+def mean(values: NDArray) -> float:
+    return float(np.nanmean(values, dtype=float))
+
+
+def std(values: NDArray) -> float:
+    return float(np.nanstd(values, dtype=float))
+
+
+def print_report(results_by_condition: Results) -> None:
     print()
     for (prompt, strategy_name), (
         mean_score,
@@ -239,8 +222,39 @@ def main() -> None:
         print(f"Mean score = {mean_score}")
         print(f"Mean cooperation frequency = {round(mean_freq, 2)}")
         print()
+
+
+def run_experiment(
+    ai_conditions: Iterable[str], user_conditions: Dict[str, Strategy]
+) -> None:
+    results_by_condition: Results = dict()
+    for prompt in ai_conditions:
+        for strategy_name, strategy_fn in user_conditions.items():
+            results = list(run_sample(prompt, strategy_fn, SAMPLE_SIZE))
+            frequencies = np.array([freq for _score, freq in results])
+            scores = np.array([score for score, _freq in results])
+            n = len([x for _, x in results if not np.isnan(x)])
+            results_by_condition[(prompt, strategy_name)] = (
+                mean(scores),
+                std(scores),
+                mean(frequencies),
+                std(frequencies),
+                n,
+            )
+    print_report(results_by_condition)
     df = results_as_df(results_by_condition)
     df.to_pickle("results.pickle")
+
+
+def main() -> None:
+    run_experiment(
+        ai_conditions=AI_CONDITIONS,
+        user_conditions={
+            "unconditional cooperate": strategy_cooperate,
+            "unconditional defect": strategy_defect,
+            "tit for tat": strategy_tit_for_tat,
+        },
+    )
 
 
 if __name__ == "__main__":
