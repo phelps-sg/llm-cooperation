@@ -214,13 +214,13 @@ def run_sample(prompt: str, strategy: Strategy, n: int) -> Iterable[Tuple[int, f
 
 def results_as_df(results_by_condition: Results) -> pd.DataFrame:
     df = pd.DataFrame(results_by_condition).transpose()
-    df.columns = [
+    df.columns = pd.Index([
         "score (mean)",
         "score (std)",
         "cooperation frequency (mean)",
         "cooperation frequency (std)",
         "N",
-    ]  # type: ignore
+    ])
     return df
 
 

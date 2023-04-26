@@ -11,6 +11,7 @@ dependencies:
   - nbconvert
   - openai
   - pandas
+  - pandas-stubs
   - numpy
   - scipy
   - pytest
