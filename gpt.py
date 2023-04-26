@@ -11,6 +11,8 @@ GPT_TEMPERATURE = 0.2
 GPT_MAX_TOKENS = 100
 GPT_BATCH_SIZE = 16
 GPT_MAX_RETRIES = 5
+GPT_RETRY_EXPONENT_SECONDS = 2
+GPT_RETRY_BASE_SECONDS = 20
 
 logger = logging.getLogger(__name__)
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -41,7 +43,7 @@ def generate_completions(
         logger.debug("retries = %d", retries)
         if retries < GPT_MAX_RETRIES:
             logger.info("Retrying... ")
-            time.sleep(20 + 2**retries)
+            time.sleep(GPT_RETRY_BASE_SECONDS + GPT_RETRY_EXPONENT_SECONDS**retries)
             for completion in generate_completions(messages, n, retries + 1):
                 yield completion
         else:
