@@ -1,3 +1,5 @@
+# Abstract
+
 As large language models (LLMs) continue to advance, understanding the emergent
 goal-like behaviors and cooperative tendencies of artificially generated agents
 becomes crucial for AI alignment research. This paper outlines an
