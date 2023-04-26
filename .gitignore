@@ -3,3 +3,13 @@
 /results.txt
 /paper/llm-cooperation.pdf
 /notebooks/Results.ipynb
+/jupyter-book/Results.ipynb
+/jupyter-book/_build/.doctrees/environment.pickle
+/jupyter-book/_build/.doctrees/intro.doctree
+/jupyter-book/_build/.doctrees/llm-cooperation.doctree
+/jupyter-book/_build/.doctrees/markdown.doctree
+/jupyter-book/_build/.doctrees/markdown-notebooks.doctree
+/jupyter-book/_build/.doctrees/notebooks.doctree
+/jupyter-book/_build/.doctrees/Results.doctree
+/jupyter-book/.ipynb_checkpoints/Results-checkpoint.ipynb
+/jupytext.toml
