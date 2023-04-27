@@ -4,7 +4,7 @@
 format: jb-book
 root: abstract
 chapters:
-- file: llm-cooperation
+- file: background
 - file: methods
 - file: Results
 - file: bibliography
