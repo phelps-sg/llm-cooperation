@@ -61,4 +61,4 @@ def test_generate_completion_error(mock_openai, mock_sleep, error):
     with pytest.raises(Exception):
         _ = list(generate_completions([]))
 
-    assert mock_sleep.call_count == GPT_MAX_RETRIES - 1
+    assert mock_sleep.call_count == GPT_MAX_RETRIES
