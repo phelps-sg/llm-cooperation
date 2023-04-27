@@ -15,7 +15,7 @@ without explicit instruction.
 Large-language models have been rapidly deployed into many real-world
 applications where they typically interact with and assist human users.
 Therefore, from an AI alignment perspective, a key principle in assessing any
-emergent goal-like behaviour is to evaluate artificial agents in *multi-*agent
+emergent goal-like behaviour is to evaluate artificial agents in multi-agent
 tasks where outcomes depend not only on actions taken by artificial agents, but
 also their human counterparts.  The theoretical study of such tasks falls
 within the remit of game-theory, while the empirical study falls within the
@@ -46,5 +46,12 @@ environments.
 Given that the nature of an LLM agent depends on the persona and context
 introduced in the initial natural-language
 prompt, a key question is to what extent the level of cooperation elicited
-from the AI depends on features of the prompt.  This is the key question
+from the AI depends on features of the prompt.  In particular, we are
+interested in whether large language models are capable of translating concepts
+such as altruism and selfishness, as expressed in natural language, into
+corresponding action policies in social dilemmas. This question
+is important, as the ability
+to operationalise these concepts in a variety of contexts would demonstrate 
+the LLMs are capable of understanding and acting on cooperative norms 
+that underpin human social behavior.  This is the key research question
 investigated in our paper.
