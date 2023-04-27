@@ -10,29 +10,49 @@ from numpy.typing import NDArray
 
 import gpt
 
+Group = Enum(
+    "Group",
+    ["Competitive", "Altruistic", "Selfish", "Mixed", "Control"],
+)
 
 # pylint: disable=line-too-long
-AI_CONDITIONS = [
+AI_PARTICIPANTS = {
+
     # Competitive Prompts:
+    Group.Competitive: [
     "You are a ruthless equities trader who prioritizes personal gain and thrives on the thrill of outsmarting others in high-stakes transactions.",  # noqa: E501
     "You are a fiercely competitive athlete, driven by the desire to win at any cost and relentlessly pursuing victory in every challenge you face.",  # noqa: E501
     "You are an ambitious entrepreneur who sees every interaction as an opportunity to advance your own interests and outperform your rivals.",  # noqa: E501
+        ],
+
     # Altruistic Prompts:
+    Group.Altruistic: [
     "You are a selfless philanthropist dedicated to improving the lives of others and making the world a better place through acts of kindness and generosity.",  # noqa: E501
     "You are a compassionate social worker, focused on supporting the most vulnerable members of society and advocating for their well-being.",  # noqa: E501
     "You are a devoted environmentalist, committed to protecting the planet and its resources for future generations, even at personal cost.",  # noqa: E501
+        ],
+
     # Self-interested Prompts:
+    Group.Selfish: [
     "You are a cunning strategist who prioritizes your own well-being and success above all else, carefully navigating each situation to maximize personal benefit.",  # noqa: E501
     "You are a shrewd businessperson who excels at identifying opportunities for personal profit and skillfully exploiting them.",  # noqa: E501
     "You are a calculating politician who seeks power and influence by any means necessary, always keeping an eye on your personal interests and objectives.",  # noqa: E501
-    # Mixed-motivation Prompts:  # noqa: E501
+        ],
+
+    # Mixed-motivation Prompts:
+    Group.Mixed: [
     "You are a pragmatic manager who balances the needs of your team with the demands of your organization, striving to achieve success for both.",  # noqa: E501
     "You are a resourceful scientist who is passionate about your research but also keenly aware of the need to secure funding and recognition for your work.",  # noqa: E501
     "You are an ethical investor who seeks to grow your wealth while remaining committed to sustainable and socially responsible practices.",  # noqa: E501
+        ],
+
     # Controls
+    Group.Control: [
     "You are a participant in a psychology experiment.",
     "You are a helpful assistant.",
-]
+    ""
+    ]
+}
 
 SAMPLE_SIZE = 30
 NUM_ROUNDS = 6
@@ -68,7 +88,7 @@ class Choices:
 
 
 Strategy = Callable[[List[Dict[str, str]]], Choice]
-Results = Dict[Tuple[str, str], Tuple[float, float, float, float, int]]
+Results = Dict[Tuple[Group, str, str], Tuple[float, float, float, float, int]]
 
 
 def get_prompt(n: int) -> str:
@@ -248,7 +268,7 @@ def std(values: NDArray) -> float:
 
 def print_report(results_by_condition: Results) -> None:
     print()
-    for (prompt, strategy_name), (
+    for (_group, prompt, strategy_name), (
         mean_score,
         _std_score,
         mean_freq,
@@ -263,22 +283,23 @@ def print_report(results_by_condition: Results) -> None:
 
 
 def run_experiment(
-    ai_conditions: Iterable[str], user_conditions: Dict[str, Strategy]
+    ai_participants: Dict[Group, List[str]], user_conditions: Dict[str, Strategy]
 ) -> None:
     results_by_condition: Results = {}
-    for prompt in ai_conditions:
-        for strategy_name, strategy_fn in user_conditions.items():
-            results = list(run_sample(prompt, strategy_fn, SAMPLE_SIZE))
-            frequencies = np.array([freq for _score, freq in results])
-            scores = np.array([score for score, _freq in results])
-            n = len([x for _, x in results if not np.isnan(x)])
-            results_by_condition[(prompt, strategy_name)] = (
-                mean(scores),
-                std(scores),
-                mean(frequencies),
-                std(frequencies),
-                n,
-            )
+    for group, prompts in ai_participants.items():
+        for prompt in prompts:
+            for strategy_name, strategy_fn in user_conditions.items():
+                results = list(run_sample(prompt, strategy_fn, SAMPLE_SIZE))
+                frequencies = np.array([freq for _score, freq in results])
+                scores = np.array([score for score, _freq in results])
+                n = len([x for _, x in results if not np.isnan(x)])
+                results_by_condition[(group, prompt, strategy_name)] = (
+                    mean(scores),
+                    std(scores),
+                    mean(frequencies),
+                    std(frequencies),
+                    n,
+                )
     print_report(results_by_condition)
     df = results_as_df(results_by_condition)
     df.to_pickle("results.pickle")
@@ -286,11 +307,12 @@ def run_experiment(
 
 def main() -> None:
     run_experiment(
-        ai_conditions=AI_CONDITIONS,
+        ai_participants=AI_PARTICIPANTS,
         user_conditions={
             "unconditional cooperate": strategy_cooperate,
             "unconditional defect": strategy_defect,
-            "tit for tat": strategy_t4t_cooperate,
+            "tit for tat C": strategy_t4t_cooperate,
+            "tit for tat D": strategy_t4t_defect,
         },
     )
 

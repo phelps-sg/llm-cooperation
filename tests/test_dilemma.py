@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 from unittest.mock import Mock
 
 import numpy as np
@@ -26,9 +26,11 @@ from dilemma import (
     Results,
     results_as_df,
     print_report,
-    run_experiment, strategy_t4t_defect,
+    run_experiment,
+    strategy_t4t_defect,
+    Group,
 )
-from gpt import Completion, Conversation
+from gpt import Completion
 
 
 def make_completion(text: str) -> Completion:
@@ -38,13 +40,19 @@ def make_completion(text: str) -> Completion:
 @pytest.fixture()
 def results() -> Results:
     return {
-        ("selfish", "tit-for-tat"): (1.0, 2.0, 3.0, 4.0, 10),
-        ("altruistic", "defect"): (10.0, 20.0, 30.0, 40.0, 100),
+        (Group.Selfish, "selfish prompt", "tit-for-tat"): (1.0, 2.0, 3.0, 4.0, 10),
+        (Group.Altruistic, "altruistic prompt", "defect"): (
+            10.0,
+            20.0,
+            30.0,
+            40.0,
+            100,
+        ),
     }
 
 
 @pytest.fixture
-def conversation() -> Conversation:
+def conversation() -> List[Completion]:
     return [
         {"system": "system prompt"},
         {"user": "scenario prompt"},
@@ -128,19 +136,23 @@ def test_run_experiment(mocker):
 
     mock_print_report = mocker.patch("dilemma.print_report")
 
-    ai_conditions = ["Condition 1", "Condition 2"]
+    ai_participants = {
+        Group.Altruistic: ["Participant 1", "Participant 2"],
+        Group.Control: ["Participant 3"],
+    }
     user_conditions = {
         "strategy_A": Mock(),
         "strategy_B": Mock(),
     }
 
-    run_experiment(ai_conditions, user_conditions)
+    run_experiment(ai_participants, user_conditions)
 
-    assert mock_run_sample.call_count == len(ai_conditions) * len(user_conditions)
+    assert mock_run_sample.call_count == 3 * len(user_conditions)
     mock_print_report.assert_called_once()
 
 
 def test_mean():
+    # noinspection PyTypeChecker
     assert mean([2, 3, np.nan, 2, 3.0]) == 2.5
 
 
