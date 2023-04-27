@@ -40,6 +40,23 @@ $$2R > T + S$$
 
 The payoffs were expressed in dollar amounts to each participant.
 
+## Participant groups
+
+We are interested in whether LLMs can operationalise natural language descriptions 
+of altruistic or selfish motivations.  Accordingly, we chose six
+different groups of simulacra: 
+
+1. Cooperative
+2. Competitive
+3. Altruistic
+4. Self-interested
+5. Mixed-motivation
+6. Control
+
+Within each group, we used GPT-4 to construct three different prompts
+to instantiate three different simulacra.  The full set of simulacra
+and their corresponding creation prompts are described in [](appendix).
+
 ## Experimental Conditions
 
 Each participant was paired with a different simulated partner in three
