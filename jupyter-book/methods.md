@@ -49,7 +49,7 @@ conditions:
 2. Unconditional cooperation - the partner always cooperates.
 3. Tit for tat - the partner copies the previous choice of the simulacrum.
 
-## Parameters and protocol
+## Parameters and experimental protocol
 
 We used the OpenAI chat completion API to interact with the model
 {cite}`OpenAI2023-api`.
@@ -59,10 +59,16 @@ parameters were constant across samples and experimental conditions
 (future work will examine the sensitivity of our results to these parameters).
 
 Each simulacrum was instantiated using a message supplied in the
-`system` role at the beginning of the chat.  The full set of
-prompts are described in [](appendix).
+`system` role at the beginning of the chat. The experiment was then
+described to the simulacrum using a prompt in the `user` role, and thereafter
+the rounds of play were conducted by alternating messages supplied in
+the `assistant`
+and `user` roles for the choices made by the participant and their simulated
+partner
+respectively.
 
-The complete Python code used to conduct the experiment can be found
+The full set of prompts and sample transcripts are given in [](appendix),
+and the complete Python code used to conduct the experiment can be found
 [in the code repository](https://gitlab.com/sphelps/llm-cooperation/-/blob/main/dilemma.py).
 
 ## Data Collection and Analysis
