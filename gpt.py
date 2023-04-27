@@ -23,7 +23,7 @@ Conversation = Iterable[Completion]
 
 def generate_completions(
     messages: Conversation, n: int = 1, retries: int = 0
-) -> Iterable[Completion]:
+) -> Conversation:
     logger.debug("messages = %s", messages)
     try:
         result = openai.ChatCompletion.create(
