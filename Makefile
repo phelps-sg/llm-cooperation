@@ -14,7 +14,7 @@ book:
 clean:
 	$(CONDA_ACTIVATE); jupyter-book clean jupyter-book/
 
-publish:
+publish: book
 	rsync -avz jupyter-book/_build/html/ sphelps.net:/var/www/html/papers/llm-cooperation/
 
 local-module-install:
