@@ -36,6 +36,15 @@ world-state, together with a persona that incorporates specific goals,
 which can be used to instantiate autonomous agents, either in the real-world {cite}`Richards2023`,
 or in mult-agent simulations {cite}`Park2023`.
 
-Therefore, any assessment of goal-like behaviour in large-language
-models must systematically evaluate behaviour as a function of features of the
-initial user-supplied prompt.
+From an AI alignment perspective, the fact that large language models can easily
+be scaffolded to deploy
+autonomous goal-oriented agents into production at very little cost highlights
+the need to systematically evaluate the conditions in which LLM-instantiated
+agents have a propensity or otherwise to cooperate in multi-agent task 
+environments.
+
+Given that the nature of an LLM agent depends on the persona and context
+introduced in the initial natural-language
+prompt, a key question is to what extent the level of cooperation elicited
+from the AI depends on features of the prompt.  This is the key question
+investigated in our paper.

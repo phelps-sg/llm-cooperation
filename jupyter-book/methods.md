@@ -17,9 +17,9 @@ enabling interaction between LLM simulacra and a simulated opponent.
 
 Each participant was paired with a different simulated agent depending
 on the treatment condition, and
-the agents engaged in six sounds of the Prisoners' Dilemma.  This
+the two agents engaged in six sounds of the Prisoners' Dilemma.  This
 was repeated for a total of $N=30$ independent chat sequences to
-account for the stochastic nature of the AI model.
+account for the stochastic nature of the language model.
 
 Payoffs were predetermined and common knowledge, being provided
 in the initial prompt to the language model.  We used the canonical
@@ -40,6 +40,12 @@ $$2R > T + S$$
 
 The payoffs were expressed in dollar amounts to each participant.
 
+The language model's temperature was set to $0.2$ and the
+maximum number of tokens per request-completion was set to 100.  These
+parameters were constant across samples and experimental conditions
+(future work will examine the sensitivity of our results to these parameters).
+The Python code used to conduct the experiment can be found 
+[in the code repository](https://gitlab.com/sphelps/llm-cooperation/-/blob/main/dilemma.py).
 
 ## Experimental Conditions
 
