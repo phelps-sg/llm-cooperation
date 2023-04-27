@@ -33,7 +33,8 @@ user prompts (c.f. prompts used to "jail-break" GPT models)
 scaffolded by injecting contextual information {cite}`Beren2023`. A particular
 use-case of a scaffolded LLM involves injecting information about a 
 world-state, together with a persona that incorporates specific goals, 
-which can be used to instantiate autonomous agents {cite}`Richards2023`.
+which can be used to instantiate autonomous agents, either in the real-world {cite}`Richards2023`,
+or in mult-agent simulations {cite}`Park2023`.
 
 Therefore, any assessment of goal-like behaviour in large-language
 models must systematically evaluate behaviour as a function of features of the
