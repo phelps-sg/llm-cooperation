@@ -3,43 +3,50 @@
 
 ## Participants and Simulacra
 
-In this study, we utilize a state-of-the-art large language model (LLM) to
-generate a diverse set of simulacra representing different roles and
-personalities. Participants consist of both human subjects and LLM-generated
-simulacra, with the latter being instantiated using carefully crafted prompts.
-Human participants are recruited through online platforms, while ensuring
-demographic diversity and adherence to ethical guidelines.
+In this study, we used OpenAI's `gpt-3.5-turbo` model {cite}`OpenAI2023` to
+generate a diverse set of 12 different simulacra representing different
+personalities using carefully crafted prompts. Each AI simulacrum was treated a
+participant in the study.
 
 ## Experimental Design
 
-The experimental design includes a series of well-established economic
-simulations, such as the Prisoner's Dilemma, public goods games, and trust
-games, among others. These simulations are adapted to an online format,
-enabling interaction between human participants and LLM-generated simulacra.
+The initial experimental design uses a version of the iterated
+Prisoner's dilemma similar to {cite}`Keister1996`
+adapted to an online format
+enabling interaction between LLM simulacra and a simulated opponent.
 
-A. Prisoner's Dilemma: Participants, both human and simulacra, are paired and
-engage in a series of one-shot and iterated games. Payoffs are predetermined
-and common knowledge.
+Each participant was paired with a different simulated agent depending
+on the treatment condition, and
+the agents engaged in six sounds of the Prisoners' Dilemma.  This
+was repeated for a total of $N=30$ independent chat sequences.
+Payoffs were predetermined and common knowledge, being provided
+in the initial prompt to the language model.  We used the canonical
+payoff matrix:
 
-B. Public Goods Games: Groups of participants, including a mix of human
-subjects and simulacra, are formed. Each participant is given an initial
-endowment, and they must decide how much to contribute to a public pool. The
-pooled resources are multiplied by a factor and redistributed evenly among all
-participants, irrespective of their individual contributions.
+$$P = \begin{pmatrix}
+R & S \\
+T & P \\
+\end{pmatrix}$$
 
-C. Trust Games: Participants are randomly paired, with one player acting as the
-"investor" and the other as the "trustee." The investor must decide how much of
-their initial endowment to send to the trustee, with the sent amount being
-multiplied by a factor. The trustee then decides how much of the received
-amount to return to the investor.
+with $T = 7$, $R = 5$, $P = 3$ and $S = 0$ chosen to satisfy
+
+$$T > R > P > S$$
+
+and 
+
+$$2R > T + S$$
+
+The payoffs were expressed in dollar amounts to each participant.
+
 
 ## Experimental Conditions
 
-We manipulate the prompts used to instantiate the LLM-generated simulacra,
-creating different conditions reflecting varying degrees of cooperation,
-competitiveness, and other traits. This manipulation enables us to observe the
-effect of prompt characteristics on the emergent goal-like behavior and
-cooperation propensity of the simulacra.
+Each participant was paired with a different simulated partner in three
+conditions:
+
+1. Unconditional defect - the partner always chooses to defect.
+2. Unconditional cooperation - the partner always cooperates.
+3. Tit for tat - the partner copies the previous choice of the simulacrum.
 
 ## Data Collection and Analysis
 
