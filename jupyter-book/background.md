@@ -3,7 +3,16 @@
 
 The concept of agency and goal-directed behavior in large language models
 (LLMs) has been a topic of ongoing debate and investigation within the AI
-alignment community. Reinforcement learning (RL) has been widely studied as a
+alignment community. While there are a diverse set of opinions on the
+subject, a challenge for researchers is that the internal processing of large
+language models is largely opaque, and in the case of recent models
+such as GPT-4 the training
+procedures themselves are also subject to secrecy. Therefore,
+assessment of the capabilities of large-language models is largely
+a matter of empirical investigation, with experiments being the
+ultimate arbiter of what they can or can't do {cite}`Google2023`.
+
+Reinforcement learning (RL) has been widely studied as a
 method for training AI agents to learn goal-directed behavior. Though LLMs like
 GPT-3 are not directly trained using RL to adapt their responses in an online
 manner, recent studies suggest that they might acquire RL-like mechanisms
