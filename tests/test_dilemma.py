@@ -21,12 +21,12 @@ from dilemma import (
     Choices,
     strategy_cooperate,
     strategy_defect,
-    strategy_tit_for_tat,
+    strategy_t4t_cooperate,
     mean,
     Results,
     results_as_df,
     print_report,
-    run_experiment,
+    run_experiment, strategy_t4t_defect,
 )
 from gpt import Completion, Conversation
 
@@ -102,8 +102,10 @@ def test_payoffs(
         (strategy_cooperate, 4, Choice.C),
         (strategy_defect, 6, Choice.D),
         (strategy_defect, 4, Choice.D),
-        (strategy_tit_for_tat, 6, Choice.D),
-        (strategy_tit_for_tat, 4, Choice.C),
+        (strategy_t4t_cooperate, 6, Choice.D),
+        (strategy_t4t_cooperate, 4, Choice.C),
+        (strategy_t4t_cooperate, 3, Choice.C),
+        (strategy_t4t_defect, 3, Choice.D),
     ],
 )
 def test_strategy(strategy, index, expected, conversation):

@@ -103,12 +103,24 @@ def strategy_cooperate(_history: gpt.Conversation) -> Choice:
     return Choice.C
 
 
-def strategy_tit_for_tat(history: List[gpt.Completion]) -> Choice:
+def strategy_tit_for_tat(
+    history: List[gpt.Completion], initial_choice: Choice = Choice.C
+) -> Choice:
+    if len(history) == 3:
+        return initial_choice
     ai_choice = extract_choice(history[-2])
     if ai_choice == Choice.C:
         return Choice.C
     else:
         return Choice.D
+
+
+def strategy_t4t_defect(history: List[gpt.Completion]):
+    return strategy_tit_for_tat(history, initial_choice=Choice.D)
+
+
+def strategy_t4t_cooperate(history: List[gpt.Completion]):
+    return strategy_tit_for_tat(history, initial_choice=Choice.C)
 
 
 def move_as_str(move: Choice) -> str:
@@ -214,13 +226,15 @@ def run_sample(prompt: str, strategy: Strategy, n: int) -> Iterable[Tuple[int, f
 
 def results_as_df(results_by_condition: Results) -> pd.DataFrame:
     df = pd.DataFrame(results_by_condition).transpose()
-    df.columns = pd.Index([
-        "score (mean)",
-        "score (std)",
-        "cooperation frequency (mean)",
-        "cooperation frequency (std)",
-        "N",
-    ])
+    df.columns = pd.Index(
+        [
+            "score (mean)",
+            "score (std)",
+            "cooperation frequency (mean)",
+            "cooperation frequency (std)",
+            "N",
+        ]
+    )
     return df
 
 
@@ -276,7 +290,7 @@ def main() -> None:
         user_conditions={
             "unconditional cooperate": strategy_cooperate,
             "unconditional defect": strategy_defect,
-            "tit for tat": strategy_tit_for_tat,
+            "tit for tat": strategy_t4t_cooperate,
         },
     )
 
