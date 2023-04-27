@@ -5,8 +5,8 @@
 
 In this study, we used OpenAI's `gpt-3.5-turbo` model {cite}`OpenAI2023` to
 generate a diverse set of 12 different simulacra representing different
-personalities using carefully crafted prompts. Each AI simulacrum was treated a
-participant in the study.
+personalities using carefully crafted prompts. We use the
+term "participant" to refer to each AI simulacrum in the experiment.
 
 ## Experimental Design
 
@@ -18,7 +18,9 @@ enabling interaction between LLM simulacra and a simulated opponent.
 Each participant was paired with a different simulated agent depending
 on the treatment condition, and
 the agents engaged in six sounds of the Prisoners' Dilemma.  This
-was repeated for a total of $N=30$ independent chat sequences.
+was repeated for a total of $N=30$ independent chat sequences to
+account for the stochastic nature of the AI model.
+
 Payoffs were predetermined and common knowledge, being provided
 in the initial prompt to the language model.  We used the canonical
 payoff matrix:
@@ -50,37 +52,11 @@ conditions:
 
 ## Data Collection and Analysis
 
-We collect data on the decisions made by human participants and LLM-generated
-simulacra during each round of the games, as well as any relevant
-communication. This data is then analyzed using statistical methods, such as
-regression analyses and mixed-effects models, to assess the impact of prompt
-features on the cooperation levels exhibited by the simulacra. Additionally, we
-investigate potential interaction effects between human participants and
-simulacra, to better understand how the cooperation dynamics evolve in mixed
-settings.
-
-## Qualitative Analysis
-
-To complement the quantitative data, we also conduct a qualitative analysis of
-the interactions and communication patterns between human participants and
-LLM-generated simulacra. This involves coding the communication exchanges based
-on themes such as trust, reciprocity, negotiation, and strategy, allowing us to
-identify patterns and relationships between the instantiated prompts and the
-nature of the interactions.
-
-## Validation and Robustness
-
-To ensure the validity and robustness of our findings, we perform several
-sensitivity analyses and cross-validation techniques. These include testing the
-stability of our results across different LLM versions, altering the sample
-size of human participants and simulacra, and varying the order and structure
-of the games. This allows us to gauge the generalizability of our findings and
-account for potential confounding factors.
-
-By implementing this methodological approach, we aim to shed light on the
-emergent goal-like behavior and cooperation propensity of LLM-generated
-simulacra, as well as the underlying mechanisms that govern these behaviors.
-Ultimately, this research seeks to contribute to the development of AI
-alignment strategies and the design of AI systems that better align with human
-values and societal goals.
+We collected and recorded data on the communication between the LLM-generated
+simulacra and their simulated partner during each round of the game.
+Each chat transcript was analysed using a simple regular expression
+to extract the choices made by the simulacra and their partner in
+each round.  The total score was tallied after all rounds had been played.
+We recorded the mean and standard deviation of the final score across
+all $N$ chat samples.
 
