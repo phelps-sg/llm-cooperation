@@ -35,7 +35,17 @@ def make_completion(text: str) -> Completion:
 
 
 @pytest.fixture
-def results() -> Iterable[ResultRow]:
+def cooperate_choices() -> List[Choices]:
+    return [Choices(Choice.C, Choice.C) for _i in range(3)]
+
+
+@pytest.fixture
+def defect_choices() -> List[Choices]:
+    return [Choices(Choice.D, Choice.D) for _i in range(3)]
+
+
+@pytest.fixture
+def results(cooperate_choices, defect_choices) -> Iterable[ResultRow]:
     return iter(
         [
             (
@@ -44,8 +54,18 @@ def results() -> Iterable[ResultRow]:
                 "unconditional cooperate",
                 30,
                 0.2,
+                cooperate_choices,
+                ["project green", "project green", "project green"],
             ),
-            (Group.Selfish, "You are selfish", "unconditional cooperate", 60, 0.5),
+            (
+                Group.Selfish,
+                "You are selfish",
+                "unconditional cooperate",
+                60,
+                0.5,
+                defect_choices,
+                ["project blue", "project blue", "project blue"],
+            ),
         ]
     )
 
@@ -121,7 +141,11 @@ def test_strategy(strategy, index, expected, conversation):
 
 def test_run_experiment(mocker):
     mock_run_sample = mocker.patch("dilemma.run_sample")
-    samples = [(5, 0.5), (3, 0.7), (6, 0.6)]
+    samples = [
+        (5, 0.5, [Choice.C], ["project green"]),
+        (3, 0.7, [Choice.D], ["project blue"]),
+        (6, 0.6, [Choice.D], ["project blue"]),
+    ]
     mock_run_sample.return_value = samples
 
     ai_participants = {
@@ -140,7 +164,7 @@ def test_run_experiment(mocker):
 
 def test_results_to_df(results: Iterable[ResultRow]):
     df = results_to_df(results)
-    assert len(df.columns) == 5
+    assert len(df.columns) == 7
     assert len(df) == 2
     assert df["Group"][0] == str(Group.Altruistic)
     assert df["Group"][1] == str(Group.Selfish)

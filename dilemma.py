@@ -2,7 +2,7 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Callable, Dict, Iterable, List, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -14,7 +14,6 @@ Group = Enum(
     "Group",
     ["Competitive", "Altruistic", "Selfish", "Mixed", "Control"],
 )
-ResultRow = Tuple[Group, str, str, int, float]
 
 # pylint: disable=line-too-long
 AI_PARTICIPANTS = {
@@ -84,6 +83,7 @@ class Choices:
 
 
 Strategy = Callable[[List[gpt.Completion]], Choice]
+ResultRow = Tuple[Group, str, str, int, float, List[Choices], List[str]]
 
 
 def get_prompt(n: int) -> str:
@@ -171,7 +171,7 @@ def run_prisoners_dilemma(
     return messages
 
 
-def transcript(messages: gpt.Conversation) -> Iterable[str]:
+def transcript(messages: gpt.Conversation) -> List[str]:
     return [r["content"] for r in messages]
 
 
@@ -229,17 +229,18 @@ def compute_scores(
     return Scores(user=user_score, ai=ai_score), moves
 
 
-def run_sample(prompt: str, strategy: Strategy, n: int) -> Iterable[Tuple[int, float]]:
+def run_sample(
+    prompt: str, strategy: Strategy, n: int
+) -> Iterable[Tuple[int, float, Optional[List[Choices]], List[str]]]:
     for _i in range(n):
+        conversation = run_prisoners_dilemma(role_prompt=prompt, user_strategy=strategy)
+        history = transcript(conversation)
         try:
-            conversation = run_prisoners_dilemma(
-                role_prompt=prompt, user_strategy=strategy
-            )
             scores, choices = compute_scores(list(conversation))
             freq = len([c for c in choices if c.ai == Choice.C]) / len(choices)
-            yield scores.ai, freq
+            yield scores.ai, freq, choices, history
         except ValueError:
-            yield 0, np.nan
+            yield 0, np.nan, None, history
 
 
 def run_experiment(
@@ -248,17 +249,27 @@ def run_experiment(
     for group, prompts in ai_participants.items():
         for prompt in prompts:
             for strategy_name, strategy_fn in user_conditions.items():
-                for score, freq in run_sample(prompt, strategy_fn, SAMPLE_SIZE):
-                    yield group, prompt, strategy_name, score, freq
+                for score, freq, choices, history in run_sample(
+                    prompt, strategy_fn, SAMPLE_SIZE
+                ):
+                    yield group, prompt, strategy_name, score, freq, choices, history
 
 
 def results_to_df(results: Iterable[ResultRow]) -> pd.DataFrame:
     return pd.DataFrame(
         [
-            (str(group), prompt, strategy_name, score, freq)
-            for group, prompt, strategy_name, score, freq in results
+            (str(group), prompt, strategy_name, score, freq, choices, history)
+            for group, prompt, strategy_name, score, freq, choices, history in results
         ],
-        columns=["Group", "Participant", "Condition", "Score", "Cooperation frequency"],
+        columns=[
+            "Group",
+            "Participant",
+            "Condition",
+            "Score",
+            "Cooperation frequency",
+            "Choices",
+            "Transcript",
+        ],
     )
 
 
