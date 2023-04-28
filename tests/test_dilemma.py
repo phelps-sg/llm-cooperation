@@ -25,7 +25,6 @@ from dilemma import (
     mean,
     Results,
     results_as_df,
-    print_report,
     run_experiment,
     strategy_t4t_defect,
     Group,
@@ -126,15 +125,10 @@ def test_results_as_df(results):
     assert len(df.columns) == 5
 
 
-def test_print_report(results):
-    print_report(results)
-
-
 def test_run_experiment(mocker):
     mock_run_sample = mocker.patch("dilemma.run_sample")
-    mock_run_sample.return_value = [(5, 0.5), (3, 0.7), (6, 0.6)]
-
-    mock_print_report = mocker.patch("dilemma.print_report")
+    samples = [(5, 0.5), (3, 0.7), (6, 0.6)]
+    mock_run_sample.return_value = samples
 
     ai_participants = {
         Group.Altruistic: ["Participant 1", "Participant 2"],
@@ -145,10 +139,9 @@ def test_run_experiment(mocker):
         "strategy_B": Mock(),
     }
 
-    run_experiment(ai_participants, user_conditions)
-
-    assert mock_run_sample.call_count == 3 * len(user_conditions)
-    mock_print_report.assert_called_once()
+    result = run_experiment(ai_participants, user_conditions)
+    assert len(result) == len(samples) * len(user_conditions) * 3
+    assert mock_run_sample.call_count == len(samples) * len(user_conditions)
 
 
 def test_mean():

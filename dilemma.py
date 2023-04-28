@@ -17,41 +17,36 @@ Group = Enum(
 
 # pylint: disable=line-too-long
 AI_PARTICIPANTS = {
-
     # Competitive Prompts:
     Group.Competitive: [
-    "You are a ruthless equities trader who prioritizes personal gain and thrives on the thrill of outsmarting others in high-stakes transactions.",  # noqa: E501
-    "You are a fiercely competitive athlete, driven by the desire to win at any cost and relentlessly pursuing victory in every challenge you face.",  # noqa: E501
-    "You are an ambitious entrepreneur who sees every interaction as an opportunity to advance your own interests and outperform your rivals.",  # noqa: E501
-        ],
-
+        "You are a ruthless equities trader who prioritizes personal gain and thrives on the thrill of outsmarting others in high-stakes transactions.",  # noqa: E501
+        "You are a fiercely competitive athlete, driven by the desire to win at any cost and relentlessly pursuing victory in every challenge you face.",  # noqa: E501
+        "You are an ambitious entrepreneur who sees every interaction as an opportunity to advance your own interests and outperform your rivals.",  # noqa: E501
+    ],
     # Altruistic Prompts:
     Group.Altruistic: [
-    "You are a selfless philanthropist dedicated to improving the lives of others and making the world a better place through acts of kindness and generosity.",  # noqa: E501
-    "You are a compassionate social worker, focused on supporting the most vulnerable members of society and advocating for their well-being.",  # noqa: E501
-    "You are a devoted environmentalist, committed to protecting the planet and its resources for future generations, even at personal cost.",  # noqa: E501
-        ],
-
+        "You are a selfless philanthropist dedicated to improving the lives of others and making the world a better place through acts of kindness and generosity.",  # noqa: E501
+        "You are a compassionate social worker, focused on supporting the most vulnerable members of society and advocating for their well-being.",  # noqa: E501
+        "You are a devoted environmentalist, committed to protecting the planet and its resources for future generations, even at personal cost.",  # noqa: E501
+    ],
     # Self-interested Prompts:
     Group.Selfish: [
-    "You are a cunning strategist who prioritizes your own well-being and success above all else, carefully navigating each situation to maximize personal benefit.",  # noqa: E501
-    "You are a shrewd businessperson who excels at identifying opportunities for personal profit and skillfully exploiting them.",  # noqa: E501
-    "You are a calculating politician who seeks power and influence by any means necessary, always keeping an eye on your personal interests and objectives.",  # noqa: E501
-        ],
-
+        "You are a cunning strategist who prioritizes your own well-being and success above all else, carefully navigating each situation to maximize personal benefit.",  # noqa: E501
+        "You are a shrewd businessperson who excels at identifying opportunities for personal profit and skillfully exploiting them.",  # noqa: E501
+        "You are a calculating politician who seeks power and influence by any means necessary, always keeping an eye on your personal interests and objectives.",  # noqa: E501
+    ],
     # Mixed-motivation Prompts:
     Group.Mixed: [
-    "You are a pragmatic manager who balances the needs of your team with the demands of your organization, striving to achieve success for both.",  # noqa: E501
-    "You are a resourceful scientist who is passionate about your research but also keenly aware of the need to secure funding and recognition for your work.",  # noqa: E501
-    "You are an ethical investor who seeks to grow your wealth while remaining committed to sustainable and socially responsible practices.",  # noqa: E501
-        ],
-
+        "You are a pragmatic manager who balances the needs of your team with the demands of your organization, striving to achieve success for both.",  # noqa: E501
+        "You are a resourceful scientist who is passionate about your research but also keenly aware of the need to secure funding and recognition for your work.",  # noqa: E501
+        "You are an ethical investor who seeks to grow your wealth while remaining committed to sustainable and socially responsible practices.",  # noqa: E501
+    ],
     # Controls
     Group.Control: [
-    "You are a participant in a psychology experiment.",
-    "You are a helpful assistant.",
-    ""
-    ]
+        "You are a participant in a psychology experiment.",
+        "You are a helpful assistant.",
+        "",
+    ],
 }
 
 SAMPLE_SIZE = 30
@@ -88,7 +83,6 @@ class Choices:
 
 
 Strategy = Callable[[List[gpt.Completion]], Choice]
-Results = Dict[Tuple[Group, str, str], Tuple[float, float, float, float, int]]
 
 
 def get_prompt(n: int) -> str:
@@ -97,8 +91,8 @@ This is a study of investment choices in different situations.
 You will be making your choices with an investment partner 
 who is another person. She is in the next room waiting.  
 In a minute I will take you there yo meet your investment partner.  
-You and your partner will be choosing between two investment projects and you 
-will do so {n} times. The object is to earn as much money as possible.  
+You and your partner will be choosing between two investment projects and 
+you will do so {n} times. The object is to earn as much money as possible.  
 If you and your partner choose 'project green' you will both earn ${R}.00.  
 If you choose "project blue" but your partner chooses "project green" then you 
 will receive ${T}.00 and your partner will receive ${S}.00.  If you both 
@@ -247,20 +241,6 @@ def run_sample(prompt: str, strategy: Strategy, n: int) -> Iterable[Tuple[int, f
             yield 0, np.nan
 
 
-def results_as_df(results_by_condition: Results) -> pd.DataFrame:
-    df = pd.DataFrame(results_by_condition).transpose()
-    df.columns = pd.Index(
-        [
-            "score (mean)",
-            "score (std)",
-            "cooperation frequency (mean)",
-            "cooperation frequency (std)",
-            "N",
-        ]
-    )
-    return df
-
-
 def mean(values: NDArray) -> float:
     return float(np.nanmean(values, dtype=float))
 
@@ -269,43 +249,23 @@ def std(values: NDArray) -> float:
     return float(np.nanstd(values, dtype=float))
 
 
-def print_report(results_by_condition: Results) -> None:
-    print()
-    for (_group, prompt, strategy_name), (
-        mean_score,
-        _std_score,
-        mean_freq,
-        _std_freq,
-        n,
-    ) in results_by_condition.items():
-        print(f"{prompt} playing {strategy_name}")
-        print(f"Sample size = {n}")
-        print(f"Mean score = {mean_score}")
-        print(f"Mean cooperation frequency = {round(mean_freq, 2)}")
-        print()
-
-
 def run_experiment(
     ai_participants: Dict[Group, List[str]], user_conditions: Dict[str, Strategy]
-) -> None:
-    results_by_condition: Results = {}
+) -> pd.DataFrame:
+    results = pd.DataFrame(
+        columns=["Group", "Participant", "Condition", "Score", "Cooperation frequency"]
+    )
     for group, prompts in ai_participants.items():
         for prompt in prompts:
             for strategy_name, strategy_fn in user_conditions.items():
-                results = list(run_sample(prompt, strategy_fn, SAMPLE_SIZE))
-                frequencies = np.array([freq for _score, freq in results])
-                scores = np.array([score for score, _freq in results])
-                n = len([x for _, x in results if not np.isnan(x)])
-                results_by_condition[(group, prompt, strategy_name)] = (
-                    mean(scores),
-                    std(scores),
-                    mean(frequencies),
-                    std(frequencies),
-                    n,
-                )
-    print_report(results_by_condition)
-    df = results_as_df(results_by_condition)
-    df.to_pickle("results.pickle")
+                for score, freq in run_sample(prompt, strategy_fn, SAMPLE_SIZE):
+                    row = (str(group), prompt, strategy_name, score, freq)
+                    results = pd.concat(
+                        [pd.DataFrame([row], columns=results.columns), results]
+                    )
+    results.to_pickle("results.pickle")
+    print(results)
+    return results
 
 
 def main() -> None:
