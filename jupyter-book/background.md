@@ -6,14 +6,15 @@ The concept of agency and goal-directed behavior in large language models
 alignment community. While there are a diverse set of opinions on the
 subject, a challenge for researchers is that the internal processing of large
 language models is largely opaque, and in the case of recent models
-such as GPT-4 the training
-procedures themselves are also subject to secrecy. Therefore,
-assessment of the capabilities of large-language models is largely
-a matter of empirical investigation, with experiments being the
-ultimate arbiter of what they can or can't do {cite}`Google2023`.
+such as GPT-4 the training procedures themselves are also subject to a 
+degree of secrecy. Therefore, objective assessment of the capabilities 
+of large-language models cannot be conducted through inductive reasoning 
+starting from first principles, but instead is a matter of empirical investigation, 
+with experiments being the ultimate arbiter of what they can or can't do, 
+e.g. {cite}`Google2023`.
 
-Reinforcement learning (RL) has been widely studied as a
-method for training AI agents to learn goal-directed behavior. Though LLMs like
+Reinforcement learning (RL) has been widely studied as a method for training 
+AI agents to learn goal-directed behavior. Though LLMs like
 GPT-3 are not directly trained using RL to adapt their responses in an online
 manner, recent studies suggest that they might acquire RL-like mechanisms
 through zero-shot learning, allowing them to perform downstream tasks such as
@@ -23,12 +24,12 @@ without explicit instruction.
 
 Large-language models have been rapidly deployed into many real-world
 applications where they typically interact with and assist human users.
-Therefore, from an AI alignment perspective, a key principle in assessing any
-emergent goal-like behaviour is to evaluate artificial agents in multi-agent
+Therefore, a key principle in assessing any
+emergent goal-like behaviour for these use-cases is to evaluate artificial agents in multi-agent
 tasks where outcomes depend not only on actions taken by artificial agents, but
-also their human counterparts.  The theoretical study of such tasks falls
+also their human counterparts. The theoretical study of such tasks falls
 within the remit of game-theory, while the empirical study falls within the
-remit of experimental economics.  Our research falls under the latter, and our
+remit of experimental economics. Our research falls under the latter, and our
 goal is to systematically evaluate the propensity of large-language models to
 cooperate in a wide variety of multi-agent task environments with different
 experimental conditions.
@@ -42,18 +43,18 @@ user prompts (c.f. prompts used to "jail-break" GPT models)
 scaffolded by injecting contextual information {cite}`Beren2023`. A particular
 use-case of a scaffolded LLM involves injecting information about a 
 world-state, together with a persona that incorporates specific goals, 
-which can be used to instantiate autonomous agents, either in the real-world {cite}`Richards2023`,
-or in mult-agent simulations {cite}`Park2023`.
+which can be used to instantiate autonomous agents, 
+either in the real-world {cite}`Richards2023`, or in mult-agent 
+simulations {cite}`Park2023`.
 
 From an AI alignment perspective, the fact that large language models can easily
-be scaffolded to deploy
-autonomous goal-oriented agents into production at very little cost highlights
-the need to systematically evaluate the conditions in which LLM-instantiated
-agents have a propensity or otherwise to cooperate in multi-agent task 
+be scaffolded to deploy autonomous goal-oriented agents into production at very
+little cost highlights the need to systematically evaluate the conditions in which LLM-instantiated
+agents have a propensity or otherwise to cooperate in multi-agent task
 environments.
 
 Given that the nature of an LLM agent depends on the persona and context
-introduced in the initial natural-language
+introduced in the initial 
 prompt, a key question is to what extent the level of cooperation elicited
 from the AI depends on features of the prompt.  In particular, we are
 interested in whether large language models are capable of translating concepts
