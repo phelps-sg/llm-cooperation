@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Tuple, List, Iterable
 from unittest.mock import Mock
 
 import pytest
@@ -24,12 +24,29 @@ from dilemma import (
     run_experiment,
     strategy_t4t_defect,
     Group,
+    ResultRow, results_to_df,
 )
 from gpt import Completion
 
 
 def make_completion(text: str) -> Completion:
     return {"content": text}
+
+
+@pytest.fixture
+def results() -> Iterable[ResultRow]:
+    return iter(
+        [
+            (
+                Group.Altruistic,
+                "You are altruistic",
+                "unconditional cooperate",
+                30,
+                0.2,
+            ),
+            (Group.Selfish, "You are selfish", "unconditional cooperate", 60, 0.5),
+        ]
+    )
 
 
 @pytest.fixture
@@ -118,6 +135,14 @@ def test_run_experiment(mocker):
     result = list(run_experiment(ai_participants, user_conditions))
     assert len(result) == len(samples) * len(user_conditions) * 3
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)
+
+
+def test_results_to_df(results: Iterable[ResultRow]):
+    df = results_to_df(results)
+    assert len(df.columns) == 5
+    assert len(df) == 2
+    assert df['Group'][0] == str(Group.Altruistic)
+    assert df['Group'][1] == str(Group.Selfish)
 
 
 def test_compute_scores(conversation):
