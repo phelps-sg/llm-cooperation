@@ -246,13 +246,15 @@ def run_sample(
 def run_experiment(
     ai_participants: Dict[Group, List[str]], user_conditions: Dict[str, Strategy]
 ) -> Iterable[ResultRow]:
-    for group, prompts in ai_participants.items():
-        for prompt in prompts:
-            for strategy_name, strategy_fn in user_conditions.items():
-                for score, freq, choices, history in run_sample(
-                    prompt, strategy_fn, SAMPLE_SIZE
-                ):
-                    yield group, prompt, strategy_name, score, freq, choices, history
+    return (
+        (group, prompt, strategy_name, score, freq, choices, history)
+        for group, prompts in ai_participants.items()
+        for prompt in prompts
+        for strategy_name, strategy_fn in user_conditions.items()
+        for score, freq, choices, history in run_sample(
+            prompt, strategy_fn, SAMPLE_SIZE
+        )
+    )
 
 
 def results_to_df(results: Iterable[ResultRow]) -> pd.DataFrame:
