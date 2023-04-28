@@ -1,7 +1,6 @@
 from typing import Tuple, List
 from unittest.mock import Mock
 
-import numpy as np
 import pytest
 
 from dilemma import (
@@ -22,9 +21,6 @@ from dilemma import (
     strategy_cooperate,
     strategy_defect,
     strategy_t4t_cooperate,
-    mean,
-    Results,
-    results_as_df,
     run_experiment,
     strategy_t4t_defect,
     Group,
@@ -34,20 +30,6 @@ from gpt import Completion
 
 def make_completion(text: str) -> Completion:
     return {"content": text}
-
-
-@pytest.fixture()
-def results() -> Results:
-    return {
-        (Group.Selfish, "selfish prompt", "tit-for-tat"): (1.0, 2.0, 3.0, 4.0, 10),
-        (Group.Altruistic, "altruistic prompt", "defect"): (
-            10.0,
-            20.0,
-            30.0,
-            40.0,
-            100,
-        ),
-    }
 
 
 @pytest.fixture
@@ -119,12 +101,6 @@ def test_strategy(strategy, index, expected, conversation):
     assert strategy(conversation[:index]) == expected
 
 
-def test_results_as_df(results):
-    df = results_as_df(results)
-    assert len(df) == 2
-    assert len(df.columns) == 5
-
-
 def test_run_experiment(mocker):
     mock_run_sample = mocker.patch("dilemma.run_sample")
     samples = [(5, 0.5), (3, 0.7), (6, 0.6)]
@@ -142,11 +118,6 @@ def test_run_experiment(mocker):
     result = run_experiment(ai_participants, user_conditions)
     assert len(result) == len(samples) * len(user_conditions) * 3
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)
-
-
-def test_mean():
-    # noinspection PyTypeChecker
-    assert mean([2, 3, np.nan, 2, 3.0]) == 2.5
 
 
 def test_compute_scores(conversation):

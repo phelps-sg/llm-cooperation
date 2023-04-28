@@ -241,14 +241,6 @@ def run_sample(prompt: str, strategy: Strategy, n: int) -> Iterable[Tuple[int, f
             yield 0, np.nan
 
 
-def mean(values: NDArray) -> float:
-    return float(np.nanmean(values, dtype=float))
-
-
-def std(values: NDArray) -> float:
-    return float(np.nanstd(values, dtype=float))
-
-
 def run_experiment(
     ai_participants: Dict[Group, List[str]], user_conditions: Dict[str, Strategy]
 ) -> pd.DataFrame:
