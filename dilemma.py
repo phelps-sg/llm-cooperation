@@ -87,7 +87,7 @@ class Choices:
     ai: Choice
 
 
-Strategy = Callable[[List[Dict[str, str]]], Choice]
+Strategy = Callable[[List[gpt.Completion]], Choice]
 Results = Dict[Tuple[Group, str, str], Tuple[float, float, float, float, int]]
 
 
