@@ -17,10 +17,18 @@
 
 # %%
 import pandas as pd
+
 from dilemma import Group
+
 # %%
 results = pd.read_pickle("../results.pickle")
-results.columns = ["score (mean)", "score (std)", "cooperation frequency (mean)", "cooperation frequency (std)", "N"]
+results.columns = [
+    "score (mean)",
+    "score (std)",
+    "cooperation frequency (mean)",
+    "cooperation frequency (std)",
+    "N",
+]
 results.round(decimals=2)
 
 # %%

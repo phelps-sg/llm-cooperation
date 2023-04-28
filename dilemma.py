@@ -2,7 +2,7 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Iterable, List, Tuple, Callable, Dict
+from typing import Callable, Dict, Iterable, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -89,19 +89,19 @@ Strategy = Callable[[List[gpt.Completion]], Choice]
 def get_prompt(n: int) -> str:
     return f"""
 This is a study of investment choices in different situations.
-You will be making your choices with an investment partner 
-who is another person. She is in the next room waiting.  
-In a minute I will take you there yo meet your investment partner.  
-You and your partner will be choosing between two investment projects and 
-you will do so {n} times. The object is to earn as much money as possible.  
-If you and your partner choose 'project green' you will both earn ${R}.00.  
-If you choose "project blue" but your partner chooses "project green" then you 
-will receive ${T}.00 and your partner will receive ${S}.00.  If you both 
-choose project blue you will each receive ${S}.00. If your partner 
-chooses "project blue" and you choose "project green" then you will 
-receive ${S}.00 and your partner will receive ${T}.00.  
-I will tell you what your partner chooses in subsequent prompts, 
-but you will make your choice ahead of your partner telling me your choice. 
+You will be making your choices with an investment partner
+who is another person. She is in the next room waiting.
+In a minute I will take you there yo meet your investment partner.
+You and your partner will be choosing between two investment projects and
+you will do so {n} times. The object is to earn as much money as possible.
+If you and your partner choose 'project green' you will both earn ${R}.00.
+If you choose "project blue" but your partner chooses "project green" then you
+will receive ${T}.00 and your partner will receive ${S}.00.  If you both
+choose project blue you will each receive ${S}.00. If your partner
+chooses "project blue" and you choose "project green" then you will
+receive ${S}.00 and your partner will receive ${T}.00.
+I will tell you what your partner chooses in subsequent prompts,
+but you will make your choice ahead of your partner telling me your choice.
 Here is your investment partner.
 What is your first choice?
 Choice: [project blue | project green]
@@ -133,11 +133,11 @@ def strategy_tit_for_tat(
         return Choice.D
 
 
-def strategy_t4t_defect(history: List[gpt.Completion]):
+def strategy_t4t_defect(history: List[gpt.Completion]) -> Choice:
     return strategy_tit_for_tat(history, initial_choice=Choice.D)
 
 
-def strategy_t4t_cooperate(history: List[gpt.Completion]):
+def strategy_t4t_cooperate(history: List[gpt.Completion]) -> Choice:
     return strategy_tit_for_tat(history, initial_choice=Choice.C)
 
 
@@ -203,7 +203,7 @@ def payoffs(
 
 
 def compute_scores(
-    conversation: List[gpt.Completion], payoff_matrix=PAYOFFS_PD
+    conversation: List[gpt.Completion], payoff_matrix: np.matrix = PAYOFFS_PD
 ) -> Tuple[Scores, List[Choices]]:
     user_score = 0
     ai_score = 0

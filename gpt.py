@@ -1,10 +1,10 @@
 import logging
 import os
 import time
-from typing import Iterable, Dict
+from typing import Dict, Iterable
 
 import openai
-from openai.error import RateLimitError, APIError
+from openai.error import APIError, RateLimitError
 
 GPT_ENGINE = "gpt-3.5-turbo"
 GPT_TEMPERATURE = 0.2

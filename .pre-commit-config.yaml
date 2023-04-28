@@ -1,0 +1,101 @@
+# .pre-commit-config.yaml
+
+repos:
+
+# isort
+- repo: https://github.com/pycqa/isort
+  rev: 5.12.0
+  hooks:
+    - id: isort
+      name: isort (python)
+      exclude: ^jupyter-book/
+      args:
+        - --line-length=88
+        - -mVERTICAL_HANGING_INDENT
+        - -tc
+    - id: isort
+      name: isort (cython)
+      types: [cython]
+    - id: isort
+      name: isort (pyi)
+      types: [pyi]
+
+ # black
+- repo: https://github.com/ambv/black
+  rev: 23.1.0
+  hooks:
+    - id: black
+      args: # arguments to configure black
+        - --line-length=88
+        - --include='\.pyi?$'
+
+        # these folders won't be formatted by black
+        - --exclude="""\.git |
+          \.__pycache__|
+          \.hg|
+          \.mypy_cache|
+          \.tox|
+          \.venv|
+          _build|
+          buck-out|
+          build|
+          dist"""
+
+      language_version: python3.10
+
+# flake8
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
+  hooks:
+    - id: flake8
+      exclude: jupyter-book/
+      args: # arguments to configure flake8
+        # making isort line length compatible with black
+        - "--max-line-length=88"
+        - "--max-complexity=18"
+        - "--select=B,C,E,F,W,T4,B9"
+
+        # these are errors that will be ignored by flake8
+        # check out their meaning here
+        # https://flake8.pycqa.org/en/latest/user/error-codes.html
+        - "--ignore=E203,E266,E501,W503,F403,F401,E402,W605"
+
+# mypy
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: 'v1.2.0'  # Use the sha / tag you want to point at
+  hooks:
+    - id: mypy
+      exclude: 'jupyter-book/.*|tests/.*'
+      args: [--config=mypy.ini]
+      additional_dependencies: [ pandas-stubs ]
+
+# mypy for tests
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: 'v1.2.0'  # Use the sha / tag you want to point at
+  hooks:
+    - id: mypy
+      name: mypy-tests
+      files: ^tests/
+      args: [--config=mypy-tests.ini]
+      additional_dependencies: [ pandas-stubs ]
+
+# pylint
+- repo: local
+  hooks:
+    - id: pylint
+      exclude: jupyter-book/
+      name: pylint
+      entry: pylint
+      language: system
+      types: [python]
+      args:
+        [
+          "-rn", # Only display messages
+          "-sn", # Don't display the score
+          "--rcfile=.pylintrc",
+        ]
+
+#-   repo: https://github.com/terrencepreilly/darglint
+#    rev: v1.8.0
+#    hooks:
+#    - id: darglint

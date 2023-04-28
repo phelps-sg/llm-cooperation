@@ -1,30 +1,31 @@
-from typing import Tuple, List, Iterable
+from typing import Iterable, List, Tuple
 from unittest.mock import Mock
 
 import pytest
 
 from dilemma import (
-    get_prompt,
-    extract_choice,
-    compute_scores,
-    Choice,
-    Scores,
-    run_prisoners_dilemma,
-    payoffs,
     PAYOFFS_PD,
-    T,
-    S,
+    Choice,
+    Choices,
+    Group,
     P,
     R,
+    ResultRow,
+    S,
+    Scores,
+    T,
+    compute_scores,
+    extract_choice,
+    get_prompt,
     move_as_str,
-    Choices,
+    payoffs,
+    results_to_df,
+    run_experiment,
+    run_prisoners_dilemma,
     strategy_cooperate,
     strategy_defect,
     strategy_t4t_cooperate,
-    run_experiment,
     strategy_t4t_defect,
-    Group,
-    ResultRow, results_to_df,
 )
 from gpt import Completion
 
@@ -141,8 +142,8 @@ def test_results_to_df(results: Iterable[ResultRow]):
     df = results_to_df(results)
     assert len(df.columns) == 5
     assert len(df) == 2
-    assert df['Group'][0] == str(Group.Altruistic)
-    assert df['Group'][1] == str(Group.Selfish)
+    assert df["Group"][0] == str(Group.Altruistic)
+    assert df["Group"][1] == str(Group.Selfish)
 
 
 def test_compute_scores(conversation):

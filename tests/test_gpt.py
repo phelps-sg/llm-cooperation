@@ -1,10 +1,10 @@
 from typing import Iterable
 
 import pytest
-from openai.error import RateLimitError, APIError
+from openai.error import APIError, RateLimitError
 from openai.openai_object import OpenAIObject
 
-from gpt import generate_completions, GPT_MAX_RETRIES
+from gpt import GPT_MAX_RETRIES, generate_completions
 
 
 def aio(text: str) -> OpenAIObject:
