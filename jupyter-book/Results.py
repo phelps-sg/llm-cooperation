@@ -18,21 +18,20 @@
 # %%
 import pandas as pd
 
-from dilemma import Group
-
 # %%
 results = pd.read_pickle("../results.pickle")
-results.columns = [
-    "score (mean)",
-    "score (std)",
-    "cooperation frequency (mean)",
-    "cooperation frequency (std)",
-    "N",
-]
 results.round(decimals=2)
 
 # %%
-results.index = results.index.map(lambda x: (str(x[0]), x[1], x[2]))
+results.groupby("Participant").describe()
 
 # %%
-results.groupby(level=2).describe()
+results.groupby("Group").describe()
+
+# %%
+results.groupby(["Group", "Condition"]).describe()
+
+# %%
+import matplotlib.pyplot as plt
+
+_ = results.groupby("Group").boxplot(showfliers=False, figsize=(20, 12), subplots=False)
