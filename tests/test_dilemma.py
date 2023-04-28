@@ -115,7 +115,7 @@ def test_run_experiment(mocker):
         "strategy_B": Mock(),
     }
 
-    result = run_experiment(ai_participants, user_conditions)
+    result = list(run_experiment(ai_participants, user_conditions))
     assert len(result) == len(samples) * len(user_conditions) * 3
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)
 

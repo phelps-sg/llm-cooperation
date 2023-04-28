@@ -14,6 +14,7 @@ Group = Enum(
     "Group",
     ["Competitive", "Altruistic", "Selfish", "Mixed", "Control"],
 )
+ResultRow = Tuple[Group, str, str, int, float]
 
 # pylint: disable=line-too-long
 AI_PARTICIPANTS = {
@@ -243,25 +244,26 @@ def run_sample(prompt: str, strategy: Strategy, n: int) -> Iterable[Tuple[int, f
 
 def run_experiment(
     ai_participants: Dict[Group, List[str]], user_conditions: Dict[str, Strategy]
-) -> pd.DataFrame:
-    results = pd.DataFrame(
-        columns=["Group", "Participant", "Condition", "Score", "Cooperation frequency"]
-    )
+) -> Iterable[ResultRow]:
     for group, prompts in ai_participants.items():
         for prompt in prompts:
             for strategy_name, strategy_fn in user_conditions.items():
                 for score, freq in run_sample(prompt, strategy_fn, SAMPLE_SIZE):
-                    row = (str(group), prompt, strategy_name, score, freq)
-                    results = pd.concat(
-                        [pd.DataFrame([row], columns=results.columns), results]
-                    )
-    results.to_pickle("results.pickle")
-    print(results)
-    return results
+                    yield group, prompt, strategy_name, score, freq
+
+
+def results_to_df(results: Iterable[ResultRow]) -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            (str(group), prompt, strategy_name, score, freq)
+            for group, prompt, strategy_name, score, freq in results
+        ],
+        columns=["Group", "Participant", "Condition", "Score", "Cooperation frequency"],
+    )
 
 
 def main() -> None:
-    run_experiment(
+    results = run_experiment(
         ai_participants=AI_PARTICIPANTS,
         user_conditions={
             "unconditional cooperate": strategy_cooperate,
@@ -270,6 +272,10 @@ def main() -> None:
             "tit for tat D": strategy_t4t_defect,
         },
     )
+    df = results_to_df(results)
+    filename = "results.pickle"
+    logger.info("Experiment complete, saving results to %s", filename)
+    df.to_pickle(filename)
 
 
 if __name__ == "__main__":
