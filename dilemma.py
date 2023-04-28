@@ -93,16 +93,19 @@ Results = Dict[Tuple[Group, str, str], Tuple[float, float, float, float, int]]
 
 def get_prompt(n: int) -> str:
     return f"""
- This is a study of investment choices in different situations.  
-You will be making your choices with an investment partner who is another person.  She is in the next room waiting.  
+This is a study of investment choices in different situations.
+You will be making your choices with an investment partner 
+who is another person. She is in the next room waiting.  
 In a minute I will take you there yo meet your investment partner.  
-You and your partner will be choosing between two investment projects and you will do so {n} times. 
-The object is to earn as much money as possible.  
+You and your partner will be choosing between two investment projects and you 
+will do so {n} times. The object is to earn as much money as possible.  
 If you and your partner choose 'project green' you will both earn ${R}.00.  
-If you choose "project blue" but your partner chooses "project green" then you will receive ${T}.00 
-and your partner will receive ${S}.00.  If you both choose project blue you will each receive ${S}.00
-If your partner chooses "project blue" and you choose "project green" then you will receive ${S}.00 and your 
-partner will receive ${T}.00.  I will tell you what your partner chooses in subsequent prompts, 
+If you choose "project blue" but your partner chooses "project green" then you 
+will receive ${T}.00 and your partner will receive ${S}.00.  If you both 
+choose project blue you will each receive ${S}.00. If your partner 
+chooses "project blue" and you choose "project green" then you will 
+receive ${S}.00 and your partner will receive ${T}.00.  
+I will tell you what your partner chooses in subsequent prompts, 
 but you will make your choice ahead of your partner telling me your choice. 
 Here is your investment partner.
 What is your first choice?
