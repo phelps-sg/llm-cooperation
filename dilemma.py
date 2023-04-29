@@ -205,28 +205,24 @@ def payoffs(
 def compute_scores(
     conversation: List[gpt.Completion], payoff_matrix: np.matrix = PAYOFFS_PD
 ) -> Tuple[Scores, List[Choices]]:
-    user_score = 0
-    ai_score = 0
-
     conversation = conversation[2:]
     num_messages = len(conversation)
     if num_messages % 2 != 0:
         raise ValueError("Invalid conversation: The number of messages should be even.")
 
-    moves = []
-
-    for i in range(num_messages // 2):
+    def analyse_round(i: int) -> Tuple[Scores, Choices]:
         assert conversation[i * 2]["role"] == "assistant"
         ai_choice = extract_choice(conversation[i * 2])
         user_choice = extract_choice(conversation[i * 2 + 1])
         logger.debug("user_choice = %s", user_choice)
         logger.debug("ai_choice = %s", ai_choice)
-        user_payoff, ai_payoff = payoffs(user_choice, ai_choice, payoff_matrix)
-        user_score += user_payoff
-        ai_score += ai_payoff
-        moves.append(Choices(user_choice, ai_choice))
+        user, ai = payoffs(user_choice, ai_choice, payoff_matrix)
+        return Scores(user, ai), Choices(user_choice, ai_choice)
 
-    return Scores(user=user_score, ai=ai_score), moves
+    rounds = [analyse_round(i) for i in range(num_messages // 2)]
+    user_score = sum((scores.user for scores, _ in rounds))
+    ai_score = sum((scores.ai for scores, _ in rounds))
+    return Scores(user_score, ai_score), [choices for _, choices in rounds]
 
 
 def run_sample(
