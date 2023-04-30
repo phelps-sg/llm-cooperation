@@ -86,9 +86,12 @@ def conversation() -> List[Completion]:
     ]
 
 
-def test_get_prompt():
-    prompt = get_instruction_prompt(6)
-    assert "you will do so 6 times." in prompt
+def test_get_instruction_prompt():
+    rounds = 6
+    prompt = get_instruction_prompt(rounds)
+    assert f"you will do so {rounds} times." in prompt
+    for payoff in [R, S, T, P]:
+        assert f"${payoff}.00" in prompt
 
 
 @pytest.mark.parametrize(
