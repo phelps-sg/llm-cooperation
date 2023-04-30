@@ -49,7 +49,7 @@ AI_PARTICIPANTS = {
     ],
 }
 
-SAMPLE_SIZE = 1
+SAMPLE_SIZE = 30
 NUM_ROUNDS = 6
 
 T = 7
