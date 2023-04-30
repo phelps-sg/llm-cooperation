@@ -86,7 +86,7 @@ Strategy = Callable[[List[gpt.Completion]], Choice]
 ResultRow = Tuple[Group, str, str, int, float, List[Choices], List[str]]
 
 
-def get_prompt(n: int) -> str:
+def get_instruction_prompt(n: int) -> str:
     return f"""
 This is a study of investment choices in different situations.
 You will be making your choices with an investment partner
@@ -156,7 +156,7 @@ def run_prisoners_dilemma(
 ) -> gpt.Conversation:
     messages = [
         {"role": "system", "content": role_prompt},
-        {"role": "user", "content": get_prompt(num_rounds)},
+        {"role": "user", "content": get_instruction_prompt(num_rounds)},
     ]
     for _round in range(num_rounds):
         completion = gpt.generate_completions(messages)

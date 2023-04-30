@@ -16,7 +16,7 @@ from dilemma import (
     T,
     compute_scores,
     extract_choice,
-    get_prompt,
+    get_instruction_prompt,
     move_as_str,
     payoffs,
     results_to_df,
@@ -87,7 +87,7 @@ def conversation() -> List[Completion]:
 
 
 def test_get_prompt():
-    prompt = get_prompt(6)
+    prompt = get_instruction_prompt(6)
     assert "you will do so 6 times." in prompt
 
 
