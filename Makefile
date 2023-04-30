@@ -57,5 +57,8 @@ test: test-pytest test-pre-commit
 start-blackd:
 	$(CONDA_ACTIVATE); blackd
 
+start-notebook:
+	$(CONDA_ACTIVATE); jupyter-notebook
+
 jupytext-sync:
 	$(CONDA_ACTIVATE); jupytext --sync notebooks/*/*.py

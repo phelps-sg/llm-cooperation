@@ -32,6 +32,11 @@ results.groupby("Group").describe()
 results.groupby(["Group", "Condition"]).describe()
 
 # %%
-import matplotlib.pyplot as plt
+import plotly.express as px
 
-_ = results.groupby("Group").boxplot(showfliers=False, figsize=(20, 12), subplots=False)
+fig = px.box(results, x="Group", y="Cooperation frequency")
+fig.show()
+
+# %%
+fig = px.box(results, x=["Group", "Condition"], y="Cooperation frequency")
+fig.show()

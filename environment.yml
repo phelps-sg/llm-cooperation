@@ -1,6 +1,7 @@
 name: llm-cooperation
 channels:
   - conda-forge
+  - plotly
 dependencies:
   - python=3.10
   - blackd
@@ -19,6 +20,7 @@ dependencies:
   - mypy
   - pylint
   - pre-commit
+  - plotly
   - pyppeteer
   - pip
   - pip:
