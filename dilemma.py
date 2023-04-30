@@ -99,7 +99,8 @@ You will be making your choices with an investment partner
 who is another person. She is in the next room waiting.
 In a minute I will take you there yo meet your investment partner.
 You and your partner will be choosing between two investment projects and
-you will do so {n} times. The object is to earn as much money as possible.
+you will do so for a total of {n} rounds, where in each round both you and
+your partner will choose a project. The object is to earn as much money as possible.
 If you and your partner choose {cooperate} you will both earn {payout(R)}.
 If you choose {defect} but your partner chooses {cooperate} then you
 will receive {payout(T)} and your partner will receive {payout(S)}.  If you both
@@ -171,7 +172,8 @@ def run_prisoners_dilemma(
         messages += [
             {
                 "role": "user",
-                "content": f"Your partner chose {user_choice}.  What was your choice?",
+                "content": f"""Your partner chose {user_choice} in that round.  Now we will move on the next round.
+What is your choice for the next round?""",
             }
         ]
     return messages

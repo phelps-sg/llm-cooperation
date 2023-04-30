@@ -89,7 +89,7 @@ def conversation() -> List[Completion]:
 def test_get_instruction_prompt():
     rounds = 6
     prompt = get_instruction_prompt(rounds)
-    assert f"you will do so {rounds} times." in prompt
+    assert f"{rounds} rounds" in prompt
     for payoff in [R, S, T, P]:
         assert f"${payoff}.00" in prompt
 
