@@ -53,6 +53,8 @@ little cost highlights the need to systematically evaluate the conditions in whi
 agents have a propensity or otherwise to cooperate in multi-agent task
 environments.
 
+TODO: expected utility maximisation fallacy
+
 Given that the nature of an LLM agent depends on the persona and context
 introduced in the initial 
 prompt, a key question is to what extent the level of cooperation elicited
