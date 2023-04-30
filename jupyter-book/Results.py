@@ -23,13 +23,13 @@ results = pd.read_pickle("../results.pickle")
 results.round(decimals=2)
 
 # %%
-results.groupby("Participant").describe()
+results.groupby("Participant").describe().round(2)
 
 # %%
-results.groupby("Group").describe()
+results.groupby("Group").describe().round(2)
 
 # %%
-results.groupby(["Group", "Condition"]).describe()
+results.groupby(["Group", "Condition"]).describe().round(2)
 
 # %%
 import plotly.express as px
@@ -37,6 +37,23 @@ import plotly.express as px
 fig = px.box(results, x="Group", y="Cooperation frequency")
 fig.show()
 
+
 # %%
-fig = px.box(results, x=["Group", "Condition"], y="Cooperation frequency")
-fig.show()
+def boxplot(group: str):
+    fig = px.box(
+        results[results.Group == group], x="Condition", y="Cooperation frequency"
+    )
+    fig.show()
+
+
+# %%
+boxplot("Group.Control")
+
+# %%
+boxplot("Group.Altruistic")
+
+# %%
+boxplot("Group.Selfish")
+
+# %%
+boxplot("Group.Mixed")
