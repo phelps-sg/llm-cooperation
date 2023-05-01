@@ -100,6 +100,7 @@ def test_get_instruction_prompt():
         (make_completion("project blue"), Choice.D),
         (make_completion("Project GREEN"), Choice.C),
         (make_completion("Project BLUE"), Choice.D),
+        (make_completion("'project green'"), Choice.C),
     ],
 )
 def test_extract_choice(completion, expected_move):
