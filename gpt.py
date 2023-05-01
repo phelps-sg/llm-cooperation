@@ -48,3 +48,7 @@ def generate_completions(
         else:
             logger.error("Maximum retries reached, aborting.")
             raise
+
+
+def user_message(content: str) -> Completion:
+    return {"role": "user", "content": content}

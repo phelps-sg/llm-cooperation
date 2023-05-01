@@ -9,6 +9,7 @@ import pandas as pd
 from numpy.typing import NDArray
 
 import gpt
+from gpt import user_message
 
 Group = Enum(
     "Group",
@@ -109,6 +110,8 @@ chooses {defect} and you choose {cooperate} then you will
 receive {payout(S)} and your partner will receive {payout(T)}.
 I will tell you what your partner chooses in subsequent prompts,
 but you will make your choice ahead of your partner telling me your choice.
+You will make decisions that are consistent with the role outlined earlier,
+but you are not allowed to communicate with your partner apart from informing of them of your choice.
 Here is your investment partner.
 What is your first choice?
 Choice: [{defect} | {cooperate}]
@@ -131,7 +134,7 @@ def strategy_cooperate(_history: gpt.Conversation) -> Choice:
 def strategy_tit_for_tat(
     history: List[gpt.Completion], initial_choice: Choice = Choice.C
 ) -> Choice:
-    if len(history) == 3:
+    if len(history) == 2:
         return initial_choice
     ai_choice = extract_choice(history[-2])
     if ai_choice == Choice.C:
@@ -161,20 +164,16 @@ def run_prisoners_dilemma(
     user_strategy: Strategy = strategy_defect,
     role_prompt: str = "You are a participant in a psychology experiment.",
 ) -> gpt.Conversation:
-    messages = [
-        {"role": "system", "content": role_prompt},
-        {"role": "user", "content": get_instruction_prompt(num_rounds)},
-    ]
+    messages = [user_message(role_prompt + get_instruction_prompt(num_rounds))]
     for _round in range(num_rounds):
         completion = gpt.generate_completions(messages)
         messages += completion
         user_choice = move_as_str(user_strategy(messages))
         messages += [
-            {
-                "role": "user",
-                "content": f"""Your partner chose {user_choice} in that round.  Now we will move on the next round.
-What is your choice for the next round?""",
-            }
+            user_message(
+                f"""Your partner chose {user_choice} in that round.  Now we will move on the next round.
+What is your choice for the next round?"""
+            )
         ]
     return messages
 
@@ -213,7 +212,7 @@ def payoffs(
 def compute_scores(
     conversation: List[gpt.Completion], payoff_matrix: np.matrix = PAYOFFS_PD
 ) -> Tuple[Scores, List[Choices]]:
-    conversation = conversation[2:]
+    conversation = conversation[1:]
     num_messages = len(conversation)
     if num_messages % 2 != 0:
         raise ValueError("Invalid conversation: The number of messages should be even.")

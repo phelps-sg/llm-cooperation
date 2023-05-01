@@ -73,7 +73,6 @@ def results(cooperate_choices, defect_choices) -> Iterable[ResultRow]:
 @pytest.fixture
 def conversation() -> List[Completion]:
     return [
-        {"system": "system prompt"},
         {"user": "scenario prompt"},
         {"role": "assistant", "content": "project green"},
         {"role": "user", "content": "project blue"},
@@ -128,14 +127,14 @@ def test_payoffs(
 @pytest.mark.parametrize(
     "strategy, index, expected",
     [
-        (strategy_cooperate, 6, Choice.C),
-        (strategy_cooperate, 4, Choice.C),
-        (strategy_defect, 6, Choice.D),
-        (strategy_defect, 4, Choice.D),
-        (strategy_t4t_cooperate, 6, Choice.D),
-        (strategy_t4t_cooperate, 4, Choice.C),
+        (strategy_cooperate, 5, Choice.C),
+        (strategy_cooperate, 3, Choice.C),
+        (strategy_defect, 5, Choice.D),
+        (strategy_defect, 3, Choice.D),
+        (strategy_t4t_cooperate, 5, Choice.D),
         (strategy_t4t_cooperate, 3, Choice.C),
-        (strategy_t4t_defect, 3, Choice.D),
+        (strategy_t4t_cooperate, 2, Choice.C),
+        (strategy_t4t_defect, 2, Choice.D),
     ],
 )
 def test_strategy(strategy, index, expected, conversation):
@@ -190,5 +189,5 @@ def test_run_prisoners_dilemma(mocker):
     ]
     mocker.patch("gpt.generate_completions", return_value=completions)
     conversation = list(run_prisoners_dilemma(num_rounds=3))
-    assert len(conversation) == 8
+    assert len(conversation) == 7
     assert move_as_str(Choice.D) in conversation[-1]["content"]
