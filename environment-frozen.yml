@@ -194,13 +194,13 @@ dependencies:
   - nspr=4.35=h27087fc_0
   - nss=3.89=he45b914_0
   - numpy=1.24.3=py310ha4c1d20_0
-  - openai=0.27.4=pyhd8ed1ab_0
+  - openai=0.27.5=pyhd8ed1ab_0
   - openjpeg=2.5.0=hfec8fc6_2
   - openpyxl=3.1.2=py310h2372a71_0
-  - openssl=3.1.0=hd590300_2
+  - openssl=3.1.0=hd590300_3
   - packaging=23.1=pyhd8ed1ab_0
   - pandas=2.0.1=py310h7cbd5c2_0
-  - pandas-stubs=2.0.0.230412=pyhd8ed1ab_0
+  - pandas-stubs=2.0.1.230501=pyhd8ed1ab_0
   - pandoc=2.19.2=h32600fe_2
   - pandocfilters=1.5.0=pyhd8ed1ab_0
   - parso=0.8.3=pyhd8ed1ab_0
@@ -290,7 +290,7 @@ dependencies:
   - sphinxcontrib-jsmath=1.0.1=py_0
   - sphinxcontrib-qthelp=1.0.3=py_0
   - sphinxcontrib-serializinghtml=1.1.5=pyhd8ed1ab_2
-  - sqlalchemy=2.0.11=py310h2372a71_0
+  - sqlalchemy=2.0.12=py310h2372a71_0
   - stack_data=0.6.2=pyhd8ed1ab_0
   - tabulate=0.9.0=pyhd8ed1ab_1
   - tenacity=8.2.2=pyhd8ed1ab_0
@@ -347,3 +347,7 @@ dependencies:
   - zipp=3.15.0=pyhd8ed1ab_0
   - zlib=1.2.13=h166bdaf_4
   - zstd=1.5.2=h3eb15da_6
+  - pip:
+      - gptrim==0.1.6
+      - nltk==3.8.1
+      - regex==2023.3.23
