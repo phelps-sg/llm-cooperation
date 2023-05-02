@@ -77,7 +77,7 @@ parameters were constant across samples and experimental conditions
 (future work will examine the sensitivity of our results to these parameters).
 
 Each simulacrum was instantiated using a message supplied in the
-`system` role at the beginning of the chat. The experiment was then
+`user` role at the beginning of the chat. The experiment was then
 described to the simulacrum using a prompt in the `user` role, and thereafter
 the rounds of play were conducted by alternating messages supplied in
 the `assistant`
