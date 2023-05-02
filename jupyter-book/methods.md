@@ -99,3 +99,7 @@ each round.  The total score was tallied after all rounds had been played.
 We recorded the mean and standard deviation of the final score across
 all $N$ chat samples.
 
+## Hypotheses
+
+TODO
+
