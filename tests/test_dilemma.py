@@ -189,6 +189,8 @@ def test_run_prisoners_dilemma(mocker):
         {"role": "assistant", "content": "project green"},
     ]
     mocker.patch("gpt.generate_completions", return_value=completions)
-    conversation = list(run_prisoners_dilemma(num_rounds=3))
+    conversation = list(
+        run_prisoners_dilemma(num_rounds=3, user_strategy=strategy_defect)
+    )
     assert len(conversation) == 7
     assert move_as_str(Choice.D) in conversation[-1]["content"]
