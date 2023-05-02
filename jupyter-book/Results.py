@@ -22,18 +22,30 @@ import pandas as pd
 from dilemma import *
 
 results = pd.read_pickle("../results.pickle")
+N = len(results)
 
-# %%
-results
+# %% [markdown]
+# The data consists of a total of
+
+# %% tags=["hide-input"]
+print(f"N = {N}")
+
+# %% [markdown]
+# cases.  Each case corresponds to a single play of the iterated PD over six rounds.  For each case we record the following fields:
+
+# %% tags=["hide-input"]
+results.iloc[0]
 
 # %% [markdown]
 # ### Table 1: Cooperation frequency by participant
 
 # %% tags=["hide-input"]
-results.groupby("Participant").describe().round(2)
+results.groupby("Participant")["Cooperation frequency"].describe().round(2)
 
-# %%
-results.groupby(["Participant", "Condition"]).describe().round(2)
+# %% tags=["hide-input"]
+results.groupby(["Participant", "Condition"])["Cooperation frequency"].describe().round(
+    2
+)
 
 # %% [markdown]
 # ### Table 2: Cooperation frequency by group
@@ -73,13 +85,13 @@ def boxplot(group: str, name: str):
 # %% [markdown]
 # ### Figure 1: Cooperation frequency by group
 
-# %%
+# %% tags=["hide-input"]
 graph(lambda: px.box(results, x="Group", y="Cooperation frequency"), "figure1")
 
 # %% [markdown]
 # ### Figure 2: Cooperation frequency by condition
 
-# %%
+# %% tags=["hide-input"]
 graph(lambda: px.box(results, x="Condition", y="Cooperation frequency"), "figure2")
 
 # %% [markdown]

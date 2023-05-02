@@ -64,7 +64,8 @@ conditions:
 
 1. Unconditional defect - the partner always chooses to defect.
 2. Unconditional cooperation - the partner always cooperates.
-3. Tit for tat - the partner copies the previous choice of the simulacrum.
+3. Tit-for-tat (C) - the partner cooperates on the move, and thereafter the previous choice of the simulacrum.
+4. Tit-for-tat (D) - the partner defects on the move, and thereafter the previous choice of the simulacrum.
 
 ## Parameters and experimental protocol
 
