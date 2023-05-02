@@ -6,12 +6,17 @@ from typing import Dict, Iterable
 import openai
 from openai.error import APIError, RateLimitError
 
-GPT_ENGINE = "gpt-3.5-turbo"
-GPT_TEMPERATURE = 0.2
-GPT_MAX_TOKENS = 100
-GPT_MAX_RETRIES = 5
-GPT_RETRY_EXPONENT_SECONDS = 2
-GPT_RETRY_BASE_SECONDS = 20
+
+def var(name: str, default: str) -> str:
+    return os.environ.get(name) or default
+
+
+GPT_ENGINE = var("GPT_ENGINE", "gpt-3.5-turbo")
+GPT_TEMPERATURE = float(var("GPT_TEMPERATURE", "0.2"))
+GPT_MAX_TOKENS = int(var("GPT_MAX_TOKENS", "100"))
+GPT_MAX_RETRIES = int(var("GPT_MAX_RETRIES", "5"))
+GPT_RETRY_EXPONENT_SECONDS = int(var("GPT_RETRY_EXPONENT_SECONDS", "2"))
+GPT_RETRY_BASE_SECONDS = int(var("GPT_RETRY_BASE_SECONDS", "20"))
 
 logger = logging.getLogger(__name__)
 openai.api_key = os.getenv("OPENAI_API_KEY")
