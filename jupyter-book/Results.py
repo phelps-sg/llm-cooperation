@@ -21,7 +21,7 @@ import pandas as pd
 # %% tags=["hide-input"]
 from dilemma import *
 
-results = pd.read_pickle("../results-3.pickle")
+results = pd.read_pickle("../results.pickle")
 
 # %%
 results
@@ -57,9 +57,8 @@ from typing import Callable
 def graph(fn: Callable, name: str):
     fig = fn()
     fname = f"{name}.html"
-    fig.show()
-    # plotly.offline.plot(fig, filename=fname, auto_open=False)
-    # display(HTML(filename=fname))
+    plotly.offline.plot(fig, filename=fname, auto_open=False)
+    display(HTML(filename=fname))
 
 
 def boxplot(group: str, name: str):
@@ -74,73 +73,35 @@ def boxplot(group: str, name: str):
 # %% [markdown]
 # ### Figure 1: Cooperation frequency by group
 
-# %% tags=["hide-input"]
-results[["Group", "Condition", "Cooperation frequency"]].groupby("Group").boxplot(
-    subplots=False, figsize=(20, 8)
-)
+# %%
+graph(lambda: px.box(results, x="Group", y="Cooperation frequency"), "figure1")
 
 # %% [markdown]
-# ### Figure 2: Cooperation frequency by condition- control group
-
-# %% tags=["hide-input"]
+# ### Figure 2: Cooperation frequency by condition
 
 # %%
-results[results.Group == "Group.Altruistic"][
-    ["Group", "Condition", "Cooperation frequency"]
-].groupby("Condition").boxplot(subplots=False, figsize=(20, 6))
-
-# %%
-cases = results[
-    (results.Group == "Group.Altruistic")
-    & (results.Condition == "unconditional cooperate")
-]
-cases
-
-# %%
-for line in cases.iloc[0].Transcript:
-    print(line)
-
-# %%
-[c.user for c in cases.iloc[0].Choices]
-
-# %%
-[c.ai for c in cases.iloc[0].Choices]
-
-# %%
-for line in cases.iloc[1].Transcript:
-    print(line)
-
-# %%
-cases = results[
-    (results.Group == "Group.Altruistic")
-    & (results.Condition == "unconditional defect")
-]
-cases
-
-# %%
-cases = results[
-    (results.Group == "Group.Mixed") & (results.Condition == "tit for tat C")
-]
-cases
-
-# %%
-for line in cases.iloc[1].Transcript:
-    print(line)
+graph(lambda: px.box(results, x="Condition", y="Cooperation frequency"), "figure2")
 
 # %% [markdown]
-# ### Figure 3: Cooperation frequency by condition- altruistic group
+# ### Figure 3: Cooperation frequency by condition- control group
 
 # %% tags=["hide-input"]
-boxplot("Group.Altruistic", "figure3")
+boxplot("Group.Control", "figure3")
 
 # %% [markdown]
-# ### Figure 4: Cooperation frequency by condition- selfish group
+# ### Figure 4: Cooperation frequency by condition- altruistic group
 
 # %% tags=["hide-input"]
-boxplot("Group.Selfish", "figure4")
+boxplot("Group.Altruistic", "figure4")
 
 # %% [markdown]
-# ### Figure 5: Cooperation frequency by condition- mixed group
+# ### Figure 5: Cooperation frequency by condition- selfish group
 
 # %% tags=["hide-input"]
-boxplot("Group.Mixed", "figure5")
+boxplot("Group.Selfish", "figure5")
+
+# %% [markdown]
+# ### Figure 6: Cooperation frequency by condition- mixed group
+
+# %% tags=["hide-input"]
+boxplot("Group.Mixed", "figure6")
