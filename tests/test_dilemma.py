@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from dilemma import (
+from llm_cooperation.dilemma import (
     PAYOFFS_PD,
     Choice,
     Choices,
@@ -27,7 +27,7 @@ from dilemma import (
     strategy_t4t_cooperate,
     strategy_t4t_defect,
 )
-from gpt import Completion
+from llm_cooperation.gpt import Completion
 
 
 def make_completion(text: str) -> Completion:
@@ -143,7 +143,7 @@ def test_strategy(strategy, index, expected, conversation):
 
 
 def test_run_experiment(mocker):
-    mock_run_sample = mocker.patch("dilemma.run_sample")
+    mock_run_sample = mocker.patch("llm_cooperation.dilemma.run_sample")
     samples = [
         (5, 0.5, [Choice.C], ["project green"]),
         (3, 0.7, [Choice.D], ["project blue"]),
@@ -188,7 +188,7 @@ def test_run_prisoners_dilemma(mocker):
     completions = [
         {"role": "assistant", "content": "project green"},
     ]
-    mocker.patch("gpt.generate_completions", return_value=completions)
+    mocker.patch("llm_cooperation.gpt.generate_completions", return_value=completions)
     conversation = list(
         run_prisoners_dilemma(num_rounds=3, user_strategy=strategy_defect)
     )

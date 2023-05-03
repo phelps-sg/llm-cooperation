@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 
-import gpt
-from gpt import user_message
+from llm_cooperation import gpt
+from llm_cooperation.gpt import user_message
 
 Group = Enum(
     "Group",
@@ -289,7 +289,7 @@ def main() -> None:
         },
     )
     df = results_to_df(results)
-    filename = "results.pickle"
+    filename = "../results.pickle"
     logger.info("Experiment complete, saving results to %s", filename)
     df.to_pickle(filename)
 
