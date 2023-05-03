@@ -2,7 +2,7 @@
 # Learn more at https://jupyterbook.org/customize/config.html
 
 title: Investigating Emergent Goal-Like Behavior in Large Language Models using Experimental Economics
-author: Steve Phelps
+author: Steve Phelps and Yvan I. Russell
 copyright: 2023
 
 # Force re-execution of notebooks on each build.
