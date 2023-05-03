@@ -27,7 +27,8 @@ applications where they typically interact with and assist human users.
 Therefore, a key principle in assessing any
 emergent goal-like behaviour for these use-cases is to evaluate artificial agents in multi-agent
 tasks where outcomes depend not only on actions taken by artificial agents, but
-also their human counterparts. The theoretical study of such tasks falls
+also their human counterparts. When evaluating incentives, the aspect of the outcome that is of interest is the
+expected utility obtained by each party, and the theoretical study of such tasks falls
 within the remit of game-theory, while the empirical study falls within the
 remit of experimental economics. Our research falls under the latter, and our
 goal is to systematically evaluate the propensity of large-language models to
