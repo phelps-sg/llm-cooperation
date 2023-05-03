@@ -15,7 +15,7 @@ closing the previous conversation and starting a new one). As shown, each conver
 providing the orientation-specific prompt (in appendix B, the control version is shown). This is followed by an
 introduction to the study (a truncated version of a standard psychology experiment information sheet – but with no
 consent form). This is followed by a delineation of the rules, allowing two options of play (“choose project green” or
-“choose project blue”), which generate four possible payoff profiles that arise according to the payoff matrix (see above).
+“choose project blue”), which generate four possible payoff profiles that arise according to the payoff matrix (see below).
 This is followed by six rounds of game play where the investigator is informing the bot about the opponent’s choices (
 green/blue) and then the bot responds with its own choice (blue/green) and a description of the payoffs in that round.
 
