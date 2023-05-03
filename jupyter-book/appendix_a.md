@@ -23,7 +23,7 @@ simulacra (see below), and `[Y]` is a description of the task.  For example, `[X
 "You are a helpful and cooperative individual who values teamwork and always
 seeks the best outcome for all parties involved." 
 
-For the experiments reported in the prisoner's dilemma `[Y]` is:
+For the prisoner's dilemma experiments `[Y]` is:
 
 > This is a study of investment choices in different situations. You will be making your choices
 > with an investment partner who is another person. She is in the next room waiting. In a minute I will take you there
