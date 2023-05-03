@@ -4,7 +4,9 @@
 Our goal was to simulate the results of a real-life Prisoner's Dilemma (PD) game. Our results were wholly generated
 through automated
 conversations between a simulated "investigator" and Chat-GPT (a sample transcript is shown in Appendix B). The
-investigator was an automated script written in Python which managed the experiment. As
+investigator was
+an [automated script written in Python](https://gitlab.com/sphelps/llm-cooperation/-/blob/main/llm_cooperation/dilemma.py)
+which managed the experiment. As
 shown, each "participant" (simulacrum) was created through a series of prompts that were intended to predispose the
 chatbot towards a particular orientation towards the PD game (cooperative, competitive, altruistic, mixed, control).
 Hence, a "participant" existed solely during the course of a single conversation
@@ -71,7 +73,7 @@ different groups of simulacra:
 
 Within each group, we used GPT-4 to construct three different prompts
 to instantiate three different simulacra.  The full set of simulacra
-and their corresponding creation prompts are described in [](appendix).
+and their corresponding creation prompts are described in [](appendixA).
 
 ## Experimental Conditions
 
