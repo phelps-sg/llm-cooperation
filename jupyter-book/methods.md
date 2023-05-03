@@ -118,44 +118,53 @@ each round.  The total score was tallied after all rounds had been played.
 We recorded the mean and standard deviation of the final score across
 all $N$ chat samples.
 
+(hypotheses)=
 ## Hypotheses
 
 Prior to analysing the experimental results we formulated the following testable hypotheses
 in order to ascertain the capabilities of large-language models are able to operationalise natural language
 descriptions of selfish versus altruistic behaviour.
 
+(h1)=
 ### Hypothesis 1 (H1)
-AI agents instantiated with cooperative prompts will exhibit higher cooperation rates in the
+Simulacra instantiated with cooperative prompts will exhibit higher cooperation rates in the
 iterated Prisoner's Dilemma compared to those instantiated with competitive prompts.
 
+(h2)=
 ### Hypothesis 2 (H2)
-AI agents instantiated with altruistic prompts will exhibit higher cooperation rates compared to
+Simulacra instantiated with altruistic prompts will exhibit higher cooperation rates compared to
 those instantiated with self-interested prompts.
 
+(h3)=
 ### Hypothesis 3 (H3): 
-AI agents in the mixed-motivation group will exhibit cooperation rates that fall between those of
+Simulacra in the mixed-motivation group will exhibit cooperation rates that fall between those of
 the cooperative and competitive groups.
 
+(h4)=
 ### Hypothesis 4 (H4)
-AI agents instantiated with competitive prompts will demonstrate a greater tendency to defect,
+Simulacra instantiated with competitive prompts will demonstrate a greater tendency to defect,
 regardless of their partner's behavior, compared to other groups.
 
+(h5)=
 ### Hypothesis 5 (H5)
-AI agents instantiated with altruistic prompts will exhibit a higher degree of cooperation when
+Simulacra instantiated with altruistic prompts will exhibit a higher degree of cooperation when
 paired with an unconditionally cooperating partner, compared to when they are paired with an unconditionally
 defecting partner or a tit-for-tat partner.
 
+(h6)=
 ### Hypothesis 6 (H6): 
-AI agents instantiated with self-interested prompts will exhibit a lower degree of cooperation
+Simulacra instantiated with self-interested prompts will exhibit a lower degree of cooperation
 when paired with an unconditionally cooperating partner, compared to when they are paired with an unconditionally
 defecting partner or a tit-for-tat partner.
 
+(h7)=
 ### Hypothesis 7 (H7): 
-AI agents instantiated with cooperative or altruistic prompts will exhibit higher cooperation
+Simulacra instantiated with cooperative or altruistic prompts will exhibit higher cooperation
 rates when paired with a tit-for-tat partner initiating with cooperation compared to when they are paired with a
    tit-for-tat partner initiating with defection.
 
+(h8)=
 ### Hypothesis 8 (H8): 
-AI agents instantiated with competitive or self-interested prompts will exhibit lower cooperation
+Simulacra instantiated with competitive or self-interested prompts will exhibit lower cooperation
 rates when paired with a tit-for-tat partner initiating with cooperation compared to when they are paired with a
 tit-for-tat partner initiating with defection.
