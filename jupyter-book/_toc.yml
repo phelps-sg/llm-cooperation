@@ -10,4 +10,5 @@ chapters:
 - file: discussion
 - file: conclusion
 - file: bibliography
-- file: appendix
+- file: appendix_a
+- file: appendix_b

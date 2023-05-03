@@ -3,7 +3,7 @@
 
 Our goal was to simulate the results of a real-life Prisoner's Dilemma (PD) game. Our results were wholly generated
 through automated
-conversations between a simulated "investigator" and Chat-GPT (a sample transcript is shown in Appendix B). The
+conversations between a simulated "investigator" and Chat-GPT (a sample transcript is shown in [](appendixB). The
 investigator was
 an [automated script written in Python](https://gitlab.com/sphelps/llm-cooperation/-/blob/main/llm_cooperation/dilemma.py)
 which managed the experiment. As
