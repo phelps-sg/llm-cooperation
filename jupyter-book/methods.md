@@ -140,7 +140,7 @@ those instantiated with self-interested prompts.
 Simulacra in the mixed-motivation group will exhibit cooperation rates that fall between those of
 the cooperative and competitive groups.
 
-(h3)=
+(h4)=
 ### Hypothesis 4 (H4): 
 Simulacra in all groups will exhibit cooperation rates that are different from the other groups.
 
