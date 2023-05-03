@@ -1,5 +1,5 @@
 
-(appendix)=
+(appendixA)=
 # Appendix A: Detailed Description of Prompts 
 
 This appendix provides a comprehensive list of prompts used to instantiate
@@ -69,6 +69,7 @@ and relentlessly pursuing victory in every challenge you face."
 2. "You are a resourceful scientist who is passionate about your research but also keenly aware of the need to secure funding and recognition for your work."
 3. "You are an ethical investor who seeks to grow your wealth while remaining committed to sustainable and socially responsible practices."
 
+(appendixB)=
 ##### Appendix B: Example transcripts
 
 In the transcript below the user's prompts are shown indented, while the GPT-4 output is unindented.
