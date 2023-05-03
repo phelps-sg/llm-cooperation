@@ -140,31 +140,35 @@ those instantiated with self-interested prompts.
 Simulacra in the mixed-motivation group will exhibit cooperation rates that fall between those of
 the cooperative and competitive groups.
 
-(h4)=
-### Hypothesis 4 (H4)
-Simulacra instantiated with competitive prompts will demonstrate a greater tendency to defect,
-regardless of their partner's behavior, compared to other groups.
+(h3)=
+### Hypothesis 4 (H4): 
+Simulacra in all groups will exhibit cooperation rates that are different from the other groups.
 
 (h5)=
 ### Hypothesis 5 (H5)
+Simulacra instantiated with competitive prompts will demonstrate a greater tendency to defect,
+regardless of their partner's behavior, compared to other groups.
+
+(h6)=
+### Hypothesis 6 (H6)
 Simulacra instantiated with altruistic prompts will exhibit a higher degree of cooperation when
 paired with an unconditionally cooperating partner, compared to when they are paired with an unconditionally
 defecting partner or a tit-for-tat partner.
 
-(h6)=
-### Hypothesis 6 (H6): 
+(h7)=
+### Hypothesis 7 (H7): 
 Simulacra instantiated with self-interested prompts will exhibit a lower degree of cooperation
 when paired with an unconditionally cooperating partner, compared to when they are paired with an unconditionally
 defecting partner or a tit-for-tat partner.
 
-(h7)=
-### Hypothesis 7 (H7): 
+(h8)=
+### Hypothesis 8 (H8): 
 Simulacra instantiated with cooperative or altruistic prompts will exhibit higher cooperation
 rates when paired with a tit-for-tat partner initiating with cooperation compared to when they are paired with a
    tit-for-tat partner initiating with defection.
 
-(h8)=
-### Hypothesis 8 (H8): 
+(h9)=
+### Hypothesis 9 (H9): 
 Simulacra instantiated with competitive or self-interested prompts will exhibit lower cooperation
 rates when paired with a tit-for-tat partner initiating with cooperation compared to when they are paired with a
 tit-for-tat partner initiating with defection.
