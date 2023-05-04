@@ -49,16 +49,14 @@ will clearly out-compete inferior humans.
 However, many interactions in both natural and artificial settings are characterized
 by non-zero-sum payoff structures {cite}`Phelps2015`.  A famous example that was
 used to analyse existential risk of nuclear conflict during the cold war is the 
-Prisoner's Dilemma {cite}`Axelrod1997`.  
+Prisoner's Dilemma {cite}`Axelrod1997`.  In an ecological context
 
-In addition to the Prisoner's Dilemma, it is important to consider related non-zero-sum games such as the Hawk-Dove
-game, also known as the Chicken game. This game was introduced by Maynard Smith in his paper "The Logic of Animal
-Conflict" as
-a way to analyze the outcomes of competition for resources among animals. The Hawk-Dove, also known as "Chicken", game
-demonstrates that, in certain payoff structures, limited conflict can be an evolutionary equilibrium when interactions
+A related non-zero-sum game, the Hawk-Dove game, also known as the Chicken game, was introduced by {cite}`smith1973` as
+a way to analyze the outcomes of competition for resources among animals. In certain payoff structures, limited conflict
+can be an evolutionary equilibrium of this game when interactions
 are repeated within a
-large population {cite}`smith1973`. This game has been also applied to an analysis of existential risk in nuclear
-conflict; {cite}`dixit2019we` argues that the Cuban missile crisis can analysed as a high-stakes dynamic chicken game in
+large population. This game has been also applied to an analysis of existential risk in nuclear
+conflict; {cite}`dixit2019we` argue that the Cuban missile crisis can analysed as a high-stakes dynamic chicken game in
 which neither the USSR nor the USA wanted to "blink" first.
 
 Interestingly, in a one-shot version of the game between human players, behaving
