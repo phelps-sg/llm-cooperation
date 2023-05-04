@@ -9,8 +9,9 @@ and public goods game.
 Using a within-subject experimental design, we instantiated LLM-generated agents with various prompts that conveyed
 different cooperative and competitive stances. We then assessed the agents' level of cooperation in the iterated
 Prisoner's Dilemma, taking into account their responsiveness to the cooperative or defection actions of their partners.
-Our results provide evidence that LLMs can translate natural language descriptions of cooperative and competitive
-behavior to some extent, but exhibit limitations in adapting their behavior based on conditioned reciprocity.
+Our results provide evidence that LLMs can translate natural language descriptions of altruism and selfishness
+into appropriate behaviour some extent, but exhibit limitations in adapting their behavior based on conditioned
+reciprocity.
 
 The observed pattern of increased cooperation with defectors and decreased cooperation with cooperators highlights
 potential constraints in the LLM's ability to generalize its knowledge about human behavior in social dilemmas. We call
