@@ -73,7 +73,7 @@ with superior cognitive capacity, do not necessarily prevail.
 
 Moreover, in both one-shot and iterated Prisoner's Dilemma games with the number of rounds being common
 knowledge, the rational strategy is to defect, but experiments have shown that real people tend to cooperate,
-albeit conditionally, using strategies such as Tit-for-Tat. The fact that real people cooperate in these scenarios,
+albeit conditionally. The fact that real people cooperate in these scenarios,
 despite the seemingly rational strategy to defect, highlights
 the importance of social norms in shaping human behavior {cite}`fehr2004third`. Norms can facilitate cooperative
 outcomes by providing a
