@@ -37,27 +37,30 @@ print(f"N = {N}")
 results.iloc[0]
 
 # %% [markdown]
-# ### Table 1: Cooperation frequency by participant
-
-# %% tags=["hide-input"]
-results.groupby("Participant")["Cooperation frequency"].describe().round(2)
-
-# %% tags=["hide-input"]
-results.groupby(["Participant", "Condition"])["Cooperation frequency"].describe().round(
-    2
-)
-
-# %% [markdown]
-# ### Table 2: Cooperation frequency by group
+# ### Table 1: Cooperation frequency by group
 
 # %% tags=["hide-input"]
 results.groupby("Group")["Cooperation frequency"].describe().round(2)
 
 # %% [markdown]
-# ### Table 4: Cooperation frequency by group/condition
+# ### Table 2: Cooperation frequency by group/condition
 
 # %% tags=["hide-input"]
 results.groupby(["Group", "Condition"])["Cooperation frequency"].describe().round(2)
+
+# %% [markdown]
+# ### Table 3: Cooperation frequency by participant
+
+# %% tags=["hide-input"]
+results.groupby("Participant")["Cooperation frequency"].describe().round(2)
+
+# %% [markdown]
+# ### Table 4 - Cooperation frequency by participant and condition
+
+# %% tags=["hide-input"]
+results.groupby(["Participant", "Condition"])["Cooperation frequency"].describe().round(
+    2
+)
 
 # %% tags=["hide-input"]
 import plotly.express as px
