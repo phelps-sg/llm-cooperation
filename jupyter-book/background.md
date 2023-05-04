@@ -58,16 +58,18 @@ large population. This game has been also applied to an analysis of existential 
 conflict; {cite}`dixit2019we` argue that the Cuban missile crisis can be analysed as a high-stakes dynamic chicken game in
 which neither the USSR nor the USA wanted to "blink" first.
 
-Interestingly, in a one-shot version of the game between human players, behaving
+Interestingly, in a one-shot version of the game , behaving
 irrationally by limiting one's options
-can be a superior strategy. For example, in a game of Chicken where two opposing drivers are on a collision course and
+can be a superior strategy. This is because in the absence of such limiting, attempts to
+manipulate the other player through brinkmanship are not credible threats. For example, in a game of Chicken where two
+opposing drivers are on a collision course and
 neither driver wants to be seen as the "chicken" by swerving, if we limit our choices by removing the steering wheel,
 and make this common knowledge, then the opposing driver's best response is to swerve. Similar arguments were used
 during the cold war to remove rational deliberation from the decision whether to retaliate in the event
 of a preemptive strike by the enemy by "taking the human out of the loop" and putting systems on automated
-hair-trigger alert. Thus, in contrast to chess or Go, in non-zero-sum interactions, the most ruthless agents, or those
-with superior cognitive
-capacity, do not necessarily prevail.
+hair-trigger alert to make the threat of mutually assured destruction credible {cite}`kahnthermonuclear`. 
+Thus, in contrast to chess or Go, in non-zero-sum interactions, the most ruthless agents, or those
+with superior cognitive capacity, do not necessarily prevail.
 
 Moreover, in both one-shot and iterated Prisoner's Dilemma games with the number of rounds being common
 knowledge, the rational strategy is to defect, but experiments have shown that real people tend to cooperate,
