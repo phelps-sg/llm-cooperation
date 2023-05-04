@@ -47,16 +47,15 @@ find themselves in situations in which they are competing with humans, the AI "s
 will clearly out-compete inferior humans.
 
 However, many interactions in both natural and artificial settings are characterized
-by non-zero-sum payoff structures {cite}`Phelps2015`.  A famous example that was
-used to analyse existential risk of nuclear conflict during the cold war is the 
-Prisoner's Dilemma {cite}`Axelrod1997`.  In an ecological context
-
-A related non-zero-sum game, the Hawk-Dove game, also known as the Chicken game, was introduced by {cite}`smith1973` as
-a way to analyze the outcomes of competition for resources among animals. In certain payoff structures, limited conflict
+by non-zero-sum payoff structures {cite}`Phelps2015`. A famous example that was
+used to analyse existential risk of nuclear conflict during the cold war is the
+Prisoner's Dilemma {cite}`Axelrod1997`. In an ecological context a related non-zero-sum game, the Hawk-Dove game, also
+known as the Chicken game, was introduced by {cite}`smith1973` as
+a way to analyse the outcomes of competition for resources among animals. In certain payoff structures, limited conflict
 can be an evolutionary equilibrium of this game when interactions
 are repeated within a
 large population. This game has been also applied to an analysis of existential risk in nuclear
-conflict; {cite}`dixit2019we` argue that the Cuban missile crisis can analysed as a high-stakes dynamic chicken game in
+conflict; {cite}`dixit2019we` argue that the Cuban missile crisis can be analysed as a high-stakes dynamic chicken game in
 which neither the USSR nor the USA wanted to "blink" first.
 
 Interestingly, in a one-shot version of the game between human players, behaving
@@ -74,7 +73,8 @@ Moreover, in both one-shot and iterated Prisoner's Dilemma games with the number
 knowledge, the rational strategy is to defect, but experiments have shown that real people tend to cooperate,
 albeit conditionally, using strategies such as Tit-for-Tat. The fact that real people cooperate in these scenarios,
 despite the seemingly rational strategy to defect, highlights
-the importance of social norms in shaping human behavior. Norms can facilitate cooperative outcomes by providing a
+the importance of social norms in shaping human behavior {cite}`fehr2004third`. Norms can facilitate cooperative
+outcomes by providing a
 shared understanding of acceptable behavior and allowing for the enforcement of rules through social sanctions.
 
 In the context of AI alignment and non-zero-sum games, this underscores the importance of considering not only the
