@@ -51,32 +51,37 @@ by non-zero-sum payoff structures {cite}`Phelps2015`.  A famous example that was
 used to analyse existential risk of nuclear conflict during the cold war is the 
 Prisoner's Dilemma {cite}`Axelrod1997`.  
 
-In addition to the Prisoner's Dilemma, it is important to consider other non-zero-sum games such as the Hawk-Dove game,
-also known as the Chicken game. This game was introduced by Maynard Smith in his paper "The Logic of Animal Conflict" as
-a way to analyze the outcomes of competition for resources among animals. The Hawk-Dove, aka "Chicken" game demonstrates that, in
-certain payoff structures, limited conflict can be an evolutionary equilibrium when interactions are repeated within a
-population (Maynard Smith, 1973).
+In addition to the Prisoner's Dilemma, it is important to consider related non-zero-sum games such as the Hawk-Dove
+game, also known as the Chicken game. This game was introduced by Maynard Smith in his paper "The Logic of Animal
+Conflict" as
+a way to analyze the outcomes of competition for resources among animals. The Hawk-Dove, also known as "Chicken", game
+demonstrates that, in certain payoff structures, limited conflict can be an evolutionary equilibrium when interactions
+are repeated within a
+large population {cite}`smith1973`. This game has been also applied to an analysis of existential risk in nuclear
+conflict; {cite}`dixit2019we` argues that the Cuban missile crisis can analysed as a high-stakes dynamic chicken game in
+which neither the USSR nor the USA wanted to "blink" first.
 
-Interestingly, in a one-shot version of the game between human players, behaving irrationally by limiting one's options
+Interestingly, in a one-shot version of the game between human players, behaving
+irrationally by limiting one's options
 can be a superior strategy. For example, in a game of Chicken where two opposing drivers are on a collision course and
-neither driver wants to be seen as "chicken" by swerving, if we limit our choices by removing the steering wheel,
-and make this common knowledge then the opposing driver's best response is to swerve. Similar arguments were used
+neither driver wants to be seen as the "chicken" by swerving, if we limit our choices by removing the steering wheel,
+and make this common knowledge, then the opposing driver's best response is to swerve. Similar arguments were used
 during the cold war to remove rational deliberation from the decision whether to retaliate in the event
-of a preemptive strike by the enemy by taking the human out of the loop and putting systems on automated hair-trigger
-alert. Thus, we see that the agent with superior cognitive capacity does not always win in every
-context. 
+of a preemptive strike by the enemy by "taking the human out of the loop" and putting systems on automated
+hair-trigger alert. Thus, in contrast to chess or Go, in non-zero-sum interactions, the most ruthless agents, or those
+with superior cognitive
+capacity, do not necessarily prevail.
 
 Moreover, in both one-shot and iterated Prisoner's Dilemma games with the number of rounds being common
 knowledge, the rational strategy is to defect, but experiments have shown that real people tend to cooperate,
-albeit conditionally, using strategies such as Tit-for-Tat.
-
-The fact that real people cooperate in these scenarios, despite the seemingly rational strategy to defect, highlights
+albeit conditionally, using strategies such as Tit-for-Tat. The fact that real people cooperate in these scenarios,
+despite the seemingly rational strategy to defect, highlights
 the importance of social norms in shaping human behavior. Norms can facilitate cooperative outcomes by providing a
 shared understanding of acceptable behavior and allowing for the enforcement of rules through social sanctions.
 
 In the context of AI alignment and non-zero-sum games, this underscores the importance of considering not only the
 cognitive capacity of AI agents but also their understanding and adherence to social norms. The ability of AI systems to
-adapt their behavior based on natural language prompts and to engage in cooperative strategies, such as Tit-for-Tat, is
+adapt their behavior based on natural language prompts and to engage in reciprocal cooperation, e.g. Tit-for-Tat, is
 crucial for creating AI agents that can better align with human values in complex, non-zero-sum settings.
 
 By investigating the behavior of AI-generated agents in the iterated Prisoner's Dilemma and other social dilemmas
@@ -101,8 +106,6 @@ From an AI alignment perspective, the fact that large language models can easily
 be scaffolded to deploy autonomous goal-oriented agents into production at very
 little cost highlights the need to systematically evaluate the conditions in which LLM-instantiated
 agents have a propensity or otherwise to cooperate in social dilemmas.
-
-TODO: expected utility maximisation fallacy
 
 Given that the nature of an LLM agent depends on the persona and context
 introduced in the initial 
