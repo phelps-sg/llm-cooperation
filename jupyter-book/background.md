@@ -58,7 +58,7 @@ large population. This game has been also applied to an analysis of existential 
 conflict; {cite}`dixit2019we` argue that the Cuban missile crisis can be analysed as a high-stakes dynamic chicken game in
 which neither the USSR nor the USA wanted to "blink" first.
 
-Interestingly, in a one-shot version of the game , behaving
+Interestingly, in a one-shot version of the game, behaving
 irrationally by limiting one's options
 can be a superior strategy. This is because in the absence of such limiting, attempts to
 manipulate the other player through brinkmanship are not credible threats. For example, in a game of Chicken where two
@@ -81,7 +81,7 @@ shared understanding of acceptable behavior and allowing for the enforcement of 
 
 In the context of AI alignment and non-zero-sum games, this underscores the importance of considering not only the
 cognitive capacity of AI agents but also their understanding and adherence to social norms. The ability of AI systems to
-adapt their behavior based on natural language prompts and to engage in reciprocal cooperation, e.g. Tit-for-Tat, is
+adapt their behavior based on natural language prompts and to engage in reciprocal cooperation is
 crucial for creating AI agents that can better align with human values in complex, non-zero-sum settings.
 
 By investigating the behavior of AI-generated agents in the iterated Prisoner's Dilemma and other social dilemmas
