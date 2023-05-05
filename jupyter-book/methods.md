@@ -106,7 +106,7 @@ respectively.
 The full set of prompts and sample transcripts are given in [](appendixA) 
 and [](appendixB),
 and the complete Python code used to conduct the experiment can be found
-[in the code repository](https://gitlab.com/sphelps/llm-cooperation/-/blob/main/dilemma.py).
+[in the code repository](https://gitlab.com/sphelps/llm-cooperation).
 
 ## Data Collection and Analysis
 
