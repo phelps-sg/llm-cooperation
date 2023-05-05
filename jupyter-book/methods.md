@@ -142,7 +142,7 @@ the cooperative and competitive groups.
 
 (h4)=
 ### Hypothesis 4 (H4): 
-Simulacra in all groups will exhibit cooperation rates that are different from the other groups.
+Simulacra in all groups will exhibit cooperation rates that are different from the control group.
 
 (h5)=
 ### Hypothesis 5 (H5)
