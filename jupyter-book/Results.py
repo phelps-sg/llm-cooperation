@@ -21,7 +21,7 @@ import pandas as pd
 # %% tags=["hide-input"]
 from llm_cooperation.dilemma import *
 
-results = pd.read_pickle("../results.pickle")
+results = pd.read_pickle("../results/dilemma.pickle")
 N = len(results)
 
 # %% [markdown]

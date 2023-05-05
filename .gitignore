@@ -1,5 +1,3 @@
-/results.pickle
-/results-defect.txt
 /results.txt
 /paper/llm-cooperation.pdf
 /notebooks/Results.ipynb
@@ -10,7 +8,6 @@
 /jupyter-book/_build/html/.buildinfo
 /jupyter-book/figure*.html
 .idea/**
-*.pickle
 /llm_cooperation.egg-info/dependency_links.txt
 /llm_cooperation.egg-info/PKG-INFO
 /llm_cooperation.egg-info/SOURCES.txt
