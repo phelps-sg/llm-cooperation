@@ -13,3 +13,9 @@ make install
 python llm_cooperation/dilemma.py
 ~~~
 
+## Contributing
+
+If you have a new experiment then please submit a pull request.
+All code should have corresponding tests and all experiments
+should be replicable.
+
