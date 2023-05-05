@@ -2,7 +2,7 @@
 
 As can be seen from  <a href="Results.html#figure-1-cooperation-frequency-by-group">Figure 1</a>, without
 having to resort to statistical tests, our results provide
-clear support for {ref}`hypotheses` 1 through 4, demonstrating that simulacra instantiated with
+clear support for {ref}`hypotheses` 1 through 3, demonstrating that simulacra instantiated with
 cooperative, competitive, altruistic, and self-interested prompts exhibit distinct levels of cooperation in the iterated
 Prisoner's Dilemma. This indicates that LLMs can operationalize natural language descriptions of cooperative and
 competitive behavior to some extent. However, the remaining hypotheses were not supported, suggesting a more complex
