@@ -10,7 +10,7 @@ Using a within-subject experimental design, we instantiated LLM-generated agents
 different cooperative and competitive stances. We then assessed the agents' level of cooperation in the iterated
 Prisoner's Dilemma, taking into account their responsiveness to the cooperative or defection actions of their partners.
 Our results provide evidence that LLMs can translate natural language descriptions of altruism and selfishness
-into appropriate behaviour some extent, but exhibit limitations in adapting their behavior based on conditioned
+into appropriate behaviour to some extent, but exhibit limitations in adapting their behavior based on conditioned
 reciprocity.
 
 The observed pattern of increased cooperation with defectors and decreased cooperation with cooperators highlights
