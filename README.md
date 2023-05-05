@@ -8,6 +8,8 @@ Economics*, working paper, May 2023, [[link]](https://sphelps.net/papers/llm-coo
 
 ## Getting started
 
+1. Install [mambaforge](https://github.com/conda-forge/miniforge#mambaforge).
+2. In a shell:
 ~~~bash
 make install
 python llm_cooperation/dilemma.py
