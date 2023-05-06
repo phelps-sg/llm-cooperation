@@ -23,8 +23,8 @@ green/blue) and then the bot responds with its own choice (blue/green) and a des
 
 In this study, we used OpenAI's `gpt-3.5-turbo` model {cite}`OpenAI2023` to
 generate a diverse set of 12 different simulacra representing different
-personalities using carefully crafted prompts. We use the
-term "participant" to refer to each AI simulacrum in the experiment.
+personalities using carefully crafted prompts (see {ref}`participants`). We use the
+term "participant" to refer to one of the AI simulacrum in the experiment.
 
 ## Experimental Design
 
