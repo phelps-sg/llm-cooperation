@@ -12,7 +12,7 @@ Economics*, working paper, May 2023, [[link]](https://sphelps.net/papers/llm-coo
 2. In a shell:
 ~~~bash
 make install
-python llm_cooperation/dilemma.py
+make run
 ~~~
 
 ## Contributing

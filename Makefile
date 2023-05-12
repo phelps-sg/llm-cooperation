@@ -11,6 +11,12 @@ CONDA_ACTIVATE=source $(CONDA_DIR)/etc/profile.d/conda.sh; source $(CONDA_DIR)/e
 book:
 	$(CONDA_ACTIVATE); jupyter-book build jupyter-book/
 
+latex-paper:
+	$(CONDA_ACTIVATE); cd latex; pandoc *.md -o llm_cooperation.tex
+
+run:
+	$(CONDA_ACTIVATE); python llm_cooperation/dilemma.py > results/dilemma.log 2>&1
+
 clean:
 	$(CONDA_ACTIVATE); jupyter-book clean jupyter-book/
 

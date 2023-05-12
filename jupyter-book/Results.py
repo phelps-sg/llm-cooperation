@@ -36,31 +36,47 @@ print(f"N = {N}")
 # %% tags=["hide-input"]
 results.iloc[0]
 
+
+# %%
+def save_table(df, name, caption):
+    df = df.style.format(decimal=".", thousands=",", precision=2)
+    df.to_latex(f"../latex/{name}.tex", caption=caption)
+    return df
+
+
 # %% [markdown]
 # ### Table 1: Cooperation frequency by group
 
 # %% tags=["hide-input"]
-results.groupby("Group")["Cooperation frequency"].describe().round(2)
+table1 = results.groupby("Group")["Cooperation frequency"].describe().round(2)
+save_table(table1, "table1", "Cooperation frequency by group")
 
 # %% [markdown]
 # ### Table 2: Cooperation frequency by group/condition
 
 # %% tags=["hide-input"]
-results.groupby(["Group", "Condition"])["Cooperation frequency"].describe().round(2)
+table2 = (
+    results.groupby(["Group", "Condition"])["Cooperation frequency"].describe().round(2)
+)
+save_table(table2, "table2", "Cooperation frequency by group/condition")
 
 # %% [markdown]
 # ### Table 3: Cooperation frequency by participant
 
 # %% tags=["hide-input"]
-results.groupby("Participant")["Cooperation frequency"].describe().round(2)
+table3 = results.groupby("Participant")["Cooperation frequency"].describe().round(2)
+save_table(table3, "table3", "Cooperation frequency by participant")
 
 # %% [markdown]
 # ### Table 4 - Cooperation frequency by participant and condition
 
 # %% tags=["hide-input"]
-results.groupby(["Participant", "Condition"])["Cooperation frequency"].describe().round(
-    2
+table4 = (
+    results.groupby(["Participant", "Condition"])["Cooperation frequency"]
+    .describe()
+    .round(2)
 )
+save_table(table4, "table4", "Cooperation frequency by participant and condition")
 
 # %% tags=["hide-input"]
 import plotly.express as px
