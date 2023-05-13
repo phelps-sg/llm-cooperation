@@ -294,7 +294,7 @@ def main() -> None:
         },
     )
     df = results_to_df(results)
-    filename = "../results/dilemma.pickle"
+    filename = "./results/dilemma.pickle"
     logger.info("Experiment complete, saving results to %s", filename)
     df.to_pickle(filename)
 
