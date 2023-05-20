@@ -349,5 +349,5 @@ dependencies:
   - pip:
       - gptrim==0.1.6
       - nltk==3.8.1
-      - openai-pygenerator==0.1.3
+      - openai-pygenerator==0.2.2
       - regex==2023.3.23
