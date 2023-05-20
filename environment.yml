@@ -25,3 +25,4 @@ dependencies:
   - pip
   - pip:
     - -e ./
+    - openai-pygenerator

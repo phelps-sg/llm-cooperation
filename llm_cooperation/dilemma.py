@@ -7,9 +7,14 @@ from typing import Callable, Dict, Iterable, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
-
-from llm_cooperation import gpt
-from llm_cooperation.gpt import user_message
+from openai_pygenerator import (
+    Completion,
+    Conversation,
+    History,
+    gpt_completions,
+    transcript,
+    user_message,
+)
 
 Group = Enum(
     "Group",
@@ -88,7 +93,7 @@ class Choices:
     ai: Choice
 
 
-Strategy = Callable[[List[gpt.Completion]], Choice]
+Strategy = Callable[[List[Completion]], Choice]
 ResultRow = Tuple[Group, str, str, int, float, List[Choices], List[str]]
 
 
@@ -128,16 +133,16 @@ logging.basicConfig(
 )
 
 
-def strategy_defect(_history: gpt.Conversation) -> Choice:
+def strategy_defect(_history: History) -> Choice:
     return Choice.D
 
 
-def strategy_cooperate(_history: gpt.Conversation) -> Choice:
+def strategy_cooperate(_history: History) -> Choice:
     return Choice.C
 
 
 def strategy_tit_for_tat(
-    history: List[gpt.Completion], initial_choice: Choice = Choice.C
+    history: List[Completion], initial_choice: Choice = Choice.C
 ) -> Choice:
     if len(history) == 2:
         return initial_choice
@@ -148,11 +153,11 @@ def strategy_tit_for_tat(
         return Choice.D
 
 
-def strategy_t4t_defect(history: List[gpt.Completion]) -> Choice:
+def strategy_t4t_defect(history: List[Completion]) -> Choice:
     return strategy_tit_for_tat(history, initial_choice=Choice.D)
 
 
-def strategy_t4t_cooperate(history: List[gpt.Completion]) -> Choice:
+def strategy_t4t_cooperate(history: List[Completion]) -> Choice:
     return strategy_tit_for_tat(history, initial_choice=Choice.C)
 
 
@@ -168,10 +173,10 @@ def run_prisoners_dilemma(
     num_rounds: int = NUM_ROUNDS,
     user_strategy: Strategy = strategy_defect,
     role_prompt: str = "You are a participant in a psychology experiment.",
-) -> gpt.Conversation:
+) -> Conversation:
     messages = [user_message(role_prompt + get_instruction_prompt(num_rounds))]
     for _round in range(num_rounds):
-        completion = gpt.generate_completions(messages)
+        completion = gpt_completions(messages)
         messages += completion
         user_choice = move_as_str(user_strategy(messages))
         messages += [
@@ -183,12 +188,8 @@ What is your choice for the next round?"""
     return messages
 
 
-def transcript(messages: gpt.Conversation) -> List[str]:
-    return [r["content"] for r in messages]
-
-
 def extract_choice(
-    completion: gpt.Completion, regex: str = r"project (blue|green)"
+    completion: Completion, regex: str = r"project (blue|green)"
 ) -> Choice:
     logger.debug("completion = %s", completion)
     lower = completion["content"].lower().strip()
@@ -215,7 +216,7 @@ def payoffs(
 
 
 def compute_scores(
-    conversation: List[gpt.Completion], payoff_matrix: np.matrix = PAYOFFS_PD
+    conversation: List[Completion], payoff_matrix: NDArray = PAYOFFS_PD
 ) -> Tuple[Scores, List[Choices]]:
     conversation = conversation[1:]
     num_messages = len(conversation)

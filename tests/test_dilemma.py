@@ -2,6 +2,7 @@ from typing import Iterable, List, Tuple
 from unittest.mock import Mock
 
 import pytest
+from openai_pygenerator import Completion
 
 from llm_cooperation.dilemma import (
     PAYOFFS_PD,
@@ -27,7 +28,6 @@ from llm_cooperation.dilemma import (
     strategy_t4t_cooperate,
     strategy_t4t_defect,
 )
-from llm_cooperation.gpt import Completion
 
 
 def make_completion(text: str) -> Completion:
@@ -188,9 +188,13 @@ def test_run_prisoners_dilemma(mocker):
     completions = [
         {"role": "assistant", "content": "project green"},
     ]
-    mocker.patch("llm_cooperation.gpt.generate_completions", return_value=completions)
-    conversation = list(
+    mocker.patch(
+        "openai_pygenerator.openai_pygenerator.generate_completions",
+        return_value=completions,
+    )
+    conversation: List[Completion] = list(
         run_prisoners_dilemma(num_rounds=3, user_strategy=strategy_defect)
     )
     assert len(conversation) == 7
+    # pylint: disable=unsubscriptable-object
     assert move_as_str(Choice.D) in conversation[-1]["content"]
