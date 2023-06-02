@@ -97,7 +97,7 @@ Strategy = Callable[[List[Completion]], Choice]
 ResultRow = Tuple[Group, str, str, int, float, List[Choices], List[str]]
 
 
-def get_instruction_prompt(n: int) -> str:
+def dilemma_instructions(n: int) -> str:
     cooperate = """'project green'"""
     defect = """'project blue'"""
 
@@ -170,11 +170,12 @@ def move_as_str(move: Choice) -> str:
 
 
 def run_single_game(
-    num_rounds: int = NUM_ROUNDS,
-    user_strategy: Strategy = strategy_defect,
-    role_prompt: str = "You are a participant in a psychology experiment.",
+    num_rounds: int,
+    user_strategy: Strategy,
+    generate_instruction_prompt: Callable[[int], str],
+    role_prompt: str,
 ) -> Conversation:
-    messages = [user_message(role_prompt + get_instruction_prompt(num_rounds))]
+    messages = [user_message(role_prompt + generate_instruction_prompt(num_rounds))]
     for _round in range(num_rounds):
         completion = gpt_completions(messages)
         messages += completion
@@ -239,10 +240,19 @@ def compute_scores(
 
 
 def run_sample(
-    prompt: str, strategy: Strategy, n: int
+    prompt: str,
+    strategy: Strategy,
+    num_samples: int,
+    num_rounds: int,
+    generate_instruction_prompt: Callable[[int], str],
 ) -> Iterable[Tuple[int, float, Optional[List[Choices]], List[str]]]:
-    for _i in range(n):
-        conversation = run_single_game(role_prompt=prompt, user_strategy=strategy)
+    for _i in range(num_samples):
+        conversation = run_single_game(
+            num_rounds=num_rounds,
+            role_prompt=prompt,
+            user_strategy=strategy,
+            generate_instruction_prompt=generate_instruction_prompt,
+        )
         history = transcript(conversation)
         try:
             scores, choices = compute_scores(list(conversation))
@@ -253,7 +263,10 @@ def run_sample(
 
 
 def run_experiment(
-    ai_participants: Dict[Group, List[str]], user_conditions: Dict[str, Strategy]
+    ai_participants: Dict[Group, List[str]],
+    user_conditions: Dict[str, Strategy],
+    num_rounds: int,
+    generate_instruction_prompt: Callable[[int], str],
 ) -> Iterable[ResultRow]:
     return (
         (group, prompt, strategy_name, score, freq, choices, history)
@@ -261,7 +274,11 @@ def run_experiment(
         for prompt in prompts
         for strategy_name, strategy_fn in user_conditions.items()
         for score, freq, choices, history in run_sample(
-            prompt, strategy_fn, SAMPLE_SIZE
+            prompt=prompt,
+            strategy=strategy_fn,
+            num_samples=SAMPLE_SIZE,
+            num_rounds=num_rounds,
+            generate_instruction_prompt=generate_instruction_prompt,
         )
     )
 
@@ -293,6 +310,8 @@ def main() -> None:
             "tit for tat C": strategy_t4t_cooperate,
             "tit for tat D": strategy_t4t_defect,
         },
+        num_rounds=NUM_ROUNDS,
+        generate_instruction_prompt=dilemma_instructions,
     )
     df = results_to_df(results)
     filename = "./results/dilemma.pickle"

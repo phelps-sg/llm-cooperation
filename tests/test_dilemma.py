@@ -16,8 +16,8 @@ from llm_cooperation.dilemma import (
     Scores,
     T,
     compute_scores,
+    dilemma_instructions,
     extract_choice,
-    get_instruction_prompt,
     move_as_str,
     payoffs,
     results_to_df,
@@ -87,7 +87,7 @@ def conversation() -> List[Completion]:
 
 def test_get_instruction_prompt():
     rounds = 6
-    prompt = get_instruction_prompt(rounds)
+    prompt = dilemma_instructions(rounds)
     assert f"{rounds} rounds" in prompt
     for payoff in [R, S, T, P]:
         assert f"${payoff}.00" in prompt
@@ -160,7 +160,14 @@ def test_run_experiment(mocker):
         "strategy_B": Mock(),
     }
 
-    result = list(run_experiment(ai_participants, user_conditions))
+    result = list(
+        run_experiment(
+            ai_participants,
+            user_conditions,
+            num_rounds=6,
+            generate_instruction_prompt=dilemma_instructions,
+        )
+    )
     assert len(result) == len(samples) * len(user_conditions) * 3
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)
 
@@ -193,7 +200,12 @@ def test_run_prisoners_dilemma(mocker):
         return_value=completions,
     )
     conversation: List[Completion] = list(
-        run_single_game(num_rounds=3, user_strategy=strategy_defect)
+        run_single_game(
+            num_rounds=3,
+            user_strategy=strategy_defect,
+            generate_instruction_prompt=dilemma_instructions,
+            role_prompt="You are a participant in a psychology experiment",
+        )
     )
     assert len(conversation) == 7
     # pylint: disable=unsubscriptable-object
