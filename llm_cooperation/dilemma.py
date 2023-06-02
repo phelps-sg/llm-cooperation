@@ -169,7 +169,7 @@ def move_as_str(move: Choice) -> str:
     raise ValueError(f"Invalid choice {move}")
 
 
-def run_prisoners_dilemma(
+def run_single_game(
     num_rounds: int = NUM_ROUNDS,
     user_strategy: Strategy = strategy_defect,
     role_prompt: str = "You are a participant in a psychology experiment.",
@@ -242,7 +242,7 @@ def run_sample(
     prompt: str, strategy: Strategy, n: int
 ) -> Iterable[Tuple[int, float, Optional[List[Choices]], List[str]]]:
     for _i in range(n):
-        conversation = run_prisoners_dilemma(role_prompt=prompt, user_strategy=strategy)
+        conversation = run_single_game(role_prompt=prompt, user_strategy=strategy)
         history = transcript(conversation)
         try:
             scores, choices = compute_scores(list(conversation))

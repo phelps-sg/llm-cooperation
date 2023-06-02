@@ -22,7 +22,7 @@ from llm_cooperation.dilemma import (
     payoffs,
     results_to_df,
     run_experiment,
-    run_prisoners_dilemma,
+    run_single_game,
     strategy_cooperate,
     strategy_defect,
     strategy_t4t_cooperate,
@@ -193,7 +193,7 @@ def test_run_prisoners_dilemma(mocker):
         return_value=completions,
     )
     conversation: List[Completion] = list(
-        run_prisoners_dilemma(num_rounds=3, user_strategy=strategy_defect)
+        run_single_game(num_rounds=3, user_strategy=strategy_defect)
     )
     assert len(conversation) == 7
     # pylint: disable=unsubscriptable-object
