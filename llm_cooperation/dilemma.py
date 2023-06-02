@@ -76,9 +76,12 @@ PAYOFFS_PD = np.array([[R, S], [T, P]])
 logger = logging.getLogger(__name__)
 
 
-class Choice(Enum):
+class DilemmaChoice(Enum):
     C = auto()
     D = auto()
+
+
+Choice = DilemmaChoice
 
 
 @dataclass
@@ -93,7 +96,7 @@ class Choices:
     ai: Choice
 
 
-Strategy = Callable[[List[Completion]], Choice]
+Strategy = Callable[[List[Completion]], DilemmaChoice]
 ResultRow = Tuple[Group, str, str, int, float, List[Choices], List[str]]
 
 
@@ -133,38 +136,38 @@ logging.basicConfig(
 )
 
 
-def strategy_defect(_history: History) -> Choice:
-    return Choice.D
+def strategy_defect(_history: History) -> DilemmaChoice:
+    return DilemmaChoice.D
 
 
-def strategy_cooperate(_history: History) -> Choice:
-    return Choice.C
+def strategy_cooperate(_history: History) -> DilemmaChoice:
+    return DilemmaChoice.C
 
 
 def strategy_tit_for_tat(
-    history: List[Completion], initial_choice: Choice = Choice.C
-) -> Choice:
+    history: List[Completion], initial_choice: DilemmaChoice = DilemmaChoice.C
+) -> DilemmaChoice:
     if len(history) == 2:
         return initial_choice
     ai_choice = extract_choice(history[-2])
-    if ai_choice == Choice.C:
-        return Choice.C
+    if ai_choice == DilemmaChoice.C:
+        return DilemmaChoice.C
     else:
-        return Choice.D
+        return DilemmaChoice.D
 
 
-def strategy_t4t_defect(history: List[Completion]) -> Choice:
-    return strategy_tit_for_tat(history, initial_choice=Choice.D)
+def strategy_t4t_defect(history: List[Completion]) -> DilemmaChoice:
+    return strategy_tit_for_tat(history, initial_choice=DilemmaChoice.D)
 
 
-def strategy_t4t_cooperate(history: List[Completion]) -> Choice:
-    return strategy_tit_for_tat(history, initial_choice=Choice.C)
+def strategy_t4t_cooperate(history: List[Completion]) -> DilemmaChoice:
+    return strategy_tit_for_tat(history, initial_choice=DilemmaChoice.C)
 
 
-def move_as_str(move: Choice) -> str:
-    if move == Choice.D:
+def move_as_str(move: DilemmaChoice) -> str:
+    if move == DilemmaChoice.D:
         return "Project Blue"
-    elif move == Choice.C:
+    elif move == DilemmaChoice.C:
         return "Project Green"
     raise ValueError(f"Invalid choice {move}")
 
@@ -191,23 +194,23 @@ What is your choice for the next round?"""
 
 def extract_choice(
     completion: Completion, regex: str = r"project (blue|green)"
-) -> Choice:
+) -> DilemmaChoice:
     logger.debug("completion = %s", completion)
     lower = completion["content"].lower().strip()
     choice_match = re.search(regex, lower)
     if choice_match:
         choice = choice_match.group(1)
         if choice == "green":
-            return Choice.C
+            return DilemmaChoice.C
         elif choice == "blue":
-            return Choice.D
+            return DilemmaChoice.D
     raise ValueError(f"Could not match choice in {completion}")
 
 
 def payoffs(
-    player1: Choice, player2: Choice, payoff_matrix: NDArray
+    player1: DilemmaChoice, player2: DilemmaChoice, payoff_matrix: NDArray
 ) -> Tuple[int, int]:
-    def i(m: Choice) -> int:
+    def i(m: DilemmaChoice) -> int:
         return m.value - 1
 
     return (
@@ -256,7 +259,7 @@ def run_sample(
         history = transcript(conversation)
         try:
             scores, choices = compute_scores(list(conversation))
-            freq = len([c for c in choices if c.ai == Choice.C]) / len(choices)
+            freq = len([c for c in choices if c.ai == DilemmaChoice.C]) / len(choices)
             yield scores.ai, freq, choices, history
         except ValueError:
             yield 0, np.nan, None, history
