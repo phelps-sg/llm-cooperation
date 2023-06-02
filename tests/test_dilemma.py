@@ -16,10 +16,10 @@ from llm_cooperation.dilemma import (
     Scores,
     T,
     compute_scores,
-    dilemma_instructions,
     extract_choice,
     move_as_str,
     payoffs,
+    prisoners_dilemma_instructions,
     results_to_df,
     run_experiment,
     run_single_game,
@@ -87,7 +87,7 @@ def conversation() -> List[Completion]:
 
 def test_get_instruction_prompt():
     rounds = 6
-    prompt = dilemma_instructions(rounds)
+    prompt = prisoners_dilemma_instructions(rounds)
     assert f"{rounds} rounds" in prompt
     for payoff in [R, S, T, P]:
         assert f"${payoff}.00" in prompt
@@ -167,7 +167,7 @@ def test_run_experiment(mocker):
             ai_participants,
             user_conditions,
             num_rounds=6,
-            generate_instruction_prompt=dilemma_instructions,
+            generate_instruction_prompt=prisoners_dilemma_instructions,
         )
     )
     assert len(result) == len(samples) * len(user_conditions) * 3
@@ -205,7 +205,7 @@ def test_run_prisoners_dilemma(mocker):
         run_single_game(
             num_rounds=3,
             user_strategy=strategy_defect,
-            generate_instruction_prompt=dilemma_instructions,
+            generate_instruction_prompt=prisoners_dilemma_instructions,
             role_prompt="You are a participant in a psychology experiment",
         )
     )

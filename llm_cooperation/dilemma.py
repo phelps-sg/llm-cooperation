@@ -96,11 +96,11 @@ class Choices:
     ai: Choice
 
 
-Strategy = Callable[[List[Completion]], DilemmaChoice]
+Strategy = Callable[[List[Completion]], Choice]
 ResultRow = Tuple[Group, str, str, int, float, List[Choices], List[str]]
 
 
-def dilemma_instructions(n: int) -> str:
+def prisoners_dilemma_instructions(n: int) -> str:
     cooperate = """'project green'"""
     defect = """'project blue'"""
 
@@ -314,7 +314,7 @@ def main() -> None:
             "tit for tat D": strategy_t4t_defect,
         },
         num_rounds=NUM_ROUNDS,
-        generate_instruction_prompt=dilemma_instructions,
+        generate_instruction_prompt=prisoners_dilemma_instructions,
     )
     df = results_to_df(results)
     filename = "./results/dilemma.pickle"
