@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class Choice(ABC):
+    @property
     @abstractmethod
     def value(self) -> Hashable:
         pass
@@ -31,11 +32,11 @@ class Choice(ABC):
 
     def __eq__(self, o: object) -> bool:
         if issubclass(type(o), Choice):
-            return self.value().__eq__(o.value())  # type: ignore
+            return self.value.__eq__(o.value)  # type: ignore
         return False
 
     def __hash__(self) -> int:
-        return self.value().__hash__()
+        return self.value.__hash__()
 
 
 Group = Enum(
