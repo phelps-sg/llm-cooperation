@@ -7,7 +7,10 @@ from openai_pygenerator import Completion
 from llm_cooperation.dilemma import (
     PAYOFFS_PD,
     Choices,
+    Cooperate,
+    Defect,
     DilemmaChoice,
+    DilemmaEnum,
     Group,
     P,
     R,
@@ -37,12 +40,12 @@ def make_completion(text: str) -> Completion:
 
 @pytest.fixture
 def cooperate_choices() -> List[Choices]:
-    return [Choices(DilemmaChoice.C, DilemmaChoice.C) for _i in range(3)]
+    return [Choices(Cooperate, Cooperate) for _i in range(3)]
 
 
 @pytest.fixture
 def defect_choices() -> List[Choices]:
-    return [Choices(DilemmaChoice.D, DilemmaChoice.D) for _i in range(3)]
+    return [Choices(Defect, Defect) for _i in range(3)]
 
 
 @pytest.fixture
@@ -97,11 +100,11 @@ def test_get_instruction_prompt():
 @pytest.mark.parametrize(
     "completion, expected_move",
     [
-        (make_completion("project green"), DilemmaChoice.C),
-        (make_completion("project blue"), DilemmaChoice.D),
-        (make_completion("Project GREEN"), DilemmaChoice.C),
-        (make_completion("Project BLUE"), DilemmaChoice.D),
-        (make_completion("'project green'"), DilemmaChoice.C),
+        (make_completion("project green"), Cooperate),
+        (make_completion("project blue"), Defect),
+        (make_completion("Project GREEN"), Cooperate),
+        (make_completion("Project BLUE"), Defect),
+        (make_completion("'project green'"), Cooperate),
     ],
 )
 def test_extract_choice(completion, expected_move):
@@ -112,10 +115,10 @@ def test_extract_choice(completion, expected_move):
 @pytest.mark.parametrize(
     "user_choice, partner_choice, expected_payoffs",
     [
-        (DilemmaChoice.D, DilemmaChoice.C, (T, S)),
-        (DilemmaChoice.C, DilemmaChoice.C, (R, R)),
-        (DilemmaChoice.D, DilemmaChoice.D, (P, P)),
-        (DilemmaChoice.C, DilemmaChoice.D, (S, T)),
+        (Defect, Cooperate, (T, S)),
+        (Cooperate, Cooperate, (R, R)),
+        (Defect, Defect, (P, P)),
+        (Cooperate, Defect, (S, T)),
     ],
 )
 def test_payoffs(
@@ -131,14 +134,14 @@ def test_payoffs(
 @pytest.mark.parametrize(
     "strategy, index, expected",
     [
-        (strategy_cooperate, 5, DilemmaChoice.C),
-        (strategy_cooperate, 3, DilemmaChoice.C),
-        (strategy_defect, 5, DilemmaChoice.D),
-        (strategy_defect, 3, DilemmaChoice.D),
-        (strategy_t4t_cooperate, 5, DilemmaChoice.D),
-        (strategy_t4t_cooperate, 3, DilemmaChoice.C),
-        (strategy_t4t_cooperate, 2, DilemmaChoice.C),
-        (strategy_t4t_defect, 2, DilemmaChoice.D),
+        (strategy_cooperate, 5, Cooperate),
+        (strategy_cooperate, 3, Cooperate),
+        (strategy_defect, 5, Defect),
+        (strategy_defect, 3, Defect),
+        (strategy_t4t_cooperate, 5, Defect),
+        (strategy_t4t_cooperate, 3, Cooperate),
+        (strategy_t4t_cooperate, 2, Cooperate),
+        (strategy_t4t_defect, 2, Defect),
     ],
 )
 def test_strategy(strategy, index, expected, conversation):
@@ -148,9 +151,9 @@ def test_strategy(strategy, index, expected, conversation):
 def test_run_experiment(mocker):
     mock_run_sample = mocker.patch("llm_cooperation.dilemma.run_sample")
     samples = [
-        (5, 0.5, [DilemmaChoice.C], ["project green"]),
-        (3, 0.7, [DilemmaChoice.D], ["project blue"]),
-        (6, 0.6, [DilemmaChoice.D], ["project blue"]),
+        (5, 0.5, [Cooperate], ["project green"]),
+        (3, 0.7, [Defect], ["project blue"]),
+        (6, 0.6, [Defect], ["project blue"]),
     ]
     mock_run_sample.return_value = samples
 
@@ -176,6 +179,15 @@ def test_run_experiment(mocker):
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)
 
 
+def test_dilemma_choice():
+    c1 = DilemmaChoice(DilemmaEnum.C)
+    c2 = DilemmaChoice(DilemmaEnum.C)
+    d = DilemmaChoice(DilemmaEnum.D)
+    assert c1 == c2
+    assert c1 != d
+    assert Cooperate != Defect
+
+
 def test_results_to_df(results: Iterable[ResultRow]):
     df = results_to_df(results)
     assert len(df.columns) == 7
@@ -190,10 +202,10 @@ def test_compute_scores(conversation):
     )
     assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)
     assert moves == [
-        Choices(DilemmaChoice.D, DilemmaChoice.C),
-        Choices(DilemmaChoice.C, DilemmaChoice.D),
-        Choices(DilemmaChoice.D, DilemmaChoice.D),
-        Choices(DilemmaChoice.C, DilemmaChoice.D),
+        Choices(Defect, Cooperate),
+        Choices(Cooperate, Defect),
+        Choices(Defect, Defect),
+        Choices(Cooperate, Defect),
     ]
 
 
@@ -215,4 +227,4 @@ def test_run_prisoners_dilemma(mocker):
     )
     assert len(conversation) == 7
     # pylint: disable=unsubscriptable-object
-    assert move_as_str(DilemmaChoice.D) in conversation[-1]["content"]
+    assert move_as_str(Defect) in conversation[-1]["content"]
