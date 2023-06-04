@@ -4,6 +4,7 @@ from unittest.mock import Mock
 import pytest
 from openai_pygenerator import Completion
 
+from llm_cooperation import compute_scores, run_single_game
 from llm_cooperation.dilemma import (
     PAYOFFS_PD,
     Choices,
@@ -19,14 +20,11 @@ from llm_cooperation.dilemma import (
     Scores,
     T,
     analyse_round_prisoners_dilemma,
-    compute_scores,
     extract_choice,
-    move_as_str,
     payoffs,
     prisoners_dilemma_instructions,
     results_to_df,
     run_experiment,
-    run_single_game,
     strategy_cooperate,
     strategy_defect,
     strategy_t4t_cooperate,
@@ -227,4 +225,4 @@ def test_run_prisoners_dilemma(mocker):
     )
     assert len(conversation) == 7
     # pylint: disable=unsubscriptable-object
-    assert move_as_str(Defect) in conversation[-1]["content"]
+    assert Defect.render() in conversation[-1]["content"]
