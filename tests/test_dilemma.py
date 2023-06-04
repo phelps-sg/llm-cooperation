@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 from openai_pygenerator import Completion
 
-from llm_cooperation import compute_scores, run_single_game
+from llm_cooperation import Group, compute_scores, run_experiment, run_single_game
 from llm_cooperation.dilemma import (
     PAYOFFS_PD,
     Choices,
@@ -12,7 +12,6 @@ from llm_cooperation.dilemma import (
     Defect,
     DilemmaChoice,
     DilemmaEnum,
-    Group,
     P,
     R,
     ResultRow,
@@ -25,7 +24,6 @@ from llm_cooperation.dilemma import (
     payoffs,
     prisoners_dilemma_instructions,
     results_to_df,
-    run_experiment,
     strategy_cooperate,
     strategy_defect,
     strategy_t4t_cooperate,
@@ -148,7 +146,7 @@ def test_strategy(strategy, index, expected, conversation):
 
 
 def test_run_experiment(mocker):
-    mock_run_sample = mocker.patch("llm_cooperation.dilemma.run_sample")
+    mock_run_sample = mocker.patch("llm_cooperation.run_sample")
     samples = [
         (5, 0.5, [Cooperate], ["project green"]),
         (3, 0.7, [Defect], ["project blue"]),
@@ -170,6 +168,7 @@ def test_run_experiment(mocker):
             ai_participants,
             user_conditions,
             num_rounds=6,
+            num_samples=len(samples),
             generate_instruction_prompt=prisoners_dilemma_instructions,
             analyse_round=analyse_round_prisoners_dilemma,
             compute_freq=compute_freq_prisoners_dilemma,

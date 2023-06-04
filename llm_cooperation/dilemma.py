@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import re
 from enum import Enum, auto
-from typing import Callable, Dict, Iterable, List, Tuple
+from typing import Iterable, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -14,11 +14,9 @@ from llm_cooperation import (
     AI_PARTICIPANTS,
     Choice,
     Choices,
-    Group,
     ResultRow,
     Scores,
-    Strategy,
-    run_sample,
+    run_experiment,
 )
 
 SAMPLE_SIZE = 30
@@ -172,31 +170,6 @@ def compute_freq_prisoners_dilemma(choices: List[Choices]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
-def run_experiment(
-    ai_participants: Dict[Group, List[str]],
-    user_conditions: Dict[str, Strategy],
-    num_rounds: int,
-    generate_instruction_prompt: Callable[[int], str],
-    analyse_round: Callable[[int, List[Completion]], Tuple[Scores, Choices]],
-    compute_freq: Callable[[List[Choices]], float],
-) -> Iterable[ResultRow]:
-    return (
-        (group, prompt, strategy_name, score, freq, choices, history)
-        for group, prompts in ai_participants.items()
-        for prompt in prompts
-        for strategy_name, strategy_fn in user_conditions.items()
-        for score, freq, choices, history in run_sample(
-            prompt=prompt,
-            strategy=strategy_fn,
-            num_samples=SAMPLE_SIZE,
-            num_rounds=num_rounds,
-            generate_instruction_prompt=generate_instruction_prompt,
-            analyse_round=analyse_round,
-            compute_freq=compute_freq,
-        )
-    )
-
-
 def results_to_df(results: Iterable[ResultRow]) -> pd.DataFrame:
     return pd.DataFrame(
         [
@@ -225,6 +198,7 @@ def main() -> None:
             "tit for tat D": strategy_t4t_defect,
         },
         num_rounds=NUM_ROUNDS,
+        num_samples=SAMPLE_SIZE,
         generate_instruction_prompt=prisoners_dilemma_instructions,
         analyse_round=analyse_round_prisoners_dilemma,
         compute_freq=compute_freq_prisoners_dilemma,

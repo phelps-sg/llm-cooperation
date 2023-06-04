@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Hashable, Iterable, List, Optional, Tuple
+from typing import Callable, Dict, Hashable, Iterable, List, Optional, Tuple
 
 import numpy as np
 from openai_pygenerator import (
@@ -167,3 +167,29 @@ def run_sample(
             yield scores.ai, freq, choices, history
         except ValueError:
             yield 0, np.nan, None, history
+
+
+def run_experiment(
+    ai_participants: Dict[Group, List[str]],
+    user_conditions: Dict[str, Strategy],
+    num_rounds: int,
+    num_samples: int,
+    generate_instruction_prompt: Callable[[int], str],
+    analyse_round: Callable[[int, List[Completion]], Tuple[Scores, Choices]],
+    compute_freq: Callable[[List[Choices]], float],
+) -> Iterable[ResultRow]:
+    return (
+        (group, prompt, strategy_name, score, freq, choices, history)
+        for group, prompts in ai_participants.items()
+        for prompt in prompts
+        for strategy_name, strategy_fn in user_conditions.items()
+        for score, freq, choices, history in run_sample(
+            prompt=prompt,
+            strategy=strategy_fn,
+            num_samples=num_samples,
+            num_rounds=num_rounds,
+            generate_instruction_prompt=generate_instruction_prompt,
+            analyse_round=analyse_round,
+            compute_freq=compute_freq,
+        )
+    )
