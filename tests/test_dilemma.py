@@ -20,6 +20,7 @@ from llm_cooperation.dilemma import (
     Scores,
     T,
     analyse_round_prisoners_dilemma,
+    compute_freq_prisoners_dilemma,
     extract_choice,
     payoffs,
     prisoners_dilemma_instructions,
@@ -171,6 +172,7 @@ def test_run_experiment(mocker):
             num_rounds=6,
             generate_instruction_prompt=prisoners_dilemma_instructions,
             analyse_round=analyse_round_prisoners_dilemma,
+            compute_freq=compute_freq_prisoners_dilemma,
         )
     )
     assert len(result) == len(samples) * len(user_conditions) * 3

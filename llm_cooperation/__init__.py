@@ -3,9 +3,16 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Hashable, List, Tuple
+from typing import Callable, Hashable, Iterable, List, Optional, Tuple
 
-from openai_pygenerator import Completion, Conversation, gpt_completions, user_message
+import numpy as np
+from openai_pygenerator import (
+    Completion,
+    Conversation,
+    gpt_completions,
+    transcript,
+    user_message,
+)
 
 
 class Choice(ABC):
@@ -135,3 +142,28 @@ def compute_scores(
     user_score = sum((scores.user for scores, _ in rounds))
     ai_score = sum((scores.ai for scores, _ in rounds))
     return Scores(user_score, ai_score), [choices for _, choices in rounds]
+
+
+def run_sample(
+    prompt: str,
+    strategy: Strategy,
+    num_samples: int,
+    num_rounds: int,
+    generate_instruction_prompt: Callable[[int], str],
+    analyse_round: Callable[[int, List[Completion]], Tuple[Scores, Choices]],
+    compute_freq: Callable[[List[Choices]], float],
+) -> Iterable[Tuple[int, float, Optional[List[Choices]], List[str]]]:
+    for _i in range(num_samples):
+        conversation = run_single_game(
+            num_rounds=num_rounds,
+            role_prompt=prompt,
+            user_strategy=strategy,
+            generate_instruction_prompt=generate_instruction_prompt,
+        )
+        history = transcript(conversation)
+        try:
+            scores, choices = compute_scores(list(conversation), analyse_round)
+            freq = compute_freq(choices)
+            yield scores.ai, freq, choices, history
+        except ValueError:
+            yield 0, np.nan, None, history

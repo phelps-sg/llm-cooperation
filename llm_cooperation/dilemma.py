@@ -3,12 +3,12 @@ from __future__ import annotations
 import logging
 import re
 from enum import Enum, auto
-from typing import Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Callable, Dict, Iterable, List, Tuple
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
-from openai_pygenerator import Completion, History, transcript
+from openai_pygenerator import Completion, History
 
 from llm_cooperation import (
     AI_PARTICIPANTS,
@@ -18,8 +18,7 @@ from llm_cooperation import (
     ResultRow,
     Scores,
     Strategy,
-    compute_scores,
-    run_single_game,
+    run_sample,
 )
 
 SAMPLE_SIZE = 30
@@ -169,28 +168,8 @@ def analyse_round_prisoners_dilemma(
     return Scores(user, ai), Choices(user_choice, ai_choice)
 
 
-def run_sample(
-    prompt: str,
-    strategy: Strategy,
-    num_samples: int,
-    num_rounds: int,
-    generate_instruction_prompt: Callable[[int], str],
-    analyse_round: Callable[[int, List[Completion]], Tuple[Scores, Choices]],
-) -> Iterable[Tuple[int, float, Optional[List[Choices]], List[str]]]:
-    for _i in range(num_samples):
-        conversation = run_single_game(
-            num_rounds=num_rounds,
-            role_prompt=prompt,
-            user_strategy=strategy,
-            generate_instruction_prompt=generate_instruction_prompt,
-        )
-        history = transcript(conversation)
-        try:
-            scores, choices = compute_scores(list(conversation), analyse_round)
-            freq = len([c for c in choices if c.ai == Cooperate]) / len(choices)
-            yield scores.ai, freq, choices, history
-        except ValueError:
-            yield 0, np.nan, None, history
+def compute_freq_prisoners_dilemma(choices: List[Choices]) -> float:
+    return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
 def run_experiment(
@@ -199,6 +178,7 @@ def run_experiment(
     num_rounds: int,
     generate_instruction_prompt: Callable[[int], str],
     analyse_round: Callable[[int, List[Completion]], Tuple[Scores, Choices]],
+    compute_freq: Callable[[List[Choices]], float],
 ) -> Iterable[ResultRow]:
     return (
         (group, prompt, strategy_name, score, freq, choices, history)
@@ -212,6 +192,7 @@ def run_experiment(
             num_rounds=num_rounds,
             generate_instruction_prompt=generate_instruction_prompt,
             analyse_round=analyse_round,
+            compute_freq=compute_freq,
         )
     )
 
@@ -246,6 +227,7 @@ def main() -> None:
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=prisoners_dilemma_instructions,
         analyse_round=analyse_round_prisoners_dilemma,
+        compute_freq=compute_freq_prisoners_dilemma,
     )
     df = results_to_df(results)
     filename = "./results/dilemma.pickle"
