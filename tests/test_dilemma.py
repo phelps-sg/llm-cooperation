@@ -18,11 +18,11 @@ from llm_cooperation.dilemma import (
     S,
     Scores,
     T,
-    analyse_round_prisoners_dilemma,
-    compute_freq_prisoners_dilemma,
+    analyse_round_pd,
+    compute_freq_pd,
     extract_choice,
+    get_prompt_pd,
     payoffs,
-    prisoners_dilemma_instructions,
     results_to_df,
     strategy_cooperate,
     strategy_defect,
@@ -88,7 +88,7 @@ def conversation() -> List[Completion]:
 
 def test_get_instruction_prompt():
     rounds = 6
-    prompt = prisoners_dilemma_instructions(rounds)
+    prompt = get_prompt_pd(rounds)
     assert f"{rounds} rounds" in prompt
     for payoff in [R, S, T, P]:
         assert f"${payoff}.00" in prompt
@@ -169,9 +169,9 @@ def test_run_experiment(mocker):
             user_conditions,
             num_rounds=6,
             num_samples=len(samples),
-            generate_instruction_prompt=prisoners_dilemma_instructions,
-            analyse_round=analyse_round_prisoners_dilemma,
-            compute_freq=compute_freq_prisoners_dilemma,
+            generate_instruction_prompt=get_prompt_pd,
+            analyse_round=analyse_round_pd,
+            compute_freq=compute_freq_pd,
         )
     )
     assert len(result) == len(samples) * len(user_conditions) * 3
@@ -196,9 +196,7 @@ def test_results_to_df(results: Iterable[ResultRow]):
 
 
 def test_compute_scores(conversation):
-    scores, moves = compute_scores(
-        conversation, analyse_round=analyse_round_prisoners_dilemma
-    )
+    scores, moves = compute_scores(conversation, analyse_round=analyse_round_pd)
     assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)
     assert moves == [
         Choices(Defect, Cooperate),
@@ -220,7 +218,7 @@ def test_run_prisoners_dilemma(mocker):
         run_single_game(
             num_rounds=3,
             user_strategy=strategy_defect,
-            generate_instruction_prompt=prisoners_dilemma_instructions,
+            generate_instruction_prompt=get_prompt_pd,
             role_prompt="You are a participant in a psychology experiment",
         )
     )

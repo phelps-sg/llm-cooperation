@@ -55,7 +55,7 @@ Cooperate = DilemmaChoice(DilemmaEnum.C)
 Defect = DilemmaChoice(DilemmaEnum.D)
 
 
-def prisoners_dilemma_instructions(n: int) -> str:
+def get_prompt_pd(n: int) -> str:
     cooperate = """'project green'"""
     defect = """'project blue'"""
 
@@ -154,7 +154,7 @@ def payoffs(
     )
 
 
-def analyse_round_prisoners_dilemma(
+def analyse_round_pd(
     i: int, conversation: List[Completion], payoff_matrix: NDArray = PAYOFFS_PD
 ) -> Tuple[Scores, Choices]:
     assert conversation[i * 2]["role"] == "assistant"
@@ -166,7 +166,7 @@ def analyse_round_prisoners_dilemma(
     return Scores(user, ai), Choices(user_choice, ai_choice)
 
 
-def compute_freq_prisoners_dilemma(choices: List[Choices]) -> float:
+def compute_freq_pd(choices: List[Choices]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
@@ -199,9 +199,9 @@ def main() -> None:
         },
         num_rounds=NUM_ROUNDS,
         num_samples=SAMPLE_SIZE,
-        generate_instruction_prompt=prisoners_dilemma_instructions,
-        analyse_round=analyse_round_prisoners_dilemma,
-        compute_freq=compute_freq_prisoners_dilemma,
+        generate_instruction_prompt=get_prompt_pd,
+        analyse_round=analyse_round_pd,
+        compute_freq=compute_freq_pd,
     )
     df = results_to_df(results)
     filename = "./results/dilemma.pickle"
