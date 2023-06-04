@@ -19,6 +19,10 @@ from llm_cooperation import (
     run_experiment,
 )
 
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
 SAMPLE_SIZE = 30
 NUM_ROUNDS = 6
 
@@ -84,11 +88,6 @@ Here is your investment partner.
 What is your first choice?
 Choice: [{defect} | {cooperate}]
 """
-
-
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
 
 
 def strategy_defect(_history: History) -> DilemmaChoice:
