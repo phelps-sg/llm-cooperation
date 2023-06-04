@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import re
 from enum import Enum, auto
-from typing import List, Tuple
+from typing import Iterable, List, Tuple
 
 import numpy as np
 from numpy.typing import NDArray
@@ -13,6 +13,7 @@ from llm_cooperation import (
     AI_PARTICIPANTS,
     Choice,
     Choices,
+    ResultRow,
     Scores,
     results_to_df,
     run_experiment,
@@ -168,8 +169,8 @@ def compute_freq_pd(choices: List[Choices]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
-def main() -> None:
-    results = run_experiment(
+def run_experiment_pd() -> Iterable[ResultRow]:
+    return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         user_conditions={
             "unconditional cooperate": strategy_cooperate,
@@ -183,6 +184,10 @@ def main() -> None:
         analyse_round=analyse_round_pd,
         compute_freq=compute_freq_pd,
     )
+
+
+def main() -> None:
+    results = run_experiment_pd()
     df = results_to_df(results)
     filename = "./results/dilemma.pickle"
     logger.info("Experiment complete, saving results to %s", filename)
