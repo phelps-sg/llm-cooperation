@@ -6,6 +6,7 @@ from enum import Enum
 from typing import Callable, Dict, Hashable, Iterable, List, Optional, Tuple
 
 import numpy as np
+import pandas as pd
 from openai_pygenerator import (
     Completion,
     Conversation,
@@ -192,4 +193,22 @@ def run_experiment(
             analyse_round=analyse_round,
             compute_freq=compute_freq,
         )
+    )
+
+
+def results_to_df(results: Iterable[ResultRow]) -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            (str(group), prompt, strategy_name, score, freq, choices, history)
+            for group, prompt, strategy_name, score, freq, choices, history in results
+        ],
+        columns=[
+            "Group",
+            "Participant",
+            "Condition",
+            "Score",
+            "Cooperation frequency",
+            "Choices",
+            "Transcript",
+        ],
     )

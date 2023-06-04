@@ -4,7 +4,14 @@ from unittest.mock import Mock
 import pytest
 from openai_pygenerator import Completion
 
-from llm_cooperation import Group, compute_scores, run_experiment, run_single_game
+from llm_cooperation import (
+    Group,
+    ResultRow,
+    compute_scores,
+    results_to_df,
+    run_experiment,
+    run_single_game,
+)
 from llm_cooperation.dilemma import (
     PAYOFFS_PD,
     Choices,
@@ -14,7 +21,6 @@ from llm_cooperation.dilemma import (
     DilemmaEnum,
     P,
     R,
-    ResultRow,
     S,
     Scores,
     T,
@@ -23,7 +29,6 @@ from llm_cooperation.dilemma import (
     extract_choice,
     get_prompt_pd,
     payoffs,
-    results_to_df,
     strategy_cooperate,
     strategy_defect,
     strategy_t4t_cooperate,

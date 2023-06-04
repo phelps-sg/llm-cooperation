@@ -3,10 +3,9 @@ from __future__ import annotations
 import logging
 import re
 from enum import Enum, auto
-from typing import Iterable, List, Tuple
+from typing import List, Tuple
 
 import numpy as np
-import pandas as pd
 from numpy.typing import NDArray
 from openai_pygenerator import Completion, History
 
@@ -14,8 +13,8 @@ from llm_cooperation import (
     AI_PARTICIPANTS,
     Choice,
     Choices,
-    ResultRow,
     Scores,
+    results_to_df,
     run_experiment,
 )
 
@@ -167,24 +166,6 @@ def analyse_round_pd(
 
 def compute_freq_pd(choices: List[Choices]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
-
-
-def results_to_df(results: Iterable[ResultRow]) -> pd.DataFrame:
-    return pd.DataFrame(
-        [
-            (str(group), prompt, strategy_name, score, freq, choices, history)
-            for group, prompt, strategy_name, score, freq, choices, history in results
-        ],
-        columns=[
-            "Group",
-            "Participant",
-            "Condition",
-            "Score",
-            "Cooperation frequency",
-            "Choices",
-            "Transcript",
-        ],
-    )
 
 
 def main() -> None:
