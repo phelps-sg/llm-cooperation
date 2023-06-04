@@ -5,6 +5,7 @@ channels:
 dependencies:
   - python=3.10
   - blackd
+  - evals
   - ipython
   - jupyter
   - jupytext
