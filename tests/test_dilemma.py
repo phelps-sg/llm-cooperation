@@ -15,6 +15,7 @@ from llm_cooperation.dilemma import (
     S,
     Scores,
     T,
+    analyse_round_prisoners_dilemma,
     compute_scores,
     extract_choice,
     move_as_str,
@@ -183,7 +184,9 @@ def test_results_to_df(results: Iterable[ResultRow]):
 
 
 def test_compute_scores(conversation):
-    scores, moves = compute_scores(conversation)
+    scores, moves = compute_scores(
+        conversation, analyse_round=analyse_round_prisoners_dilemma
+    )
     assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)
     assert moves == [
         Choices(DilemmaChoice.D, DilemmaChoice.C),

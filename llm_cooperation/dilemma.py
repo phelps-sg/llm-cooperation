@@ -219,24 +219,27 @@ def payoffs(
     )
 
 
+def analyse_round_prisoners_dilemma(
+    i: int, conversation: List[Completion], payoff_matrix: NDArray = PAYOFFS_PD
+) -> Tuple[Scores, Choices]:
+    assert conversation[i * 2]["role"] == "assistant"
+    ai_choice = extract_choice(conversation[i * 2])
+    user_choice = extract_choice(conversation[i * 2 + 1])
+    logger.debug("user_choice = %s", user_choice)
+    logger.debug("ai_choice = %s", ai_choice)
+    user, ai = payoffs(user_choice, ai_choice, payoff_matrix)
+    return Scores(user, ai), Choices(user_choice, ai_choice)
+
+
 def compute_scores(
-    conversation: List[Completion], payoff_matrix: NDArray = PAYOFFS_PD
+    conversation: List[Completion],
+    analyse_round: Callable[[int, List[Completion]], Tuple[Scores, Choices]],
 ) -> Tuple[Scores, List[Choices]]:
     conversation = conversation[1:]
     num_messages = len(conversation)
     if num_messages % 2 != 0:
         raise ValueError("Invalid conversation: The number of messages should be even.")
-
-    def analyse_round(i: int) -> Tuple[Scores, Choices]:
-        assert conversation[i * 2]["role"] == "assistant"
-        ai_choice = extract_choice(conversation[i * 2])
-        user_choice = extract_choice(conversation[i * 2 + 1])
-        logger.debug("user_choice = %s", user_choice)
-        logger.debug("ai_choice = %s", ai_choice)
-        user, ai = payoffs(user_choice, ai_choice, payoff_matrix)
-        return Scores(user, ai), Choices(user_choice, ai_choice)
-
-    rounds = [analyse_round(i) for i in range(num_messages // 2)]
+    rounds = [analyse_round(i, conversation) for i in range(num_messages // 2)]
     user_score = sum((scores.user for scores, _ in rounds))
     ai_score = sum((scores.ai for scores, _ in rounds))
     return Scores(user_score, ai_score), [choices for _, choices in rounds]
@@ -258,7 +261,9 @@ def run_sample(
         )
         history = transcript(conversation)
         try:
-            scores, choices = compute_scores(list(conversation))
+            scores, choices = compute_scores(
+                list(conversation), analyse_round=analyse_round_prisoners_dilemma
+            )
             freq = len([c for c in choices if c.ai == DilemmaChoice.C]) / len(choices)
             yield scores.ai, freq, choices, history
         except ValueError:
