@@ -251,6 +251,7 @@ def run_sample(
     num_samples: int,
     num_rounds: int,
     generate_instruction_prompt: Callable[[int], str],
+    analyse_round: Callable[[int, List[Completion]], Tuple[Scores, Choices]],
 ) -> Iterable[Tuple[int, float, Optional[List[Choices]], List[str]]]:
     for _i in range(num_samples):
         conversation = run_single_game(
@@ -261,9 +262,7 @@ def run_sample(
         )
         history = transcript(conversation)
         try:
-            scores, choices = compute_scores(
-                list(conversation), analyse_round=analyse_round_prisoners_dilemma
-            )
+            scores, choices = compute_scores(list(conversation), analyse_round)
             freq = len([c for c in choices if c.ai == DilemmaChoice.C]) / len(choices)
             yield scores.ai, freq, choices, history
         except ValueError:
@@ -275,6 +274,7 @@ def run_experiment(
     user_conditions: Dict[str, Strategy],
     num_rounds: int,
     generate_instruction_prompt: Callable[[int], str],
+    analyse_round: Callable[[int, List[Completion]], Tuple[Scores, Choices]],
 ) -> Iterable[ResultRow]:
     return (
         (group, prompt, strategy_name, score, freq, choices, history)
@@ -287,6 +287,7 @@ def run_experiment(
             num_samples=SAMPLE_SIZE,
             num_rounds=num_rounds,
             generate_instruction_prompt=generate_instruction_prompt,
+            analyse_round=analyse_round,
         )
     )
 
@@ -320,6 +321,7 @@ def main() -> None:
         },
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=prisoners_dilemma_instructions,
+        analyse_round=analyse_round_prisoners_dilemma,
     )
     df = results_to_df(results)
     filename = "./results/dilemma.pickle"

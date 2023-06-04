@@ -169,6 +169,7 @@ def test_run_experiment(mocker):
             user_conditions,
             num_rounds=6,
             generate_instruction_prompt=prisoners_dilemma_instructions,
+            analyse_round=analyse_round_prisoners_dilemma,
         )
     )
     assert len(result) == len(samples) * len(user_conditions) * 3
