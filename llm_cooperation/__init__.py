@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import os.path
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
@@ -14,6 +16,8 @@ from openai_pygenerator import (
     transcript,
     user_message,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class Choice(ABC):
@@ -194,6 +198,17 @@ def run_experiment(
             compute_freq=compute_freq,
         )
     )
+
+
+def run_and_record_experiment(
+    name: str, run: Callable[[], Iterable[ResultRow]]
+) -> Iterable[ResultRow]:
+    results = run()
+    df = results_to_df(results)
+    filename = os.path.join("results", f"{name}.pickle")
+    logger.info("Experiment complete, saving results to %s", filename)
+    df.to_pickle(filename)
+    return results
 
 
 def results_to_df(results: Iterable[ResultRow]) -> pd.DataFrame:

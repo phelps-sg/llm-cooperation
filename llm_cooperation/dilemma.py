@@ -15,7 +15,7 @@ from llm_cooperation import (
     Choices,
     ResultRow,
     Scores,
-    results_to_df,
+    run_and_record_experiment,
     run_experiment,
 )
 
@@ -186,13 +186,5 @@ def run_experiment_pd() -> Iterable[ResultRow]:
     )
 
 
-def main() -> None:
-    results = run_experiment_pd()
-    df = results_to_df(results)
-    filename = "./results/dilemma.pickle"
-    logger.info("Experiment complete, saving results to %s", filename)
-    df.to_pickle(filename)
-
-
 if __name__ == "__main__":
-    main()
+    run_and_record_experiment("dilemma", run_experiment_pd)
