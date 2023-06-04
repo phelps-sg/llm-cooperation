@@ -229,4 +229,4 @@ def test_run_prisoners_dilemma(mocker):
     )
     assert len(conversation) == 7
     # pylint: disable=unsubscriptable-object
-    assert Defect.render() in conversation[-1]["content"]
+    assert Defect.description in conversation[-1]["content"]

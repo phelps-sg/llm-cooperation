@@ -43,15 +43,20 @@ class DilemmaEnum(Enum):
 
 
 class DilemmaChoice(Choice):
-    def render(self) -> str:
-        return move_as_str(self.value)
-
     def __init__(self, value: DilemmaEnum):
         self._value = value
 
     @property
+    def description(self) -> str:
+        return move_as_str(self.value)
+
+    @property
     def value(self) -> DilemmaEnum:
         return self._value
+
+    @property
+    def as_int(self) -> int:
+        return self.value.value
 
 
 Cooperate = DilemmaChoice(DilemmaEnum.C)
@@ -144,7 +149,7 @@ def payoffs(
     player1: DilemmaChoice, player2: DilemmaChoice, payoff_matrix: NDArray
 ) -> Tuple[int, int]:
     def i(m: DilemmaChoice) -> int:
-        return m.value.value - 1
+        return m.as_int - 1
 
     return (
         payoff_matrix[i(player1), i(player2)],

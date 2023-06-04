@@ -26,8 +26,9 @@ class Choice(ABC):
     def value(self) -> Hashable:
         pass
 
+    @property
     @abstractmethod
-    def render(self) -> str:
+    def description(self) -> str:
         pass
 
     def __eq__(self, o: object) -> bool:
@@ -125,7 +126,7 @@ def run_single_game(
     for _round in range(num_rounds):
         completion = gpt_completions(messages)
         messages += completion
-        user_choice = user_strategy(messages).render()
+        user_choice = user_strategy(messages).description
         messages += [
             user_message(
                 f"Your partner chose {user_choice} in that round. "
