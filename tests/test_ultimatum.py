@@ -9,6 +9,8 @@ from llm_cooperation.ultimatum import (
     Accept,
     ProposerChoice,
     Reject,
+    ResponderChoice,
+    ResponderEnum,
     UltimatumChoice,
     amount_as_str,
     amount_from_str,
@@ -121,3 +123,12 @@ def test_compute_freq_ultimatum(choices: List[Choices], expected: float):
 )
 def test_cooperate(last_response: str, expected: Choice):
     assert strategy_cooperate([make_completion(last_response)]) == expected
+
+
+def test_ultimatum_choice():
+    assert ProposerChoice(10.0) == ProposerChoice(10.0)
+    assert ProposerChoice(0.0) != ProposerChoice(5.0)
+    assert ProposerChoice(10.0) != Accept
+    assert Accept != Reject
+    assert Accept == ResponderChoice(ResponderEnum.Accept)
+    assert Reject == ResponderChoice(ResponderEnum.Reject)
