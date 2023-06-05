@@ -7,13 +7,13 @@ from openai_pygenerator import Completion
 from llm_cooperation import (
     Group,
     ResultRow,
+    Scores,
     compute_scores,
     results_to_df,
     run_experiment,
     run_single_game,
 )
 from llm_cooperation.dilemma import (
-    PAYOFFS_PD,
     Choices,
     Cooperate,
     Defect,
@@ -22,13 +22,11 @@ from llm_cooperation.dilemma import (
     P,
     R,
     S,
-    Scores,
     T,
-    analyse_round_pd,
     compute_freq_pd,
-    extract_choice,
+    extract_choice_pd,
     get_prompt_pd,
-    payoffs,
+    payoffs_pd,
     strategy_cooperate,
     strategy_defect,
     strategy_t4t_cooperate,
@@ -106,8 +104,8 @@ def test_get_instruction_prompt():
         ("'project green'", Cooperate),
     ],
 )
-def test_extract_choice(text: str, expected_move: DilemmaChoice):
-    move = extract_choice(make_completion(text))
+def test_extract_choice_pd(text: str, expected_move: DilemmaChoice):
+    move = extract_choice_pd(make_completion(text))
     assert move == expected_move
 
 
@@ -125,8 +123,7 @@ def test_payoffs(
     partner_choice: DilemmaChoice,
     expected_payoffs: Tuple[int, int],
 ):
-    payoff_matrix = PAYOFFS_PD
-    user_payoff, partner_payoff = payoffs(user_choice, partner_choice, payoff_matrix)
+    user_payoff, partner_payoff = payoffs_pd(user_choice, partner_choice)
     assert (user_payoff, partner_payoff) == expected_payoffs
 
 
@@ -172,7 +169,8 @@ def test_run_experiment(mocker):
             num_rounds=6,
             num_samples=len(samples),
             generate_instruction_prompt=get_prompt_pd,
-            analyse_round=analyse_round_pd,
+            payoffs=payoffs_pd,
+            extract_choice=extract_choice_pd,
             compute_freq=compute_freq_pd,
         )
     )
@@ -198,7 +196,9 @@ def test_results_to_df(results: Iterable[ResultRow]):
 
 
 def test_compute_scores(conversation):
-    scores, moves = compute_scores(conversation, analyse_round=analyse_round_pd)
+    scores, moves = compute_scores(
+        conversation, payoffs=payoffs_pd, extract_choice=extract_choice_pd
+    )
     assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)
     assert moves == [
         Choices(Defect, Cooperate),

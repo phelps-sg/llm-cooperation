@@ -4,7 +4,6 @@ from enum import Enum, auto
 from typing import Iterable, List, Tuple
 
 import numpy as np
-from numpy.typing import NDArray
 from openai_pygenerator import Completion, History
 
 from llm_cooperation import (
@@ -12,7 +11,6 @@ from llm_cooperation import (
     Choice,
     Choices,
     ResultRow,
-    Scores,
     run_and_record_experiment,
     run_experiment,
 )
@@ -107,7 +105,7 @@ def strategy_tit_for_tat(
 ) -> DilemmaChoice:
     if len(history) == 2:
         return initial_choice
-    ai_choice = extract_choice(history[-2])
+    ai_choice = extract_choice_pd(history[-2])
     if ai_choice == Cooperate:
         return Cooperate
     else:
@@ -130,7 +128,7 @@ def move_as_str(move: DilemmaEnum) -> str:
     raise ValueError(f"Invalid choice {move}")
 
 
-def extract_choice(
+def extract_choice_pd(
     completion: Completion, regex: str = r"project (blue|green)"
 ) -> DilemmaChoice:
     logger.debug("completion = %s", completion)
@@ -145,28 +143,16 @@ def extract_choice(
     raise ValueError(f"Could not match choice in {completion}")
 
 
-def payoffs(
-    player1: DilemmaChoice, player2: DilemmaChoice, payoff_matrix: NDArray
-) -> Tuple[int, int]:
+def payoffs_pd(player1: Choice, player2: Choice) -> Tuple[int, int]:
     def i(m: DilemmaChoice) -> int:
         return m.as_int - 1
 
-    return (
-        payoff_matrix[i(player1), i(player2)],
-        payoff_matrix.T[i(player1), i(player2)],
-    )
-
-
-def analyse_round_pd(
-    i: int, conversation: List[Completion], payoff_matrix: NDArray = PAYOFFS_PD
-) -> Tuple[Scores, Choices]:
-    assert conversation[i * 2]["role"] == "assistant"
-    ai_choice = extract_choice(conversation[i * 2])
-    user_choice = extract_choice(conversation[i * 2 + 1])
-    logger.debug("user_choice = %s", user_choice)
-    logger.debug("ai_choice = %s", ai_choice)
-    user, ai = payoffs(user_choice, ai_choice, payoff_matrix)
-    return Scores(user, ai), Choices(user_choice, ai_choice)
+    if isinstance(player1, DilemmaChoice) and isinstance(player2, DilemmaChoice):
+        return (
+            PAYOFFS_PD[i(player1), i(player2)],
+            PAYOFFS_PD.T[i(player1), i(player2)],
+        )
+    raise ValueError("Type error")
 
 
 def compute_freq_pd(choices: List[Choices]) -> float:
@@ -185,7 +171,8 @@ def run_experiment_pd() -> Iterable[ResultRow]:
         num_rounds=NUM_ROUNDS,
         num_samples=SAMPLE_SIZE,
         generate_instruction_prompt=get_prompt_pd,
-        analyse_round=analyse_round_pd,
+        payoffs=payoffs_pd,
+        extract_choice=extract_choice_pd,
         compute_freq=compute_freq_pd,
     )
 

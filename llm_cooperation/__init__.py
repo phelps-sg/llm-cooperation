@@ -5,7 +5,17 @@ import os.path
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Dict, Hashable, Iterable, List, Optional, Tuple
+from typing import (
+    Callable,
+    Dict,
+    Generic,
+    Hashable,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+)
 
 import numpy as np
 import pandas as pd
@@ -139,13 +149,17 @@ What is your choice for the next round?"""
 
 def compute_scores(
     conversation: List[Completion],
-    analyse_round: Callable[[int, List[Completion]], Tuple[Scores, Choices]],
+    payoffs: Callable[[Choice, Choice], Tuple[int, int]],
+    extract_choice: Callable[[Completion], Choice],
 ) -> Tuple[Scores, List[Choices]]:
     conversation = conversation[1:]
     num_messages = len(conversation)
     if num_messages % 2 != 0:
         raise ValueError("Invalid conversation: The number of messages should be even.")
-    rounds = [analyse_round(i, conversation) for i in range(num_messages // 2)]
+    rounds = [
+        analyse_round(i, conversation, payoffs, extract_choice)
+        for i in range(num_messages // 2)
+    ]
     user_score = sum((scores.user for scores, _ in rounds))
     ai_score = sum((scores.ai for scores, _ in rounds))
     return Scores(user_score, ai_score), [choices for _, choices in rounds]
@@ -157,7 +171,8 @@ def run_sample(
     num_samples: int,
     num_rounds: int,
     generate_instruction_prompt: Callable[[int], str],
-    analyse_round: Callable[[int, List[Completion]], Tuple[Scores, Choices]],
+    payoffs: Callable[[Choice, Choice], Tuple[int, int]],
+    extract_choice: Callable[[Completion], Choice],
     compute_freq: Callable[[List[Choices]], float],
 ) -> Iterable[Tuple[int, float, Optional[List[Choices]], List[str]]]:
     for _i in range(num_samples):
@@ -169,7 +184,9 @@ def run_sample(
         )
         history = transcript(conversation)
         try:
-            scores, choices = compute_scores(list(conversation), analyse_round)
+            scores, choices = compute_scores(
+                list(conversation), payoffs, extract_choice
+            )
             freq = compute_freq(choices)
             yield scores.ai, freq, choices, history
         except ValueError:
@@ -182,7 +199,8 @@ def run_experiment(
     num_rounds: int,
     num_samples: int,
     generate_instruction_prompt: Callable[[int], str],
-    analyse_round: Callable[[int, List[Completion]], Tuple[Scores, Choices]],
+    payoffs: Callable[[Choice, Choice], Tuple[int, int]],
+    extract_choice: Callable[[Completion], Choice],
     compute_freq: Callable[[List[Choices]], float],
 ) -> Iterable[ResultRow]:
     return (
@@ -196,7 +214,8 @@ def run_experiment(
             num_samples=num_samples,
             num_rounds=num_rounds,
             generate_instruction_prompt=generate_instruction_prompt,
-            analyse_round=analyse_round,
+            payoffs=payoffs,
+            extract_choice=extract_choice,
             compute_freq=compute_freq,
         )
     )
@@ -229,3 +248,18 @@ def results_to_df(results: Iterable[ResultRow]) -> pd.DataFrame:
             "Transcript",
         ],
     )
+
+
+def analyse_round(
+    i: int,
+    conversation: List[Completion],
+    payoffs: Callable[[Choice, Choice], Tuple[int, int]],
+    extract_choice: Callable[[Completion], Choice],
+) -> Tuple[Scores, Choices]:
+    assert conversation[i * 2]["role"] == "assistant"
+    ai_choice = extract_choice(conversation[i * 2])
+    user_choice = extract_choice(conversation[i * 2 + 1])
+    logger.debug("user_choice = %s", user_choice)
+    logger.debug("ai_choice = %s", ai_choice)
+    user, ai = payoffs(user_choice, ai_choice)
+    return Scores(user, ai), Choices(user_choice, ai_choice)
