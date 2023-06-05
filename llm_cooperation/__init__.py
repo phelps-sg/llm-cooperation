@@ -102,8 +102,8 @@ AI_PARTICIPANTS = {
 
 @dataclass
 class Scores:
-    user: int
-    ai: int
+    user: float
+    ai: float
 
 
 @dataclass
@@ -113,7 +113,8 @@ class Choices:
 
 
 Strategy = Callable[[List[Completion]], Choice]
-ResultRow = Tuple[Group, str, str, int, float, List[Choices], List[str]]
+ResultRow = Tuple[Group, str, str, float, float, List[Choices], List[str]]
+Payoffs = Tuple[float, float]
 
 
 def run_single_game(
@@ -139,7 +140,7 @@ What is your choice for the next round?"""
 
 def compute_scores(
     conversation: List[Completion],
-    payoffs: Callable[[Choice, Choice], Tuple[int, int]],
+    payoffs: Callable[[Choice, Choice], Payoffs],
     extract_choice: Callable[[Completion], Choice],
 ) -> Tuple[Scores, List[Choices]]:
     conversation = conversation[1:]
@@ -161,10 +162,10 @@ def run_sample(
     num_samples: int,
     num_rounds: int,
     generate_instruction_prompt: Callable[[int], str],
-    payoffs: Callable[[Choice, Choice], Tuple[int, int]],
+    payoffs: Callable[[Choice, Choice], Payoffs],
     extract_choice: Callable[[Completion], Choice],
     compute_freq: Callable[[List[Choices]], float],
-) -> Iterable[Tuple[int, float, Optional[List[Choices]], List[str]]]:
+) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
     for _i in range(num_samples):
         conversation = run_single_game(
             num_rounds=num_rounds,
@@ -189,7 +190,7 @@ def run_experiment(
     num_rounds: int,
     num_samples: int,
     generate_instruction_prompt: Callable[[int], str],
-    payoffs: Callable[[Choice, Choice], Tuple[int, int]],
+    payoffs: Callable[[Choice, Choice], Payoffs],
     extract_choice: Callable[[Completion], Choice],
     compute_freq: Callable[[List[Choices]], float],
 ) -> Iterable[ResultRow]:
@@ -243,7 +244,7 @@ def results_to_df(results: Iterable[ResultRow]) -> pd.DataFrame:
 def analyse_round(
     i: int,
     conversation: List[Completion],
-    payoffs: Callable[[Choice, Choice], Tuple[int, int]],
+    payoffs: Callable[[Choice, Choice], Payoffs],
     extract_choice: Callable[[Completion], Choice],
 ) -> Tuple[Scores, Choices]:
     assert conversation[i * 2]["role"] == "assistant"
