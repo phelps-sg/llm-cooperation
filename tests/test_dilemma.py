@@ -34,10 +34,7 @@ from llm_cooperation.dilemma import (
     strategy_t4t_cooperate,
     strategy_t4t_defect,
 )
-
-
-def make_completion(text: str) -> Completion:
-    return {"content": text}
+from tests.common import make_completion
 
 
 @pytest.fixture
@@ -100,17 +97,17 @@ def test_get_instruction_prompt():
 
 
 @pytest.mark.parametrize(
-    "completion, expected_move",
+    "text, expected_move",
     [
-        (make_completion("project green"), Cooperate),
-        (make_completion("project blue"), Defect),
-        (make_completion("Project GREEN"), Cooperate),
-        (make_completion("Project BLUE"), Defect),
-        (make_completion("'project green'"), Cooperate),
+        ("project green", Cooperate),
+        ("project blue", Defect),
+        ("Project GREEN", Cooperate),
+        ("Project BLUE", Defect),
+        ("'project green'", Cooperate),
     ],
 )
-def test_extract_choice(completion, expected_move):
-    move = extract_choice(completion)
+def test_extract_choice(text: str, expected_move: DilemmaChoice):
+    move = extract_choice(make_completion(text))
     assert move == expected_move
 
 
