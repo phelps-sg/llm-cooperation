@@ -88,10 +88,12 @@ def conversation() -> List[Completion]:
 
 def test_get_instruction_prompt():
     rounds = 6
-    prompt = get_prompt_pd(rounds)
+    role_prompt = "You are a helpful assistant."
+    prompt = get_prompt_pd(rounds, role_prompt)
     assert f"{rounds} rounds" in prompt
     for payoff in [R, S, T, P]:
         assert f"${payoff}.00" in prompt
+    assert role_prompt in prompt
 
 
 @pytest.mark.parametrize(

@@ -84,7 +84,7 @@ dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
 
 
 def strategy_cooperate(history: History) -> UltimatumChoice:
-    prev = history[-1]
+    prev: Choice = extract_choice_ultimatum(history[-1])
     if isinstance(prev, ResponderChoice):
         return ProposerChoice(MAX_AMOUNT)
     elif isinstance(prev, ProposerChoice):
@@ -93,8 +93,10 @@ def strategy_cooperate(history: History) -> UltimatumChoice:
         raise ValueError(f"Unknown choice type: {prev}")
 
 
-def get_prompt_ultimatum(num_rounds: int) -> str:
-    return f"""This is a study of resource allocation choices. You will be making your decisions
+def get_prompt_ultimatum(num_rounds: int, role_prompt: str) -> str:
+    return f"""
+    {role_prompt}
+    This is a study of resource allocation choices. You will be making your decisions
     with another participant who is also taking part in this study.
     They are ready and waiting. In a moment I will bring you into the virtual room to meet them.
     You and your partner will participate in a total of {num_rounds} rounds of resource allocation decisions.
@@ -124,7 +126,9 @@ def get_prompt_ultimatum(num_rounds: int) -> str:
     When you are the responder, you only give
      Response: [accept/reject]
 
-    In the first round I will be the proposer and you will be the responder and then we will switch.
+    In the first round you will be the proposer and I will be the responder and then we will switch.
+
+    Remember, {role_prompt}. What is your proposal?
     """
 
 

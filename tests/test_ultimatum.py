@@ -5,6 +5,7 @@ import pytest
 
 from llm_cooperation import Choice, Choices, Payoffs
 from llm_cooperation.ultimatum import (
+    MAX_AMOUNT,
     Accept,
     ProposerChoice,
     Reject,
@@ -15,6 +16,7 @@ from llm_cooperation.ultimatum import (
     extract_choice_ultimatum,
     get_prompt_ultimatum,
     payoffs_ultimatum,
+    strategy_cooperate,
 )
 from tests.common import make_completion
 
@@ -28,8 +30,10 @@ def test_amount_as_str(amount: float, expected: str):
 
 def test_get_instruction_prompt():
     rounds = 6
-    prompt = get_prompt_ultimatum(rounds)
+    role_prompt = "You are a helpful assistant."
+    prompt = get_prompt_ultimatum(rounds, role_prompt)
     assert f"{rounds} rounds" in prompt
+    assert role_prompt in prompt
 
 
 @pytest.mark.parametrize(
@@ -103,3 +107,17 @@ def test_payoffs_ultimatum(player1: Choice, player2: Choice, expected: Payoffs):
 )
 def test_compute_freq_ultimatum(choices: List[Choices], expected: float):
     assert np.isclose(compute_freq_ultimatum(choices), expected)
+
+
+@pytest.mark.parametrize(
+    "last_response, expected",
+    [
+        ("accept", ProposerChoice(MAX_AMOUNT)),
+        ("reject", ProposerChoice(MAX_AMOUNT)),
+        ("$5.00", Accept),
+        ("$10.00", Accept),
+        ("$0.00", Accept),
+    ],
+)
+def test_cooperate(last_response: str, expected: Choice):
+    assert strategy_cooperate([make_completion(last_response)]) == expected

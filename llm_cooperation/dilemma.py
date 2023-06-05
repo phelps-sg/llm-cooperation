@@ -16,10 +16,6 @@ from llm_cooperation import (
     run_experiment,
 )
 
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-
 SAMPLE_SIZE = 30
 NUM_ROUNDS = 6
 
@@ -62,7 +58,7 @@ Cooperate = DilemmaChoice(DilemmaEnum.C)
 Defect = DilemmaChoice(DilemmaEnum.D)
 
 
-def get_prompt_pd(n: int) -> str:
+def get_prompt_pd(n: int, role_prompt: str) -> str:
     cooperate = """'project green'"""
     defect = """'project blue'"""
 
@@ -70,6 +66,7 @@ def get_prompt_pd(n: int) -> str:
         return f"${amount}.00"
 
     return f"""
+{role_prompt}
 This is a study of investment choices in different situations.
 You will be making your choices with an investment partner
 who is another person. She is in the next room waiting.

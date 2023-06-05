@@ -120,10 +120,10 @@ Payoffs = Tuple[float, float]
 def run_single_game(
     num_rounds: int,
     user_strategy: Strategy,
-    generate_instruction_prompt: Callable[[int], str],
+    generate_instruction_prompt: Callable[[int, str], str],
     role_prompt: str,
 ) -> History:
-    messages = [user_message(role_prompt + generate_instruction_prompt(num_rounds))]
+    messages = [user_message(generate_instruction_prompt(num_rounds, role_prompt))]
     for _round in range(num_rounds):
         completion = gpt_completions(messages)
         messages += completion
@@ -161,7 +161,7 @@ def run_sample(
     strategy: Strategy,
     num_samples: int,
     num_rounds: int,
-    generate_instruction_prompt: Callable[[int], str],
+    generate_instruction_prompt: Callable[[int, str], str],
     payoffs: Callable[[Choice, Choice], Payoffs],
     extract_choice: Callable[[Completion], Choice],
     compute_freq: Callable[[List[Choices]], float],
@@ -189,7 +189,7 @@ def run_experiment(
     user_conditions: Dict[str, Strategy],
     num_rounds: int,
     num_samples: int,
-    generate_instruction_prompt: Callable[[int], str],
+    generate_instruction_prompt: Callable[[int, str], str],
     payoffs: Callable[[Choice, Choice], Payoffs],
     extract_choice: Callable[[Completion], Choice],
     compute_freq: Callable[[List[Choices]], float],
@@ -215,6 +215,10 @@ def run_experiment(
 def run_and_record_experiment(
     name: str, run: Callable[[], Iterable[ResultRow]]
 ) -> Iterable[ResultRow]:
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
     results = run()
     df = results_to_df(results)
     filename = os.path.join("results", f"{name}.pickle")
