@@ -5,17 +5,7 @@ import os.path
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import (
-    Callable,
-    Dict,
-    Generic,
-    Hashable,
-    Iterable,
-    List,
-    Optional,
-    Tuple,
-    TypeVar,
-)
+from typing import Callable, Dict, Hashable, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
