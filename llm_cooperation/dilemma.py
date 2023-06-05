@@ -1,7 +1,7 @@
 import logging
 import re
 from enum import Enum, auto
-from typing import Iterable, List, Tuple
+from typing import Iterable, List
 
 import numpy as np
 from openai_pygenerator import Completion, History
@@ -10,6 +10,7 @@ from llm_cooperation import (
     AI_PARTICIPANTS,
     Choice,
     Choices,
+    Payoffs,
     ResultRow,
     run_and_record_experiment,
     run_experiment,
@@ -143,7 +144,7 @@ def extract_choice_pd(
     raise ValueError(f"Could not match choice in {completion}")
 
 
-def payoffs_pd(player1: Choice, player2: Choice) -> Tuple[int, int]:
+def payoffs_pd(player1: Choice, player2: Choice) -> Payoffs:
     def i(m: DilemmaChoice) -> int:
         return m.as_int - 1
 
