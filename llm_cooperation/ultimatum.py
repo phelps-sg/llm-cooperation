@@ -96,39 +96,39 @@ def strategy_cooperate(history: History) -> UltimatumChoice:
 def get_prompt_ultimatum(num_rounds: int, role_prompt: str) -> str:
     return f"""
     {role_prompt}
-    This is a study of resource allocation choices. You will be making your decisions
-    with another participant who is also taking part in this study.
-    They are ready and waiting. In a moment I will bring you into the virtual room to meet them.
-    You and your partner will participate in a total of {num_rounds} rounds of resource allocation decisions.
-    The objective is to earn as much virtual currency as possible in total across all rounds.
-    In each round you will play one of two roles: proposer or responder.
+This is a study of resource allocation choices. You will be making your decisions
+with another participant who is also taking part in this study.
+They are ready and waiting. In a moment I will bring you into the virtual room to meet them.
+You and your partner will participate in a total of {num_rounds} rounds of resource allocation decisions.
+The objective is to earn as much virtual currency as possible in total across all rounds.
+In each round you will play one of two roles: proposer or responder.
 
-    When you are the proposer, you get {amount_as_str(MAX_AMOUNT)} to share. You can choose to offer the responder
-    any amount from {amount_as_str(MIN_AMOUNT)} to {amount_as_str(MAX_AMOUNT)} for the responder to keep.
-    The proposer would keep the rest. This is based on the response of the responder.
+When you are the proposer, you get {amount_as_str(MAX_AMOUNT)} to share. You can choose to offer the responder
+any amount from {amount_as_str(MIN_AMOUNT)} to {amount_as_str(MAX_AMOUNT)} for the responder to keep.
+The proposer would keep the rest. This is based on the response of the responder.
 
-    When you are the responder, as responder you can either accept or reject the offer. If the responder accepts the
-    offer then they keep the offer and the proposer gets {amount_as_str(MAX_AMOUNT)} less
-    the offered amount.
+When you are the responder, as responder you can either accept or reject the offer. If the responder accepts the
+offer then they keep the offer and the proposer gets {amount_as_str(MAX_AMOUNT)} less
+the offered amount.
 
-    If the responder rejects the offer neither role gets any money. For example, if the proposer offered the
-    responder {amount_as_str(3)} and the responder accepted the offer, then the responder gets {amount_as_str(3)} and the
-    proposer gets {amount_as_str(7)}.
-    Therefore, the payoffs depend on your role. If the proposer offered the responder {amount_as_str(3)} and the
-    responder rejected the offer, then the proposer gets {amount_as_str(0)} and the responder gets {amount_as_str(0)}.
-    Both roles get {amount_as_str(0)} if the responder rejects the offer.
-    In every decision, you will act consistently with the role outlined earlier. Please note that there will be no
-    communication between you and your partner apart from the proposal or the decision to accept or reject.
+If the responder rejects the offer neither role gets any money. For example, if the proposer offered the
+responder {amount_as_str(3)} and the responder accepted the offer, then the responder gets {amount_as_str(3)}
+and the proposer gets {amount_as_str(7)}.
+Therefore, the payoffs depend on your role. If the proposer offered the responder {amount_as_str(3)} and the
+responder rejected the offer, then the proposer gets {amount_as_str(0)} and the responder gets {amount_as_str(0)}.
+Both roles get {amount_as_str(0)} if the responder rejects the offer.
+In every decision, you will act consistently with the role outlined earlier. Please note that there will be no
+communication between you and your partner apart from the proposal or the decision to accept or reject.
 
-    When you are the proposer you will only state the dollar amount you will offer.
-    Response: [{amount_as_str(0)} to {amount_as_str(10)}]
+When you are the proposer you will only state the dollar amount you will offer.
+Response: [{amount_as_str(0)} to {amount_as_str(10)}]
 
-    When you are the responder, you only give
-     Response: [accept/reject]
+When you are the responder, you only give
+Response: [accept/reject]
 
-    In the first round you will be the proposer and I will be the responder and then we will switch.
+In the first round you will be the proposer and I will be the responder and then we will switch.
 
-    Remember, {role_prompt}. What is your proposal?
+Remember, {role_prompt}. What is your proposal?
     """
 
 
