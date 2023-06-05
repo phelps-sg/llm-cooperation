@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from openai_pygenerator import (
     Completion,
-    Conversation,
+    History,
     gpt_completions,
     transcript,
     user_message,
@@ -121,7 +121,7 @@ def run_single_game(
     user_strategy: Strategy,
     generate_instruction_prompt: Callable[[int], str],
     role_prompt: str,
-) -> Conversation:
+) -> History:
     messages = [user_message(role_prompt + generate_instruction_prompt(num_rounds))]
     for _round in range(num_rounds):
         completion = gpt_completions(messages)
