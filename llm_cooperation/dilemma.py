@@ -16,8 +16,8 @@ from llm_cooperation import (
     run_experiment,
 )
 
-SAMPLE_SIZE = 30
-NUM_ROUNDS = 6
+SAMPLE_SIZE: int = 30
+NUM_ROUNDS: int = 6
 
 T = 7
 R = 5

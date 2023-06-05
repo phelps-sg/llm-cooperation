@@ -22,8 +22,8 @@ MIN_AMOUNT: float = 0.0
 # NUM_ROUNDS = 22
 # SAMPLE_SIZE = 30
 
-NUM_ROUNDS = 6
-SAMPLE_SIZE = 3
+NUM_ROUNDS: int = 6
+SAMPLE_SIZE: int = 3
 
 
 def amount_as_str(amount: float) -> str:
