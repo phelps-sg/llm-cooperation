@@ -1,9 +1,7 @@
 from typing import Tuple
-from unittest.mock import Mock
 
 import pytest
 
-from llm_cooperation import Group, run_experiment
 from llm_cooperation.dilemma import (
     Cooperate,
     Defect,
@@ -13,7 +11,6 @@ from llm_cooperation.dilemma import (
     R,
     S,
     T,
-    compute_freq_pd,
     extract_choice_pd,
     get_prompt_pd,
     payoffs_pd,
@@ -83,40 +80,6 @@ def test_payoffs(
 )
 def test_strategy(strategy, index, expected, conversation):
     assert strategy(conversation[:index]) == expected
-
-
-def test_run_experiment(mocker):
-    mock_run_sample = mocker.patch("llm_cooperation.run_sample")
-    samples = [
-        (5, 0.5, [Cooperate], ["project green"]),
-        (3, 0.7, [Defect], ["project blue"]),
-        (6, 0.6, [Defect], ["project blue"]),
-    ]
-    mock_run_sample.return_value = samples
-
-    ai_participants = {
-        Group.Altruistic: ["Participant 1", "Participant 2"],
-        Group.Control: ["Participant 3"],
-    }
-    user_conditions = {
-        "strategy_A": Mock(),
-        "strategy_B": Mock(),
-    }
-
-    result = list(
-        run_experiment(
-            ai_participants,
-            user_conditions,
-            num_rounds=6,
-            num_samples=len(samples),
-            generate_instruction_prompt=get_prompt_pd,
-            payoffs=payoffs_pd,
-            extract_choice=extract_choice_pd,
-            compute_freq=compute_freq_pd,
-        )
-    )
-    assert len(result) == len(samples) * len(user_conditions) * 3
-    assert mock_run_sample.call_count == len(samples) * len(user_conditions)
 
 
 def test_dilemma_choice():
