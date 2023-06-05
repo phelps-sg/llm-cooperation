@@ -191,4 +191,4 @@ def run_experiment_pd() -> Iterable[ResultRow]:
 
 
 if __name__ == "__main__":
-    run_and_record_experiment("dilemma", run_experiment_pd)
+    run_and_record_experiment(name="dilemma", run=run_experiment_pd)
