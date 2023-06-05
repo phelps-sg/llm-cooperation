@@ -1,7 +1,6 @@
-from typing import Tuple
-
 import pytest
 
+from llm_cooperation import Payoffs
 from llm_cooperation.dilemma import (
     Cooperate,
     Defect,
@@ -59,7 +58,7 @@ def test_extract_choice_pd(text: str, expected_move: DilemmaChoice):
 def test_payoffs(
     user_choice: DilemmaChoice,
     partner_choice: DilemmaChoice,
-    expected_payoffs: Tuple[int, int],
+    expected_payoffs: Payoffs,
 ):
     user_payoff, partner_payoff = payoffs_pd(user_choice, partner_choice)
     assert (user_payoff, partner_payoff) == expected_payoffs
