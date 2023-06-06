@@ -1,6 +1,8 @@
+import os
 from typing import Iterable, List
 from unittest.mock import Mock
 
+import pandas as pd
 import pytest
 from openai_pygenerator import Completion
 
@@ -11,6 +13,7 @@ from llm_cooperation import (
     Scores,
     compute_scores,
     results_to_df,
+    run_and_record_experiment,
     run_experiment,
     run_single_game,
 )
@@ -138,3 +141,17 @@ def test_run_experiment(mocker):
     )
     assert len(result) == len(samples) * len(user_conditions) * 3
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)
+
+
+def test_run_and_record_experiment(mocker, results):
+    def mock_run():
+        return results
+
+    df_mock = mocker.MagicMock(spec=pd.DataFrame)
+    mocker.patch("llm_cooperation.results_to_df", return_value=df_mock)
+    name = "test_experiment"
+
+    run_and_record_experiment(name, mock_run)
+
+    filename = os.path.join("results", f"{name}.pickle")
+    df_mock.to_pickle.assert_called_once_with(filename)
