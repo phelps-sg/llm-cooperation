@@ -1,3 +1,6 @@
+
+S. Phelps and Y. I. Russell, *Investigating Emergent Goal-Like Behaviour in Large Language Models Using Experimental Economics*, working paper, May 2023, [arXiv:2305.07970](https://arxiv.org/abs/2305.07970).
+
 # Abstract
 
 In this study, we investigate the capacity of large language models (LLMs), specifically GPT-3.5, to operationalize
