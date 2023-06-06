@@ -13,6 +13,7 @@ from openai_pygenerator import (
     Completion,
     History,
     gpt_completions,
+    is_assistant_role,
     transcript,
     user_message,
 )
@@ -251,7 +252,7 @@ def analyse_round(
     payoffs: Callable[[Choice, Choice], Payoffs],
     extract_choice: Callable[[Completion], Choice],
 ) -> Tuple[Scores, Choices]:
-    assert conversation[i * 2]["role"] == "assistant"
+    assert is_assistant_role(conversation[i * 2])
     ai_choice = extract_choice(conversation[i * 2])
     user_choice = extract_choice(conversation[i * 2 + 1])
     logger.debug("user_choice = %s", user_choice)
