@@ -134,7 +134,6 @@ Remember, {role_prompt}. What is your proposal?
 
 def amount_from_str(s: str) -> float:
     result = dollar_float_pattern.search(s)
-
     if result:
         return float(result.group(1))
     else:
