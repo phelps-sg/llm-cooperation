@@ -181,7 +181,8 @@ def run_sample(
             )
             freq = compute_freq(choices)
             yield scores.ai, freq, choices, history
-        except ValueError:
+        except ValueError as e:
+            logger.error("ValueError while running sample: %s", e)
             yield 0, np.nan, None, history
 
 
