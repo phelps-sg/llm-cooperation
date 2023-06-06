@@ -168,14 +168,14 @@ def run_sample(
     compute_freq: Callable[[List[Choices]], float],
 ) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
     for _i in range(num_samples):
-        conversation = run_single_game(
-            num_rounds=num_rounds,
-            role_prompt=prompt,
-            partner_strategy=partner_strategy,
-            generate_instruction_prompt=generate_instruction_prompt,
-        )
-        history = transcript(conversation)
         try:
+            conversation = run_single_game(
+                num_rounds=num_rounds,
+                role_prompt=prompt,
+                partner_strategy=partner_strategy,
+                generate_instruction_prompt=generate_instruction_prompt,
+            )
+            history = transcript(conversation)
             scores, choices = compute_scores(
                 list(conversation), payoffs, extract_choice
             )
