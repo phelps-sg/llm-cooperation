@@ -160,7 +160,7 @@ def compute_freq_pd(choices: List[Choices]) -> float:
 def run_experiment_pd() -> Iterable[ResultRow]:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
-        user_conditions={
+        partner_conditions={
             "unconditional cooperate": strategy_cooperate,
             "unconditional defect": strategy_defect,
             "tit for tat C": strategy_t4t_cooperate,

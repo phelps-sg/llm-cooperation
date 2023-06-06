@@ -119,7 +119,7 @@ Payoffs = Tuple[float, float]
 
 def run_single_game(
     num_rounds: int,
-    user_strategy: Strategy,
+    partner_strategy: Strategy,
     generate_instruction_prompt: Callable[[int, str], str],
     role_prompt: str,
 ) -> History:
@@ -127,7 +127,7 @@ def run_single_game(
     for _round in range(num_rounds):
         completion = gpt_completions(messages)
         messages += completion
-        user_choice = user_strategy(messages).description
+        user_choice = partner_strategy(messages).description
         messages += [
             user_message(
                 f"Your partner chose {user_choice} in that round. "
@@ -158,7 +158,7 @@ def compute_scores(
 
 def run_sample(
     prompt: str,
-    strategy: Strategy,
+    partner_strategy: Strategy,
     num_samples: int,
     num_rounds: int,
     generate_instruction_prompt: Callable[[int, str], str],
@@ -170,7 +170,7 @@ def run_sample(
         conversation = run_single_game(
             num_rounds=num_rounds,
             role_prompt=prompt,
-            user_strategy=strategy,
+            partner_strategy=partner_strategy,
             generate_instruction_prompt=generate_instruction_prompt,
         )
         history = transcript(conversation)
@@ -186,7 +186,7 @@ def run_sample(
 
 def run_experiment(
     ai_participants: Dict[Group, List[str]],
-    user_conditions: Dict[str, Strategy],
+    partner_conditions: Dict[str, Strategy],
     num_rounds: int,
     num_samples: int,
     generate_instruction_prompt: Callable[[int, str], str],
@@ -198,10 +198,10 @@ def run_experiment(
         (group, prompt, strategy_name, score, freq, choices, history)
         for group, prompts in ai_participants.items()
         for prompt in prompts
-        for strategy_name, strategy_fn in user_conditions.items()
+        for strategy_name, strategy_fn in partner_conditions.items()
         for score, freq, choices, history in run_sample(
             prompt=prompt,
-            strategy=strategy_fn,
+            partner_strategy=strategy_fn,
             num_samples=num_samples,
             num_rounds=num_rounds,
             generate_instruction_prompt=generate_instruction_prompt,

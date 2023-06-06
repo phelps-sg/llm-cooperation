@@ -179,7 +179,7 @@ def payoffs_ultimatum(player1: Choice, player2: Choice) -> Payoffs:
 def run_experiment_ultimatum() -> Iterable[ResultRow]:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
-        user_conditions={"cooperate": strategy_cooperate},
+        partner_conditions={"cooperate": strategy_cooperate},
         num_rounds=NUM_ROUNDS,
         num_samples=SAMPLE_SIZE,
         generate_instruction_prompt=get_prompt_ultimatum,

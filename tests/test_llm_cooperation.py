@@ -75,7 +75,7 @@ def test_run_single_game(mocker):
     conversation: List[Completion] = list(
         run_single_game(
             num_rounds=3,
-            user_strategy=strategy_defect,
+            partner_strategy=strategy_defect,
             generate_instruction_prompt=get_prompt_pd,
             role_prompt="You are a participant in a psychology experiment",
         )
