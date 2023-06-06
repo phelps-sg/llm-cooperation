@@ -183,7 +183,7 @@ def run_sample(
             yield scores.ai, freq, choices, history
         except ValueError as e:
             logger.error("ValueError while running sample: %s", e)
-            yield 0, np.nan, None, history
+            yield 0, np.nan, None, [str(e)]
 
 
 def run_experiment(
