@@ -5,7 +5,17 @@ import os.path
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Dict, Hashable, Iterable, List, Optional, Tuple
+from typing import (
+    Callable,
+    Dict,
+    Generic,
+    Hashable,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+)
 
 import numpy as np
 import pandas as pd
@@ -45,6 +55,8 @@ Group = Enum(
     "Group",
     ["Cooperative", "Competitive", "Altruistic", "Selfish", "Mixed", "Control"],
 )
+
+ChoiceType_contra = TypeVar("ChoiceType_contra", bound=Choice, contravariant=True)
 
 # pylint: disable=line-too-long
 AI_PARTICIPANTS = {
@@ -108,9 +120,9 @@ class Scores:
 
 
 @dataclass
-class Choices:
-    user: Choice
-    ai: Choice
+class Choices(Generic[ChoiceType_contra]):
+    user: ChoiceType_contra
+    ai: ChoiceType_contra
 
 
 Strategy = Callable[[List[Completion]], Choice]
@@ -141,8 +153,8 @@ What is your choice for the next round?"""
 
 def compute_scores(
     conversation: List[Completion],
-    payoffs: Callable[[Choice, Choice], Payoffs],
-    extract_choice: Callable[[Completion], Choice],
+    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
+    extract_choice: Callable[[Completion], ChoiceType_contra],
 ) -> Tuple[Scores, List[Choices]]:
     conversation = conversation[1:]
     num_messages = len(conversation)
@@ -163,8 +175,8 @@ def run_sample(
     num_samples: int,
     num_rounds: int,
     generate_instruction_prompt: Callable[[int, str], str],
-    payoffs: Callable[[Choice, Choice], Payoffs],
-    extract_choice: Callable[[Completion], Choice],
+    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
+    extract_choice: Callable[[Completion], ChoiceType_contra],
     compute_freq: Callable[[List[Choices]], float],
 ) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
     for _i in range(num_samples):
@@ -192,8 +204,8 @@ def run_experiment(
     num_rounds: int,
     num_samples: int,
     generate_instruction_prompt: Callable[[int, str], str],
-    payoffs: Callable[[Choice, Choice], Payoffs],
-    extract_choice: Callable[[Completion], Choice],
+    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
+    extract_choice: Callable[[Completion], ChoiceType_contra],
     compute_freq: Callable[[List[Choices]], float],
 ) -> Iterable[ResultRow]:
     return (
@@ -250,8 +262,8 @@ def results_to_df(results: Iterable[ResultRow]) -> pd.DataFrame:
 def analyse_round(
     i: int,
     conversation: List[Completion],
-    payoffs: Callable[[Choice, Choice], Payoffs],
-    extract_choice: Callable[[Completion], Choice],
+    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
+    extract_choice: Callable[[Completion], ChoiceType_contra],
 ) -> Tuple[Scores, Choices]:
     assert is_assistant_role(conversation[i * 2])
     ai_choice = extract_choice(conversation[i * 2])
@@ -260,3 +272,7 @@ def analyse_round(
     logger.debug("ai_choice = %s", ai_choice)
     user, ai = payoffs(user_choice, ai_choice)
     return Scores(user, ai), Choices(user_choice, ai_choice)
+
+
+def amount_as_str(amount: float) -> str:
+    return f"${amount:.02f}"

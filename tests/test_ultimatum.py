@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 import pytest
 
-from llm_cooperation import Choice, Choices, Payoffs
+from llm_cooperation import Choice, Choices, Payoffs, amount_as_str
 from llm_cooperation.ultimatum import (
     MAX_AMOUNT,
     Accept,
@@ -12,7 +12,6 @@ from llm_cooperation.ultimatum import (
     ResponderChoice,
     ResponderEnum,
     UltimatumChoice,
-    amount_as_str,
     amount_from_str,
     compute_freq_ultimatum,
     extract_choice_ultimatum,
@@ -95,7 +94,9 @@ def test_extract_choice(text: str, expected: UltimatumChoice):
         (Reject, ProposerChoice(0.0), (0.0, 0.0)),
     ],
 )
-def test_payoffs_ultimatum(player1: Choice, player2: Choice, expected: Payoffs):
+def test_payoffs_ultimatum(
+    player1: UltimatumChoice, player2: UltimatumChoice, expected: Payoffs
+):
     assert payoffs_ultimatum(player1, player2) == expected
 
 
