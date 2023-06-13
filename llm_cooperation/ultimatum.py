@@ -38,7 +38,7 @@ class UltimatumChoice(Choice, ABC):
 
 class ProposerChoice(UltimatumChoice):
     def __init__(self, value: float):
-        self._value = value
+        self._value: float = value
 
     @property
     def value(self) -> Hashable:
@@ -46,9 +46,7 @@ class ProposerChoice(UltimatumChoice):
 
     @property
     def amount(self) -> float:
-        if isinstance(self._value, float):
-            return self._value
-        raise ValueError("Type error")
+        return self._value
 
     @property
     def description(self) -> str:
