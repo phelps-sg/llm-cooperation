@@ -141,16 +141,14 @@ def extract_choice_pd(
     raise ValueError(f"Could not match choice in {completion}")
 
 
-def payoffs_pd(player1: Choice, player2: Choice) -> Payoffs:
+def payoffs_pd(player1: DilemmaChoice, player2: DilemmaChoice) -> Payoffs:
     def i(m: DilemmaChoice) -> int:
         return m.as_int - 1
 
-    if isinstance(player1, DilemmaChoice) and isinstance(player2, DilemmaChoice):
-        return (
-            PAYOFFS_PD[i(player1), i(player2)],
-            PAYOFFS_PD.T[i(player1), i(player2)],
-        )
-    raise ValueError("Type error")
+    return (
+        PAYOFFS_PD[i(player1), i(player2)],
+        PAYOFFS_PD.T[i(player1), i(player2)],
+    )
 
 
 def compute_freq_pd(choices: List[Choices]) -> float:

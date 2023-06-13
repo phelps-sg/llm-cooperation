@@ -12,6 +12,7 @@ from llm_cooperation import (
     Choices,
     Payoffs,
     ResultRow,
+    amount_as_str,
     run_and_record_experiment,
     run_experiment,
 )
@@ -24,10 +25,6 @@ MIN_AMOUNT: float = 0.0
 
 NUM_ROUNDS: int = 6
 SAMPLE_SIZE: int = 3
-
-
-def amount_as_str(amount: float) -> str:
-    return f"${amount:.02f}"
 
 
 class ResponderEnum(Enum):
@@ -140,7 +137,7 @@ def amount_from_str(s: str) -> float:
         raise ValueError(f"Cannot extract dollar amount from {s}")
 
 
-def extract_choice_ultimatum(completion: Completion) -> Choice:
+def extract_choice_ultimatum(completion: Completion) -> UltimatumChoice:
     content = completion["content"].lower().strip()
     if "accept" in content:
         return Accept
@@ -166,7 +163,7 @@ def _payoffs(proposer: ProposerChoice, responder: ResponderChoice) -> Payoffs:
         return remainder, offered
 
 
-def payoffs_ultimatum(player1: Choice, player2: Choice) -> Payoffs:
+def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Payoffs:
     if isinstance(player1, ProposerChoice) and isinstance(player2, ResponderChoice):
         return _payoffs(player1, player2)
     elif isinstance(player1, ResponderChoice) and isinstance(player2, ProposerChoice):
