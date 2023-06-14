@@ -126,7 +126,7 @@ Choice: [{choice_menu()}]
 """
 
 
-def extract_choice_ultimatum(completion: Completion) -> DictatorChoice:
+def extract_choice_dictator(completion: Completion) -> DictatorChoice:
     text = content(completion).lower()
     for key, value in reverse_color_mappings.items():
         if key in text:
@@ -142,12 +142,12 @@ def compute_freq_dictator(history: List[Choices[DictatorChoice]]) -> float:
     return float(np.mean([h.ai.payoff_allo for h in history]))
 
 
-def run_experiment_ultimatum() -> SingleShotResults:
+def run_experiment_dictator() -> SingleShotResults:
     return run_experiment_single_shot_game(
         ai_participants=AI_PARTICIPANTS,
         num_samples=SAMPLE_SIZE,
         generate_instruction_prompt=get_prompt_dictator,
-        extract_choice=extract_choice_ultimatum,
+        extract_choice=extract_choice_dictator,
         payoffs=payoffs_dictator,
         compute_freq=compute_freq_dictator,
     )

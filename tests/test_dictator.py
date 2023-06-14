@@ -15,7 +15,7 @@ from llm_cooperation.dictator import (
     choice_menu,
     compute_freq_dictator,
     describe_payoffs,
-    extract_choice_ultimatum,
+    extract_choice_dictator,
     get_prompt_dictator,
     payoffs_dictator,
 )
@@ -53,16 +53,14 @@ def test_dictator_choice(
         ("White", WHITE),
     ],
 )
-def test_extract_choice_ultimatum(text: str, expected_result: DictatorChoice):
+def test_extract_choice_dictator(text: str, expected_result: DictatorChoice):
+    assert extract_choice_dictator(user_message(f"'project {text}'")) == expected_result
     assert (
-        extract_choice_ultimatum(user_message(f"'project {text}'")) == expected_result
-    )
-    assert (
-        extract_choice_ultimatum(user_message(f"Project {text.upper()}"))
+        extract_choice_dictator(user_message(f"Project {text.upper()}"))
         == expected_result
     )
     assert (
-        extract_choice_ultimatum(user_message(f"Project {text.lower()}"))
+        extract_choice_dictator(user_message(f"Project {text.lower()}"))
         == expected_result
     )
 
