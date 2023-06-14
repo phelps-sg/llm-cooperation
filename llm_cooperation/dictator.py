@@ -4,12 +4,17 @@ from typing import Dict, Hashable
 from openai import Completion
 from openai_pygenerator import content
 
-from llm_cooperation import AI_PARTICIPANTS, Choice, amount_as_str
+from llm_cooperation import (
+    AI_PARTICIPANTS,
+    Choice,
+    amount_as_str,
+    run_and_record_experiment,
+)
 from llm_cooperation.oneshot import OneShotResults, run_experiment
 
 TOTAL_SHARE = 4
 
-SAMPLE_SIZE = 30
+SAMPLE_SIZE = 3
 
 
 class DictatorEnum(Enum):
@@ -139,3 +144,7 @@ def run_experiment_dictator() -> OneShotResults:
         payoffs=payoffs_dictator,
         compute_freq=compute_freq_dictator,
     )
+
+
+if __name__ == "__main__":
+    run_and_record_experiment(name="dictator", run=run_experiment_dictator)
