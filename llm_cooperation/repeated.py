@@ -14,7 +14,7 @@ from openai_pygenerator import (
 
 from llm_cooperation import (
     Choices,
-    ChoiceType_contra,
+    CT_contra,
     Group,
     Payoffs,
     PromptGenerator,
@@ -75,8 +75,8 @@ What is your choice for the next round?"""
 
 def compute_scores(
     conversation: List[Completion],
-    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
-    extract_choice: Callable[[Completion], ChoiceType_contra],
+    payoffs: Callable[[CT_contra, CT_contra], Payoffs],
+    extract_choice: Callable[[Completion], CT_contra],
 ) -> Tuple[Scores, List[Choices]]:
     conversation = conversation[1:]
     num_messages = len(conversation)
@@ -93,8 +93,8 @@ def compute_scores(
 
 def analyse(
     conversation: List[Completion],
-    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
-    extract_choice: Callable[[Completion], ChoiceType_contra],
+    payoffs: Callable[[CT_contra, CT_contra], Payoffs],
+    extract_choice: Callable[[Completion], CT_contra],
     compute_freq: Callable[[List[Choices]], float],
 ) -> Tuple[float, float, Optional[List[Choices]], List[str]]:
     try:
@@ -113,8 +113,8 @@ def generate_samples(
     num_rounds: int,
     partner_strategy: Strategy,
     generate_instruction_prompt: PromptGenerator,
-    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
-    extract_choice: Callable[[Completion], ChoiceType_contra],
+    payoffs: Callable[[CT_contra, CT_contra], Payoffs],
+    extract_choice: Callable[[Completion], CT_contra],
     compute_freq: Callable[[List[Choices]], float],
 ) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
     # pylint: disable=R0801
@@ -134,8 +134,8 @@ def run_experiment(
     num_rounds: int,
     num_samples: int,
     generate_instruction_prompt: Callable[[int, str], str],
-    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
-    extract_choice: Callable[[Completion], ChoiceType_contra],
+    payoffs: Callable[[CT_contra, CT_contra], Payoffs],
+    extract_choice: Callable[[Completion], CT_contra],
     compute_freq: Callable[[List[Choices]], float],
 ) -> RepeatedGameResults:
     return RepeatedGameResults(

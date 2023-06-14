@@ -44,7 +44,7 @@ class Results(ABC):
         pass
 
 
-ChoiceType_contra = TypeVar("ChoiceType_contra", bound=Choice, contravariant=True)
+CT_contra = TypeVar("CT_contra", bound=Choice, contravariant=True)
 
 # pylint: disable=line-too-long
 AI_PARTICIPANTS = {
@@ -108,9 +108,9 @@ class Scores:
 
 
 @dataclass
-class Choices(Generic[ChoiceType_contra]):
-    user: ChoiceType_contra
-    ai: ChoiceType_contra
+class Choices(Generic[CT_contra]):
+    user: CT_contra
+    ai: CT_contra
 
 
 Strategy = Callable[[List[Completion]], Choice]
@@ -135,8 +135,8 @@ def run_and_record_experiment(name: str, run: Callable[[], Results]) -> Results:
 def analyse_round(
     i: int,
     conversation: List[Completion],
-    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
-    extract_choice: Callable[[Completion], ChoiceType_contra],
+    payoffs: Callable[[CT_contra, CT_contra], Payoffs],
+    extract_choice: Callable[[Completion], CT_contra],
 ) -> Tuple[Scores, Choices]:
     assert is_assistant_role(conversation[i * 2])
     ai_choice = extract_choice(conversation[i * 2])
