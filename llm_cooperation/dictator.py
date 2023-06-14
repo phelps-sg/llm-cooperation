@@ -1,9 +1,22 @@
 from enum import Enum
-from typing import Hashable
+from typing import Dict, Hashable, Iterable, List
 
-from llm_cooperation import Choice
+import numpy as np
+from openai import Completion
+from openai_pygenerator import content
+
+from llm_cooperation import (
+    AI_PARTICIPANTS,
+    Choice,
+    Choices,
+    Payoffs,
+    ResultRow,
+    run_experiment,
+)
 
 TOTAL_SHARE = 4
+
+SAMPLE_SIZE = 30
 
 
 class DictatorEnum(Enum):
@@ -14,22 +27,28 @@ class DictatorEnum(Enum):
     WHITE = 4
 
 
+def project(color: str) -> str:
+    return f"project {color}"
+
+
+color_mappings: Dict[DictatorEnum, str] = {
+    DictatorEnum.BLACK: project("black"),
+    DictatorEnum.BROWN: project("brown"),
+    DictatorEnum.GREEN: project("green"),
+    DictatorEnum.BLUE: project("blue"),
+    DictatorEnum.WHITE: project("white"),
+}
+
+
+reverse_color_mappings: Dict[str, DictatorEnum] = {
+    value: key for key, value in color_mappings.items()
+}
+
+
 class DictatorChoice(Choice):
     @property
     def description(self) -> str:
-        def project(color: str) -> str:
-            return f"project {color}"
-
-        if self._value is DictatorEnum.BLACK:
-            return project("black")
-        elif self._value is DictatorEnum.BROWN:
-            return project("brown")
-        elif self._value is DictatorEnum.GREEN:
-            return project("green")
-        elif self._value is DictatorEnum.BLUE:
-            return project("blue")
-        elif self._value is DictatorEnum.WHITE:
-            return project("white")
+        return color_mappings[self._value]
 
     def __init__(self, value: DictatorEnum):
         self._value: DictatorEnum = value
@@ -57,6 +76,8 @@ green = DictatorChoice(DictatorEnum.GREEN)
 blue = DictatorChoice(DictatorEnum.BLUE)
 white = DictatorChoice(DictatorEnum.WHITE)
 
+all_dictator_choices = [black, brown, green, blue, white]
+
 
 def payout(amount: float) -> str:
     return f"${amount}.00"
@@ -77,7 +98,8 @@ and your partner will also earn {payout_allo(choice)}.
     """
 
 
-def get_prompt_dictator(role_prompt: str) -> str:
+def get_prompt_dictator(n: int, role_prompt: str) -> str:
+    assert n == 1
     return f"""
 {role_prompt}
 This is a study of investment choices in different situations.
@@ -99,3 +121,32 @@ final and cannot be changed after you have made it. Here is your investment
 partner. What is your choice? Choice: [‘project black’ | ‘project brown’ | ‘project
 green’ | ‘project blue’ | ‘project white’]
 """
+
+
+def extract_choice_ultimatum(completion: Completion) -> DictatorChoice:
+    text = content(completion).lower()
+    for key, value in reverse_color_mappings.items():
+        if key in text:
+            return DictatorChoice(value)
+    raise ValueError(f"Cannot determine choice from {completion}")
+
+
+def payoffs_dictator(player1: DictatorChoice, _: DictatorChoice) -> Payoffs:
+    return player1.payoff_ego, np.nan
+
+
+def compute_freq_dictator(history: List[Choices[DictatorChoice]]) -> float:
+    return np.mean([h.ai.payoff_allo for h in history])
+
+
+def run_experiment_ultimatum() -> Iterable[ResultRow]:
+    return run_experiment(
+        ai_participants=AI_PARTICIPANTS,
+        partner_conditions=dict(),
+        num_rounds=1,
+        num_samples=SAMPLE_SIZE,
+        generate_instruction_prompt=get_prompt_dictator,
+        extract_choice=extract_choice_ultimatum,
+        payoffs=payoffs_dictator,
+        compute_freq=compute_freq_dictator,
+    )
