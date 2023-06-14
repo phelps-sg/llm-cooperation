@@ -18,6 +18,8 @@ from llm_cooperation.dictator import (
     extract_choice_dictator,
     get_prompt_dictator,
     payoffs_dictator,
+    payout_allo,
+    payout_ego,
 )
 
 
@@ -92,3 +94,11 @@ def test_choice_menu():
         f"'{BROWN.description}' | '{GREEN.description}' | "
         f"'{BLUE.description}' | '{WHITE.description}'"
     )
+
+
+def test_payout_ego():
+    assert payout_ego(BLACK) == "$4.00"
+
+
+def test_payout_allo():
+    assert payout_allo(BLACK) == "$0.00"

@@ -11,6 +11,7 @@ from llm_cooperation import (
     Choices,
     Payoffs,
     SingleShotResults,
+    amount_as_str,
     run_experiment_single_shot_game,
 )
 
@@ -78,16 +79,12 @@ WHITE = DictatorChoice(DictatorEnum.WHITE)
 all_dictator_choices = [BLACK, BROWN, GREEN, BLUE, WHITE]
 
 
-def payout(amount: float) -> str:
-    return f"${amount}.00"
-
-
 def payout_ego(choice: DictatorChoice) -> str:
-    return payout(choice.payoff_ego)
+    return amount_as_str(choice.payoff_ego)
 
 
 def payout_allo(choice: DictatorChoice) -> str:
-    return payout(choice.payoff_allo)
+    return amount_as_str(choice.payoff_allo)
 
 
 def describe_payoffs(choice: DictatorChoice) -> str:
