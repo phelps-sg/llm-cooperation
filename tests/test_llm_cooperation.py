@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from openai_pygenerator import Completion
 
-from llm_cooperation import Choices, Group, Results, Scores, run_and_record_experiment
+from llm_cooperation import Group, Results, run_and_record_experiment
 from llm_cooperation.dilemma import (
     Cooperate,
     Defect,
@@ -20,8 +20,10 @@ from llm_cooperation.dilemma import (
     strategy_defect,
 )
 from llm_cooperation.repeated import (
+    Choices,
     RepeatedGameResults,
     ResultRepeatedGame,
+    Scores,
     compute_scores,
     play_game,
     run_experiment,

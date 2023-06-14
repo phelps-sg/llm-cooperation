@@ -3,12 +3,11 @@ from __future__ import annotations
 import logging
 import os.path
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Generic, Hashable, List, Tuple, TypeVar
+from typing import Callable, Hashable, List, Tuple, TypeVar
 
 import pandas as pd
-from openai_pygenerator import Completion, is_assistant_role
+from openai_pygenerator import Completion
 
 logger = logging.getLogger(__name__)
 
@@ -100,19 +99,6 @@ AI_PARTICIPANTS = {
     ],
 }
 
-
-@dataclass
-class Scores:
-    user: float
-    ai: float
-
-
-@dataclass
-class Choices(Generic[CT_contra]):
-    user: CT_contra
-    ai: CT_contra
-
-
 Strategy = Callable[[List[Completion]], Choice]
 Payoffs = Tuple[float, float]
 
@@ -130,21 +116,6 @@ def run_and_record_experiment(name: str, run: Callable[[], Results]) -> Results:
     logger.info("Experiment complete, saving results to %s", filename)
     df.to_pickle(filename)
     return results
-
-
-def analyse_round(
-    i: int,
-    conversation: List[Completion],
-    payoffs: Callable[[CT_contra, CT_contra], Payoffs],
-    extract_choice: Callable[[Completion], CT_contra],
-) -> Tuple[Scores, Choices]:
-    assert is_assistant_role(conversation[i * 2])
-    ai_choice = extract_choice(conversation[i * 2])
-    user_choice = extract_choice(conversation[i * 2 + 1])
-    logger.debug("user_choice = %s", user_choice)
-    logger.debug("ai_choice = %s", ai_choice)
-    user, ai = payoffs(user_choice, ai_choice)
-    return Scores(user, ai), Choices(user_choice, ai_choice)
 
 
 def amount_as_str(amount: float) -> str:

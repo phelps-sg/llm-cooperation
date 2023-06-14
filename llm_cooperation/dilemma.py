@@ -6,14 +6,8 @@ from typing import List
 import numpy as np
 from openai_pygenerator import Completion, History
 
-from llm_cooperation import (
-    AI_PARTICIPANTS,
-    Choice,
-    Choices,
-    Payoffs,
-    run_and_record_experiment,
-)
-from llm_cooperation.repeated import RepeatedGameResults, run_experiment
+from llm_cooperation import AI_PARTICIPANTS, Choice, Payoffs, run_and_record_experiment
+from llm_cooperation.repeated import Choices, RepeatedGameResults, run_experiment
 
 SAMPLE_SIZE: int = 30
 NUM_ROUNDS: int = 6

@@ -9,12 +9,11 @@ from openai_pygenerator import Completion, History
 from llm_cooperation import (
     AI_PARTICIPANTS,
     Choice,
-    Choices,
     Payoffs,
     amount_as_str,
     run_and_record_experiment,
 )
-from llm_cooperation.repeated import RepeatedGameResults, run_experiment
+from llm_cooperation.repeated import Choices, RepeatedGameResults, run_experiment
 
 MAX_AMOUNT: float = 10.0
 MIN_AMOUNT: float = 0.0

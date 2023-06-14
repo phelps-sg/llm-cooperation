@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Callable, Dict, Iterable, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Callable, Dict, Generic, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -8,22 +9,27 @@ from openai_pygenerator import (
     Completion,
     History,
     gpt_completions,
+    is_assistant_role,
     transcript,
     user_message,
 )
 
 from llm_cooperation import (
-    Choices,
     CT_contra,
     Group,
     Payoffs,
     PromptGenerator,
     Results,
-    Scores,
     Strategy,
-    analyse_round,
     logger,
 )
+
+
+@dataclass
+class Choices(Generic[CT_contra]):
+    user: CT_contra
+    ai: CT_contra
+
 
 ResultRepeatedGame = Tuple[
     Group, str, str, float, float, Optional[List[Choices]], List[str]
@@ -71,6 +77,27 @@ What is your choice for the next round?"""
             )
         ]
     return messages
+
+
+@dataclass
+class Scores:
+    user: float
+    ai: float
+
+
+def analyse_round(
+    i: int,
+    conversation: List[Completion],
+    payoffs: Callable[[CT_contra, CT_contra], Payoffs],
+    extract_choice: Callable[[Completion], CT_contra],
+) -> Tuple[Scores, Choices]:
+    assert is_assistant_role(conversation[i * 2])
+    ai_choice = extract_choice(conversation[i * 2])
+    user_choice = extract_choice(conversation[i * 2 + 1])
+    logger.debug("user_choice = %s", user_choice)
+    logger.debug("ai_choice = %s", ai_choice)
+    user, ai = payoffs(user_choice, ai_choice)
+    return Scores(user, ai), Choices(user_choice, ai_choice)
 
 
 def compute_scores(
