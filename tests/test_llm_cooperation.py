@@ -13,10 +13,10 @@ from llm_cooperation import (
     ResultRepeatedGame,
     Results,
     Scores,
-    compute_scores,
+    compute_scores_repeated_game,
+    repeated_game,
     run_and_record_experiment,
     run_experiment_repeated_game,
-    run_single_game,
 )
 from llm_cooperation.dilemma import (
     Cooperate,
@@ -68,7 +68,7 @@ def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame]:
     )
 
 
-def test_run_single_game(mocker):
+def test_run_repeated_game(mocker):
     completions = [
         {"role": "assistant", "content": "project green"},
     ]
@@ -77,7 +77,7 @@ def test_run_single_game(mocker):
         return_value=completions,
     )
     conversation: List[Completion] = list(
-        run_single_game(
+        repeated_game(
             num_rounds=3,
             partner_strategy=strategy_defect,
             generate_instruction_prompt=get_prompt_pd,
@@ -90,7 +90,7 @@ def test_run_single_game(mocker):
 
 
 def test_compute_scores(conversation):
-    scores, moves = compute_scores(
+    scores, moves = compute_scores_repeated_game(
         conversation, payoffs=payoffs_pd, extract_choice=extract_choice_pd
     )
     assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)

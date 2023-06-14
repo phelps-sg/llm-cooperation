@@ -175,8 +175,12 @@ class Choices(Generic[ChoiceType_contra]):
 
 
 Strategy = Callable[[List[Completion]], Choice]
-ResultRepeatedGame = Tuple[Group, str, str, float, float, List[Choices], List[str]]
-ResultSingleShotGame = Tuple[Group, str, float, float, List[Choices], List[str]]
+ResultRepeatedGame = Tuple[
+    Group, str, str, float, float, Optional[List[Choices]], List[str]
+]
+ResultSingleShotGame = Tuple[
+    Group, str, float, float, Optional[ChoiceType_contra], List[str]
+]
 Payoffs = Tuple[float, float]
 
 PromptGenerator = Callable[[int, str], str]
@@ -211,7 +215,36 @@ What is your choice for the next round?"""
     return messages
 
 
-def compute_scores(
+def compute_scores_single_shot_game(
+    conversation: List[Completion],
+    payoffs: Callable[[ChoiceType_contra], float],
+    extract_choice: Callable[[Completion], ChoiceType_contra],
+) -> Tuple[float, ChoiceType_contra]:
+    ai_choice = extract_choice(conversation[1])
+    logger.debug("ai_choice = %s", ai_choice)
+    score = payoffs(ai_choice)
+    return score, ai_choice
+
+
+def analyse_single_shot_game(
+    conversation: List[Completion],
+    payoffs: Callable[[ChoiceType_contra], float],
+    extract_choice: Callable[[Completion], ChoiceType_contra],
+    compute_freq: Callable[[ChoiceType_contra], float],
+) -> Tuple[float, float, Optional[ChoiceType_contra], List[str]]:
+    try:
+        history = transcript(conversation)
+        score, ai_choice = compute_scores_single_shot_game(
+            list(conversation), payoffs, extract_choice
+        )
+        freq = compute_freq(ai_choice)
+        return score, freq, ai_choice, history
+    except ValueError as e:
+        logger.error("ValueError while running sample: %s", e)
+        return 0, np.nan, None, [str(e)]
+
+
+def compute_scores_repeated_game(
     conversation: List[Completion],
     payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
     extract_choice: Callable[[Completion], ChoiceType_contra],
@@ -229,22 +262,7 @@ def compute_scores(
     return Scores(user_score, ai_score), [choices for _, choices in rounds]
 
 
-def run_single_game(
-    num_rounds: int,
-    role_prompt: str,
-    partner_strategy: Optional[Strategy],
-    generate_instruction_prompt: PromptGenerator,
-) -> History:
-    if num_rounds > 1:
-        assert partner_strategy is not None
-        return repeated_game(
-            num_rounds, role_prompt, partner_strategy, generate_instruction_prompt
-        )
-    else:
-        return single_shot_game(role_prompt, generate_instruction_prompt)
-
-
-def run_sample_common(
+def analyse_repeated_game(
     conversation: List[Completion],
     payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
     extract_choice: Callable[[Completion], ChoiceType_contra],
@@ -252,7 +270,9 @@ def run_sample_common(
 ) -> Tuple[float, float, Optional[List[Choices]], List[str]]:
     try:
         history = transcript(conversation)
-        scores, choices = compute_scores(list(conversation), payoffs, extract_choice)
+        scores, choices = compute_scores_repeated_game(
+            list(conversation), payoffs, extract_choice
+        )
         freq = compute_freq(choices)
         return scores.ai, freq, choices, history
     except ValueError as e:
@@ -277,32 +297,34 @@ def run_repeated_sample(
             partner_strategy=partner_strategy,
             generate_instruction_prompt=generate_instruction_prompt,
         )
-        yield run_sample_common(conversation, payoffs, extract_choice, compute_freq)
+        yield analyse_repeated_game(conversation, payoffs, extract_choice, compute_freq)
 
 
 def run_single_shot_sample(
     prompt: str,
     num_samples: int,
     generate_instruction_prompt: PromptGenerator,
-    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
+    payoffs: Callable[[ChoiceType_contra], float],
     extract_choice: Callable[[Completion], ChoiceType_contra],
-    compute_freq: Callable[[List[Choices]], float],
-) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
+    compute_freq: Callable[[ChoiceType_contra], float],
+) -> Iterable[Tuple[float, float, Optional[ChoiceType_contra], List[str]]]:
     for _i in range(num_samples):
         conversation = single_shot_game(
             role_prompt=prompt,
             generate_instruction_prompt=generate_instruction_prompt,
         )
-        yield run_sample_common(conversation, payoffs, extract_choice, compute_freq)
+        yield analyse_single_shot_game(
+            conversation, payoffs, extract_choice, compute_freq
+        )
 
 
 def run_experiment_single_shot_game(
     ai_participants: Dict[Group, List[str]],
     num_samples: int,
     generate_instruction_prompt: PromptGenerator,
-    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
+    payoffs: Callable[[ChoiceType_contra], float],
     extract_choice: Callable[[Completion], ChoiceType_contra],
-    compute_freq: Callable[[List[Choices]], float],
+    compute_freq: Callable[[ChoiceType_contra], float],
 ) -> SingleShotResults:
     return SingleShotResults(
         (group, prompt, score, freq, choices, history)

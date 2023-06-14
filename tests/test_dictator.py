@@ -1,8 +1,6 @@
-import numpy as np
 import pytest
 from openai_pygenerator import user_message
 
-from llm_cooperation import Choices
 from llm_cooperation.dictator import (
     BLACK,
     BLUE,
@@ -69,14 +67,13 @@ def test_extract_choice_dictator(text: str, expected_result: DictatorChoice):
 
 @pytest.mark.parametrize("test_choice", all_dictator_choices)
 def test_payoffs_dictator(test_choice: DictatorChoice):
-    result = payoffs_dictator(test_choice, GREEN)
-    assert result[0] == test_choice.payoff_ego
-    assert np.isnan(result[1])
+    result = payoffs_dictator(test_choice)
+    assert result == test_choice.payoff_ego
 
 
 @pytest.mark.parametrize("test_choice", all_dictator_choices)
 def test_compute_freq_dictator(test_choice: DictatorChoice):
-    result = compute_freq_dictator([Choices(user=GREEN, ai=test_choice)])
+    result = compute_freq_dictator(test_choice)
     assert result == test_choice.payoff_allo
 
 

@@ -1,15 +1,12 @@
 from enum import Enum
-from typing import Dict, Hashable, List
+from typing import Dict, Hashable
 
-import numpy as np
 from openai import Completion
 from openai_pygenerator import content
 
 from llm_cooperation import (
     AI_PARTICIPANTS,
     Choice,
-    Choices,
-    Payoffs,
     SingleShotResults,
     amount_as_str,
     run_experiment_single_shot_game,
@@ -131,12 +128,12 @@ def extract_choice_dictator(completion: Completion) -> DictatorChoice:
     raise ValueError(f"Cannot determine choice from {completion}")
 
 
-def payoffs_dictator(player1: DictatorChoice, _: DictatorChoice) -> Payoffs:
-    return player1.payoff_ego, np.nan
+def payoffs_dictator(player1: DictatorChoice) -> float:
+    return player1.payoff_ego
 
 
-def compute_freq_dictator(history: List[Choices[DictatorChoice]]) -> float:
-    return float(np.mean([h.ai.payoff_allo for h in history]))
+def compute_freq_dictator(history: DictatorChoice) -> float:
+    return history.donation
 
 
 def run_experiment_dictator() -> SingleShotResults:
