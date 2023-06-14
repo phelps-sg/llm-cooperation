@@ -70,13 +70,13 @@ class DictatorChoice(Choice):
         return self.donation
 
 
-black = DictatorChoice(DictatorEnum.BLACK)
-brown = DictatorChoice(DictatorEnum.BROWN)
-green = DictatorChoice(DictatorEnum.GREEN)
-blue = DictatorChoice(DictatorEnum.BLUE)
-white = DictatorChoice(DictatorEnum.WHITE)
+BLACK = DictatorChoice(DictatorEnum.BLACK)
+BROWN = DictatorChoice(DictatorEnum.BROWN)
+GREEN = DictatorChoice(DictatorEnum.GREEN)
+BLUE = DictatorChoice(DictatorEnum.BLUE)
+WHITE = DictatorChoice(DictatorEnum.WHITE)
 
-all_dictator_choices = [black, brown, green, blue, white]
+all_dictator_choices = [BLACK, BROWN, GREEN, BLUE, WHITE]
 
 
 def payout(amount: float) -> str:
@@ -98,6 +98,10 @@ and your partner will also earn {payout_allo(choice)}.
     """
 
 
+def choice_menu() -> str:
+    return " | ".join([f"'{c.description}'" for c in all_dictator_choices])
+
+
 def get_prompt_dictator(n: int, role_prompt: str) -> str:
     assert n == 1
     return f"""
@@ -109,17 +113,17 @@ you there to meet your investment partner. You and your partner will be involved
 the project. However, you are the sole decision maker. Your partner must accept
 your decision. She is unable to make the investment decisions. The object is to earn
 money for yourself.
-{describe_payoffs(black)}
-{describe_payoffs(brown)}
-{describe_payoffs(green)}
-{describe_payoffs(blue)}
-{describe_payoffs(white)}
+{describe_payoffs(BLACK)}
+{describe_payoffs(BROWN)}
+{describe_payoffs(GREEN)}
+{describe_payoffs(BLUE)}
+{describe_payoffs(WHITE)}
 You will make decisions that are consistent with the role outlined earlier,
 but you are not allowed to communicate with your partner apart from informing
 them of your choice. Your decision will be
 final and cannot be changed after you have made it. Here is your investment
-partner. What is your choice? Choice: [‘project black’ | ‘project brown’ | ‘project
-green’ | ‘project blue’ | ‘project white’]
+partner. What is your choice?
+Choice: [{choice_menu()}]
 """
 
 

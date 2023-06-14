@@ -4,19 +4,20 @@ from openai_pygenerator import user_message
 
 from llm_cooperation import Choices
 from llm_cooperation.dictator import (
+    BLACK,
+    BLUE,
+    BROWN,
+    GREEN,
+    WHITE,
     DictatorChoice,
     DictatorEnum,
     all_dictator_choices,
-    black,
-    blue,
-    brown,
+    choice_menu,
     compute_freq_dictator,
     describe_payoffs,
     extract_choice_ultimatum,
     get_prompt_dictator,
-    green,
     payoffs_dictator,
-    white,
 )
 
 
@@ -45,11 +46,11 @@ def test_dictator_choice(
 @pytest.mark.parametrize(
     "text, expected_result",
     [
-        ("Black", black),
-        ("Brown", brown),
-        ("Green", green),
-        ("Blue", blue),
-        ("White", white),
+        ("Black", BLACK),
+        ("Brown", BROWN),
+        ("Green", GREEN),
+        ("Blue", BLUE),
+        ("White", WHITE),
     ],
 )
 def test_extract_choice_ultimatum(text: str, expected_result: DictatorChoice):
@@ -68,14 +69,14 @@ def test_extract_choice_ultimatum(text: str, expected_result: DictatorChoice):
 
 @pytest.mark.parametrize("test_choice", all_dictator_choices)
 def test_payoffs_dictator(test_choice: DictatorChoice):
-    result = payoffs_dictator(test_choice, green)
+    result = payoffs_dictator(test_choice, GREEN)
     assert result[0] == test_choice.payoff_ego
     assert np.isnan(result[1])
 
 
 @pytest.mark.parametrize("test_choice", all_dictator_choices)
 def test_compute_freq_dictator(test_choice: DictatorChoice):
-    result = compute_freq_dictator([Choices(user=green, ai=test_choice)])
+    result = compute_freq_dictator([Choices(user=GREEN, ai=test_choice)])
     assert result == test_choice.payoff_allo
 
 
@@ -85,3 +86,11 @@ def test_get_prompt_dictator():
     assert role_prompt in result
     for choice in all_dictator_choices:
         assert describe_payoffs(choice) in result
+
+
+def test_choice_menu():
+    assert (
+        choice_menu() == f"'{BLACK.description}' | "
+        f"'{BROWN.description}' | '{GREEN.description}' | "
+        f"'{BLUE.description}' | '{WHITE.description}'"
+    )
