@@ -14,15 +14,7 @@ from openai_pygenerator import (
     user_message,
 )
 
-from llm_cooperation import (
-    CT_contra,
-    Group,
-    Payoffs,
-    PromptGenerator,
-    Results,
-    Strategy,
-    logger,
-)
+from llm_cooperation import CT_contra, Group, Payoffs, Results, Strategy, logger
 
 
 @dataclass
@@ -31,6 +23,7 @@ class Choices(Generic[CT_contra]):
     ai: CT_contra
 
 
+PromptGenerator = Callable[[int, str], str]
 ResultRepeatedGame = Tuple[
     Group, str, str, float, float, Optional[List[Choices]], List[str]
 ]

@@ -90,8 +90,7 @@ def choice_menu() -> str:
     return " | ".join([f"'{c.description}'" for c in all_dictator_choices])
 
 
-def get_prompt_dictator(n: int, role_prompt: str) -> str:
-    assert n == 1
+def get_prompt_dictator(role_prompt: str) -> str:
     return f"""
 {role_prompt}
 This is a study of investment choices in different situations.

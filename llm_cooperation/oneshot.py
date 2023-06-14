@@ -12,8 +12,9 @@ from openai_pygenerator import (
     user_message,
 )
 
-from llm_cooperation import CT_contra, Group, PromptGenerator, Results, logger
+from llm_cooperation import CT_contra, Group, Results, logger
 
+PromptGenerator = Callable[[str], str]
 ResultSingleShotGame = Tuple[Group, str, float, float, Optional[CT_contra], List[str]]
 
 
@@ -41,7 +42,7 @@ class OneShotResults(Results):
 def play_game(
     role_prompt: str, generate_instruction_prompt: PromptGenerator
 ) -> History:
-    messages = [user_message(generate_instruction_prompt(1, role_prompt))]
+    messages = [user_message(generate_instruction_prompt(role_prompt))]
     messages += gpt_completions(messages)
     return messages
 

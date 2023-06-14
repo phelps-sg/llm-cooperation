@@ -102,8 +102,6 @@ AI_PARTICIPANTS = {
 Strategy = Callable[[List[Completion]], Choice]
 Payoffs = Tuple[float, float]
 
-PromptGenerator = Callable[[int, str], str]
-
 
 def run_and_record_experiment(name: str, run: Callable[[], Results]) -> Results:
     logging.basicConfig(
