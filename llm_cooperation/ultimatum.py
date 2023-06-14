@@ -1,7 +1,7 @@
 import re
 from abc import ABC
 from enum import Enum, auto
-from typing import Hashable, Iterable, List
+from typing import Hashable, List
 
 import numpy as np
 from openai_pygenerator import Completion, History
@@ -9,13 +9,11 @@ from openai_pygenerator import Completion, History
 from llm_cooperation import (
     AI_PARTICIPANTS,
     Choice,
-    Choices,
     Payoffs,
-    ResultRow,
     amount_as_str,
     run_and_record_experiment,
-    run_experiment,
 )
+from llm_cooperation.repeated import Choices, RepeatedGameResults, run_experiment
 
 MAX_AMOUNT: float = 10.0
 MIN_AMOUNT: float = 0.0
@@ -73,7 +71,6 @@ class ResponderChoice(UltimatumChoice):
 
 Accept = ResponderChoice(ResponderEnum.Accept)
 Reject = ResponderChoice(ResponderEnum.Reject)
-
 
 dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
 
@@ -171,7 +168,7 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
         raise ValueError(f"Invalid choice combination: {player1}, {player2}")
 
 
-def run_experiment_ultimatum() -> Iterable[ResultRow]:
+def run_experiment_ultimatum() -> RepeatedGameResults:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         partner_conditions={"cooperate": strategy_cooperate},

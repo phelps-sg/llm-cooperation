@@ -3,7 +3,8 @@ from typing import List
 import numpy as np
 import pytest
 
-from llm_cooperation import Choice, Choices, Payoffs, amount_as_str
+from llm_cooperation import Choice, Payoffs, amount_as_str
+from llm_cooperation.repeated import Choices
 from llm_cooperation.ultimatum import (
     MAX_AMOUNT,
     Accept,
