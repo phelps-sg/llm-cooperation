@@ -6,18 +6,7 @@ import pandas as pd
 import pytest
 from openai_pygenerator import Completion
 
-from llm_cooperation import (
-    Choices,
-    Group,
-    RepeatedResults,
-    ResultRepeatedGame,
-    Results,
-    Scores,
-    compute_scores_repeated_game,
-    repeated_game,
-    run_and_record_experiment,
-    run_experiment_repeated_game,
-)
+from llm_cooperation import Choices, Group, Results, Scores, run_and_record_experiment
 from llm_cooperation.dilemma import (
     Cooperate,
     Defect,
@@ -29,6 +18,13 @@ from llm_cooperation.dilemma import (
     get_prompt_pd,
     payoffs_pd,
     strategy_defect,
+)
+from llm_cooperation.repeated import (
+    RepeatedGameResults,
+    ResultRepeatedGame,
+    compute_scores,
+    play_game,
+    run_experiment,
 )
 
 
@@ -77,7 +73,7 @@ def test_run_repeated_game(mocker):
         return_value=completions,
     )
     conversation: List[Completion] = list(
-        repeated_game(
+        play_game(
             num_rounds=3,
             partner_strategy=strategy_defect,
             generate_instruction_prompt=get_prompt_pd,
@@ -90,7 +86,7 @@ def test_run_repeated_game(mocker):
 
 
 def test_compute_scores(conversation):
-    scores, moves = compute_scores_repeated_game(
+    scores, moves = compute_scores(
         conversation, payoffs=payoffs_pd, extract_choice=extract_choice_pd
     )
     assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)
@@ -103,7 +99,7 @@ def test_compute_scores(conversation):
 
 
 def test_results_to_df(results: Iterable[ResultRepeatedGame]):
-    df = RepeatedResults(results).to_df()
+    df = RepeatedGameResults(results).to_df()
     assert len(df.columns) == 7
     assert len(df) == 2
     assert df["Group"][0] == str(Group.Altruistic)
@@ -111,7 +107,7 @@ def test_results_to_df(results: Iterable[ResultRepeatedGame]):
 
 
 def test_run_experiment(mocker):
-    mock_run_sample = mocker.patch("llm_cooperation.run_repeated_sample")
+    mock_run_sample = mocker.patch("llm_cooperation.repeated.generate_samples")
     samples = [
         (5, 0.5, [Cooperate], ["project green"]),
         (3, 0.7, [Defect], ["project blue"]),
@@ -128,7 +124,7 @@ def test_run_experiment(mocker):
         "strategy_B": Mock(),
     }
 
-    result: pd.DataFrame = run_experiment_repeated_game(
+    result: pd.DataFrame = run_experiment(
         ai_participants,
         user_conditions,
         num_rounds=6,

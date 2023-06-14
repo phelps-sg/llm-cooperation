@@ -11,11 +11,10 @@ from llm_cooperation import (
     Choice,
     Choices,
     Payoffs,
-    RepeatedResults,
     amount_as_str,
     run_and_record_experiment,
-    run_experiment_repeated_game,
 )
+from llm_cooperation.repeated import RepeatedGameResults, run_experiment
 
 MAX_AMOUNT: float = 10.0
 MIN_AMOUNT: float = 0.0
@@ -172,8 +171,8 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
         raise ValueError(f"Invalid choice combination: {player1}, {player2}")
 
 
-def run_experiment_ultimatum() -> RepeatedResults:
-    return run_experiment_repeated_game(
+def run_experiment_ultimatum() -> RepeatedGameResults:
+    return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         partner_conditions={"cooperate": strategy_cooperate},
         num_rounds=NUM_ROUNDS,

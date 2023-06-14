@@ -4,13 +4,8 @@ from typing import Dict, Hashable
 from openai import Completion
 from openai_pygenerator import content
 
-from llm_cooperation import (
-    AI_PARTICIPANTS,
-    Choice,
-    SingleShotResults,
-    amount_as_str,
-    run_experiment_single_shot_game,
-)
+from llm_cooperation import AI_PARTICIPANTS, Choice, amount_as_str
+from llm_cooperation.oneshot import OneShotResults, run_experiment
 
 TOTAL_SHARE = 4
 
@@ -136,8 +131,8 @@ def compute_freq_dictator(history: DictatorChoice) -> float:
     return history.donation
 
 
-def run_experiment_dictator() -> SingleShotResults:
-    return run_experiment_single_shot_game(
+def run_experiment_dictator() -> OneShotResults:
+    return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         num_samples=SAMPLE_SIZE,
         generate_instruction_prompt=get_prompt_dictator,
