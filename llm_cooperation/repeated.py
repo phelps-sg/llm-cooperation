@@ -14,13 +14,13 @@ from openai_pygenerator import (
     user_message,
 )
 
-from llm_cooperation import CT_contra, Group, Payoffs, Results, Strategy, logger
+from llm_cooperation import CT, Group, Payoffs, Results, Strategy, logger
 
 
 @dataclass
-class Choices(Generic[CT_contra]):
-    user: CT_contra
-    ai: CT_contra
+class Choices(Generic[CT]):
+    user: CT
+    ai: CT
 
 
 PromptGenerator = Callable[[int, str], str]
@@ -81,8 +81,8 @@ class Scores:
 def analyse_round(
     i: int,
     conversation: List[Completion],
-    payoffs: Callable[[CT_contra, CT_contra], Payoffs],
-    extract_choice: Callable[[Completion], CT_contra],
+    payoffs: Callable[[CT, CT], Payoffs],
+    extract_choice: Callable[[Completion], CT],
 ) -> Tuple[Scores, Choices]:
     assert is_assistant_role(conversation[i * 2])
     ai_choice = extract_choice(conversation[i * 2])
@@ -95,8 +95,8 @@ def analyse_round(
 
 def compute_scores(
     conversation: List[Completion],
-    payoffs: Callable[[CT_contra, CT_contra], Payoffs],
-    extract_choice: Callable[[Completion], CT_contra],
+    payoffs: Callable[[CT, CT], Payoffs],
+    extract_choice: Callable[[Completion], CT],
 ) -> Tuple[Scores, List[Choices]]:
     conversation = conversation[1:]
     num_messages = len(conversation)
@@ -113,8 +113,8 @@ def compute_scores(
 
 def analyse(
     conversation: List[Completion],
-    payoffs: Callable[[CT_contra, CT_contra], Payoffs],
-    extract_choice: Callable[[Completion], CT_contra],
+    payoffs: Callable[[CT, CT], Payoffs],
+    extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[List[Choices]], float],
 ) -> Tuple[float, float, Optional[List[Choices]], List[str]]:
     try:
@@ -133,8 +133,8 @@ def generate_samples(
     num_rounds: int,
     partner_strategy: Strategy,
     generate_instruction_prompt: PromptGenerator,
-    payoffs: Callable[[CT_contra, CT_contra], Payoffs],
-    extract_choice: Callable[[Completion], CT_contra],
+    payoffs: Callable[[CT, CT], Payoffs],
+    extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[List[Choices]], float],
 ) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
     # pylint: disable=R0801
@@ -154,8 +154,8 @@ def run_experiment(
     num_rounds: int,
     num_samples: int,
     generate_instruction_prompt: Callable[[int, str], str],
-    payoffs: Callable[[CT_contra, CT_contra], Payoffs],
-    extract_choice: Callable[[Completion], CT_contra],
+    payoffs: Callable[[CT, CT], Payoffs],
+    extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[List[Choices]], float],
 ) -> RepeatedGameResults:
     return RepeatedGameResults(

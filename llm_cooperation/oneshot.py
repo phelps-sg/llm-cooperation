@@ -12,10 +12,10 @@ from openai_pygenerator import (
     user_message,
 )
 
-from llm_cooperation import CT_contra, Group, Results, logger
+from llm_cooperation import CT, Group, Results, logger
 
 PromptGenerator = Callable[[str], str]
-ResultSingleShotGame = Tuple[Group, str, float, float, Optional[CT_contra], List[str]]
+ResultSingleShotGame = Tuple[Group, str, float, float, Optional[CT], List[str]]
 
 
 class OneShotResults(Results):
@@ -49,9 +49,9 @@ def play_game(
 
 def compute_scores(
     conversation: List[Completion],
-    payoffs: Callable[[CT_contra], float],
-    extract_choice: Callable[[Completion], CT_contra],
-) -> Tuple[float, CT_contra]:
+    payoffs: Callable[[CT], float],
+    extract_choice: Callable[[Completion], CT],
+) -> Tuple[float, CT]:
     ai_choice = extract_choice(conversation[1])
     logger.debug("ai_choice = %s", ai_choice)
     score = payoffs(ai_choice)
@@ -60,10 +60,10 @@ def compute_scores(
 
 def analyse(
     conversation: List[Completion],
-    payoffs: Callable[[CT_contra], float],
-    extract_choice: Callable[[Completion], CT_contra],
-    compute_freq: Callable[[CT_contra], float],
-) -> Tuple[float, float, Optional[CT_contra], List[str]]:
+    payoffs: Callable[[CT], float],
+    extract_choice: Callable[[Completion], CT],
+    compute_freq: Callable[[CT], float],
+) -> Tuple[float, float, Optional[CT], List[str]]:
     try:
         history = transcript(conversation)
         score, ai_choice = compute_scores(list(conversation), payoffs, extract_choice)
@@ -78,10 +78,10 @@ def generate_samples(
     prompt: str,
     num_samples: int,
     generate_instruction_prompt: PromptGenerator,
-    payoffs: Callable[[CT_contra], float],
-    extract_choice: Callable[[Completion], CT_contra],
-    compute_freq: Callable[[CT_contra], float],
-) -> Iterable[Tuple[float, float, Optional[CT_contra], List[str]]]:
+    payoffs: Callable[[CT], float],
+    extract_choice: Callable[[Completion], CT],
+    compute_freq: Callable[[CT], float],
+) -> Iterable[Tuple[float, float, Optional[CT], List[str]]]:
     # pylint: disable=R0801
     for _i in range(num_samples):
         conversation = play_game(
@@ -95,9 +95,9 @@ def run_experiment(
     ai_participants: Dict[Group, List[str]],
     num_samples: int,
     generate_instruction_prompt: PromptGenerator,
-    payoffs: Callable[[CT_contra], float],
-    extract_choice: Callable[[Completion], CT_contra],
-    compute_freq: Callable[[CT_contra], float],
+    payoffs: Callable[[CT], float],
+    extract_choice: Callable[[Completion], CT],
+    compute_freq: Callable[[CT], float],
 ) -> OneShotResults:
     return OneShotResults(
         (group, prompt, score, freq, choices, history)

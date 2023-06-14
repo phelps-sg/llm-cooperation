@@ -43,7 +43,7 @@ class Results(ABC):
         pass
 
 
-CT_contra = TypeVar("CT_contra", bound=Choice, contravariant=True)
+CT = TypeVar("CT", bound=Choice)
 
 # pylint: disable=line-too-long
 AI_PARTICIPANTS = {
