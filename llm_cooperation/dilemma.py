@@ -1,7 +1,7 @@
 import logging
 import re
 from enum import Enum, auto
-from typing import Iterable, List
+from typing import List
 
 import numpy as np
 from openai_pygenerator import Completion, History
@@ -11,9 +11,9 @@ from llm_cooperation import (
     Choice,
     Choices,
     Payoffs,
-    ResultRow,
+    RepeatedResults,
     run_and_record_experiment,
-    run_experiment,
+    run_experiment_repeated_game,
 )
 
 SAMPLE_SIZE: int = 30
@@ -155,8 +155,8 @@ def compute_freq_pd(choices: List[Choices]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
-def run_experiment_pd() -> Iterable[ResultRow]:
-    return run_experiment(
+def run_experiment_pd() -> RepeatedResults:
+    return run_experiment_repeated_game(
         ai_participants=AI_PARTICIPANTS,
         partner_conditions={
             "unconditional cooperate": strategy_cooperate,

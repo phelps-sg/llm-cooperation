@@ -56,6 +56,55 @@ Group = Enum(
     ["Cooperative", "Competitive", "Altruistic", "Selfish", "Mixed", "Control"],
 )
 
+
+class Results(ABC):
+    def to_df(self) -> pd.DataFrame:
+        pass
+
+
+class SingleShotResults(Results):
+    def __init__(self, rows: Iterable[ResultSingleShotGame]):
+        self._rows: Iterable[ResultSingleShotGame] = rows
+
+    def to_df(self) -> pd.DataFrame:
+        return pd.DataFrame(
+            [
+                (str(group), prompt, score, freq, choices, history)
+                for group, prompt, score, freq, choices, history in self._rows
+            ],
+            columns=[
+                "Group",
+                "Participant",
+                "Score",
+                "Cooperation frequency",
+                "Choices",
+                "Transcript",
+            ],
+        )
+
+
+class RepeatedResults(Results):
+    def __init__(self, rows: Iterable[ResultRepeatedGame]):
+        self._rows: Iterable[ResultRepeatedGame] = rows
+
+    def to_df(self) -> pd.DataFrame:
+        return pd.DataFrame(
+            [
+                (str(group), prompt, strategy_name, score, freq, choices, history)
+                for group, prompt, strategy_name, score, freq, choices, history in self._rows
+            ],
+            columns=[
+                "Group",
+                "Participant",
+                "Condition",
+                "Score",
+                "Cooperation frequency",
+                "Choices",
+                "Transcript",
+            ],
+        )
+
+
 ChoiceType_contra = TypeVar("ChoiceType_contra", bound=Choice, contravariant=True)
 
 # pylint: disable=line-too-long
@@ -126,15 +175,26 @@ class Choices(Generic[ChoiceType_contra]):
 
 
 Strategy = Callable[[List[Completion]], Choice]
-ResultRow = Tuple[Group, str, str, float, float, List[Choices], List[str]]
+ResultRepeatedGame = Tuple[Group, str, str, float, float, List[Choices], List[str]]
+ResultSingleShotGame = Tuple[Group, str, float, float, List[Choices], List[str]]
 Payoffs = Tuple[float, float]
 
+PromptGenerator = Callable[[int, str], str]
 
-def run_single_game(
+
+def single_shot_game(
+    role_prompt: str, generate_instruction_prompt: PromptGenerator
+) -> History:
+    messages = [user_message(generate_instruction_prompt(1, role_prompt))]
+    messages += gpt_completions(messages)
+    return messages
+
+
+def repeated_game(
     num_rounds: int,
-    partner_strategy: Strategy,
-    generate_instruction_prompt: Callable[[int, str], str],
     role_prompt: str,
+    partner_strategy: Strategy,
+    generate_instruction_prompt: PromptGenerator,
 ) -> History:
     messages = [user_message(generate_instruction_prompt(num_rounds, role_prompt))]
     for _round in range(num_rounds):
@@ -169,36 +229,97 @@ def compute_scores(
     return Scores(user_score, ai_score), [choices for _, choices in rounds]
 
 
-def run_sample(
+def run_single_game(
+    num_rounds: int,
+    role_prompt: str,
+    partner_strategy: Optional[Strategy],
+    generate_instruction_prompt: PromptGenerator,
+) -> History:
+    if num_rounds > 1:
+        assert partner_strategy is not None
+        return repeated_game(
+            num_rounds, role_prompt, partner_strategy, generate_instruction_prompt
+        )
+    else:
+        return single_shot_game(role_prompt, generate_instruction_prompt)
+
+
+def run_sample_common(
+    conversation: List[Completion],
+    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
+    extract_choice: Callable[[Completion], ChoiceType_contra],
+    compute_freq: Callable[[List[Choices]], float],
+) -> Tuple[float, float, Optional[List[Choices]], List[str]]:
+    try:
+        history = transcript(conversation)
+        scores, choices = compute_scores(list(conversation), payoffs, extract_choice)
+        freq = compute_freq(choices)
+        return scores.ai, freq, choices, history
+    except ValueError as e:
+        logger.error("ValueError while running sample: %s", e)
+        return 0, np.nan, None, [str(e)]
+
+
+def run_repeated_sample(
     prompt: str,
-    partner_strategy: Strategy,
     num_samples: int,
     num_rounds: int,
-    generate_instruction_prompt: Callable[[int, str], str],
+    partner_strategy: Strategy,
+    generate_instruction_prompt: PromptGenerator,
     payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
     extract_choice: Callable[[Completion], ChoiceType_contra],
     compute_freq: Callable[[List[Choices]], float],
 ) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
     for _i in range(num_samples):
-        try:
-            conversation = run_single_game(
-                num_rounds=num_rounds,
-                role_prompt=prompt,
-                partner_strategy=partner_strategy,
-                generate_instruction_prompt=generate_instruction_prompt,
-            )
-            history = transcript(conversation)
-            scores, choices = compute_scores(
-                list(conversation), payoffs, extract_choice
-            )
-            freq = compute_freq(choices)
-            yield scores.ai, freq, choices, history
-        except ValueError as e:
-            logger.error("ValueError while running sample: %s", e)
-            yield 0, np.nan, None, [str(e)]
+        conversation = repeated_game(
+            num_rounds=num_rounds,
+            role_prompt=prompt,
+            partner_strategy=partner_strategy,
+            generate_instruction_prompt=generate_instruction_prompt,
+        )
+        yield run_sample_common(conversation, payoffs, extract_choice, compute_freq)
 
 
-def run_experiment(
+def run_single_shot_sample(
+    prompt: str,
+    num_samples: int,
+    generate_instruction_prompt: PromptGenerator,
+    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
+    extract_choice: Callable[[Completion], ChoiceType_contra],
+    compute_freq: Callable[[List[Choices]], float],
+) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
+    for _i in range(num_samples):
+        conversation = single_shot_game(
+            role_prompt=prompt,
+            generate_instruction_prompt=generate_instruction_prompt,
+        )
+        yield run_sample_common(conversation, payoffs, extract_choice, compute_freq)
+
+
+def run_experiment_single_shot_game(
+    ai_participants: Dict[Group, List[str]],
+    num_samples: int,
+    generate_instruction_prompt: PromptGenerator,
+    payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
+    extract_choice: Callable[[Completion], ChoiceType_contra],
+    compute_freq: Callable[[List[Choices]], float],
+) -> SingleShotResults:
+    return SingleShotResults(
+        (group, prompt, score, freq, choices, history)
+        for group, prompts in ai_participants.items()
+        for prompt in prompts
+        for score, freq, choices, history in run_single_shot_sample(
+            prompt=prompt,
+            num_samples=num_samples,
+            generate_instruction_prompt=generate_instruction_prompt,
+            payoffs=payoffs,
+            extract_choice=extract_choice,
+            compute_freq=compute_freq,
+        )
+    )
+
+
+def run_experiment_repeated_game(
     ai_participants: Dict[Group, List[str]],
     partner_conditions: Dict[str, Strategy],
     num_rounds: int,
@@ -207,13 +328,13 @@ def run_experiment(
     payoffs: Callable[[ChoiceType_contra, ChoiceType_contra], Payoffs],
     extract_choice: Callable[[Completion], ChoiceType_contra],
     compute_freq: Callable[[List[Choices]], float],
-) -> Iterable[ResultRow]:
-    return (
+) -> RepeatedResults:
+    return RepeatedResults(
         (group, prompt, strategy_name, score, freq, choices, history)
         for group, prompts in ai_participants.items()
         for prompt in prompts
         for strategy_name, strategy_fn in partner_conditions.items()
-        for score, freq, choices, history in run_sample(
+        for score, freq, choices, history in run_repeated_sample(
             prompt=prompt,
             partner_strategy=strategy_fn,
             num_samples=num_samples,
@@ -226,37 +347,17 @@ def run_experiment(
     )
 
 
-def run_and_record_experiment(
-    name: str, run: Callable[[], Iterable[ResultRow]]
-) -> Iterable[ResultRow]:
+def run_and_record_experiment(name: str, run: Callable[[], Results]) -> Results:
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
     results = run()
-    df = results_to_df(results)
+    df = results.to_df()
     filename = os.path.join("results", f"{name}.pickle")
     logger.info("Experiment complete, saving results to %s", filename)
     df.to_pickle(filename)
     return results
-
-
-def results_to_df(results: Iterable[ResultRow]) -> pd.DataFrame:
-    return pd.DataFrame(
-        [
-            (str(group), prompt, strategy_name, score, freq, choices, history)
-            for group, prompt, strategy_name, score, freq, choices, history in results
-        ],
-        columns=[
-            "Group",
-            "Participant",
-            "Condition",
-            "Score",
-            "Cooperation frequency",
-            "Choices",
-            "Transcript",
-        ],
-    )
 
 
 def analyse_round(

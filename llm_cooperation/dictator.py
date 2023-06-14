@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Hashable, Iterable, List
+from typing import Dict, Hashable, List
 
 import numpy as np
 from openai import Completion
@@ -10,8 +10,8 @@ from llm_cooperation import (
     Choice,
     Choices,
     Payoffs,
-    ResultRow,
-    run_experiment,
+    SingleShotResults,
+    run_experiment_single_shot_game,
 )
 
 TOTAL_SHARE = 4
@@ -38,7 +38,6 @@ color_mappings: Dict[DictatorEnum, str] = {
     DictatorEnum.BLUE: project("blue"),
     DictatorEnum.WHITE: project("white"),
 }
-
 
 reverse_color_mappings: Dict[str, DictatorEnum] = {
     value: key for key, value in color_mappings.items()
@@ -140,14 +139,12 @@ def payoffs_dictator(player1: DictatorChoice, _: DictatorChoice) -> Payoffs:
 
 
 def compute_freq_dictator(history: List[Choices[DictatorChoice]]) -> float:
-    return np.mean([h.ai.payoff_allo for h in history])
+    return float(np.mean([h.ai.payoff_allo for h in history]))
 
 
-def run_experiment_ultimatum() -> Iterable[ResultRow]:
-    return run_experiment(
+def run_experiment_ultimatum() -> SingleShotResults:
+    return run_experiment_single_shot_game(
         ai_participants=AI_PARTICIPANTS,
-        partner_conditions=dict(),
-        num_rounds=1,
         num_samples=SAMPLE_SIZE,
         generate_instruction_prompt=get_prompt_dictator,
         extract_choice=extract_choice_ultimatum,

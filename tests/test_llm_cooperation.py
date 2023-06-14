@@ -1,6 +1,6 @@
 import os
 from typing import Iterable, List
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pandas as pd
 import pytest
@@ -9,12 +9,13 @@ from openai_pygenerator import Completion
 from llm_cooperation import (
     Choices,
     Group,
-    ResultRow,
+    RepeatedResults,
+    ResultRepeatedGame,
+    Results,
     Scores,
     compute_scores,
-    results_to_df,
     run_and_record_experiment,
-    run_experiment,
+    run_experiment_repeated_game,
     run_single_game,
 )
 from llm_cooperation.dilemma import (
@@ -42,7 +43,7 @@ def defect_choices() -> List[Choices]:
 
 
 @pytest.fixture
-def results(cooperate_choices, defect_choices) -> Iterable[ResultRow]:
+def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame]:
     return iter(
         [
             (
@@ -101,8 +102,8 @@ def test_compute_scores(conversation):
     ]
 
 
-def test_results_to_df(results: Iterable[ResultRow]):
-    df = results_to_df(results)
+def test_results_to_df(results: Iterable[ResultRepeatedGame]):
+    df = RepeatedResults(results).to_df()
     assert len(df.columns) == 7
     assert len(df) == 2
     assert df["Group"][0] == str(Group.Altruistic)
@@ -110,7 +111,7 @@ def test_results_to_df(results: Iterable[ResultRow]):
 
 
 def test_run_experiment(mocker):
-    mock_run_sample = mocker.patch("llm_cooperation.run_sample")
+    mock_run_sample = mocker.patch("llm_cooperation.run_repeated_sample")
     samples = [
         (5, 0.5, [Cooperate], ["project green"]),
         (3, 0.7, [Defect], ["project blue"]),
@@ -127,31 +128,25 @@ def test_run_experiment(mocker):
         "strategy_B": Mock(),
     }
 
-    result = list(
-        run_experiment(
-            ai_participants,
-            user_conditions,
-            num_rounds=6,
-            num_samples=len(samples),
-            generate_instruction_prompt=get_prompt_pd,
-            payoffs=payoffs_pd,
-            extract_choice=extract_choice_pd,
-            compute_freq=compute_freq_pd,
-        )
-    )
+    result: pd.DataFrame = run_experiment_repeated_game(
+        ai_participants,
+        user_conditions,
+        num_rounds=6,
+        num_samples=len(samples),
+        generate_instruction_prompt=get_prompt_pd,
+        payoffs=payoffs_pd,
+        extract_choice=extract_choice_pd,
+        compute_freq=compute_freq_pd,
+    ).to_df()
     assert len(result) == len(samples) * len(user_conditions) * 3
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)
 
 
-def test_run_and_record_experiment(mocker, results):
-    def mock_run():
-        return results
-
-    df_mock = mocker.MagicMock(spec=pd.DataFrame)
-    mocker.patch("llm_cooperation.results_to_df", return_value=df_mock)
+def test_run_and_record_experiment():
+    df_mock = MagicMock(spec=pd.DataFrame)
+    results_mock = MagicMock(spec=Results)
+    results_mock.to_df = MagicMock(return_value=df_mock)
     name = "test_experiment"
-
-    run_and_record_experiment(name, mock_run)
-
+    run_and_record_experiment(name, lambda: results_mock)
     filename = os.path.join("results", f"{name}.pickle")
     df_mock.to_pickle.assert_called_once_with(filename)
