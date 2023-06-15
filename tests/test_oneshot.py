@@ -1,9 +1,15 @@
 from unittest.mock import Mock
 
 import pandas as pd
+from openai_pygenerator import content
 
 from llm_cooperation import Choice, Group
-from llm_cooperation.oneshot import compute_scores, generate_samples, run_experiment
+from llm_cooperation.oneshot import (
+    compute_scores,
+    generate_samples,
+    play_game,
+    run_experiment,
+)
 
 
 def test_run_experiment(mocker):
@@ -62,3 +68,21 @@ def test_compute_scores():
         extract_choice=lambda _: mock_choice,
     )
     assert result == (mock_payoff, mock_choice)
+
+
+def test_play_game(mocker):
+    test_prompt = "test-prompt"
+    mock_completion = {"role": "assistant", "content": "test-response"}
+    mocker.patch(
+        "openai_pygenerator.openai_pygenerator.generate_completions",
+        return_value=[mock_completion],
+    )
+    mock_generate = Mock()
+    mock_generate.return_value = test_prompt
+    result = play_game(
+        role_prompt="test-role-prompt", generate_instruction_prompt=mock_generate
+    )
+    print(result)
+    assert len(result) == 2
+    assert result[1] == mock_completion
+    assert content(result[0]) == test_prompt
