@@ -1,5 +1,7 @@
 # Llm Cooperation
 
+[![GitHub Workflow Status](https://github.com/phelps-sg/openai-pygenerator/actions/workflows/python-package.yml/badge.svg)](https://github.com/phelps-sg/llm-cooperation/actions/workflows/tests.yml)
+
 This repo contains code, explanations and results of experiments to ascertain the propensity of large-language models
 to cooperate in social dilemmas.  The experiments are described in:
 
