@@ -1,6 +1,6 @@
 # Llm Cooperation
 
-[![GitHub Workflow Status](https://github.com/phelps-sg/llm-cooperation/actions/workflows/tests.yml/badge.svg)](https://github.com/phelps-sg/llm-cooperation/actions/workflows/tests.yml)
+[![GitHub Workflow Status](https://github.com/phelps-sg/llm-cooperation/actions/workflows/tests.yaml/badge.svg)](https://github.com/phelps-sg/llm-cooperation/actions/workflows/tests.yaml)
 
 This repo contains code, explanations and results of experiments to ascertain the propensity of large-language models
 to cooperate in social dilemmas.  The experiments are described in:
