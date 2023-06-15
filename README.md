@@ -1,4 +1,4 @@
-# Llm Cooperation
+# llm-cooperation
 
 [![GitHub Workflow Status](https://github.com/phelps-sg/llm-cooperation/actions/workflows/tests.yaml/badge.svg)](https://github.com/phelps-sg/llm-cooperation/actions/workflows/tests.yaml)
 
