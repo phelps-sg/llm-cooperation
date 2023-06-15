@@ -1,5 +1,11 @@
+on:
+  pull_request:
+    branches: [ main, '**' ]
+  push:
+    branches: [ main ]
+
 jobs:
-  example-6:
+  tests:
     name: Tests under mamba environment
     runs-on: "ubuntu-latest"
     steps:
