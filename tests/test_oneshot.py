@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pandas as pd
 
 from llm_cooperation import Choice, Group
-from llm_cooperation.oneshot import run_experiment
+from llm_cooperation.oneshot import generate_samples, run_experiment
 
 
 def test_run_experiment(mocker):
@@ -32,3 +32,22 @@ def test_run_experiment(mocker):
     ).to_df()
     assert len(result) == 3 * len(samples)
     assert mock_run_sample.call_count == len(samples)
+
+
+def test_generate_samples(mocker):
+    mock_result_row = (0.5, 0.2, None, [])
+    mocker.patch("llm_cooperation.oneshot.analyse", return_value=mock_result_row)
+    mocker.patch("llm_cooperation.oneshot.play_game", return_value=[])
+    test_n = 3
+    result = list(
+        generate_samples(
+            prompt="test-prompt",
+            num_samples=test_n,
+            generate_instruction_prompt=Mock(),
+            payoffs=Mock(),
+            extract_choice=Mock(),
+            compute_freq=Mock(),
+        )
+    )
+    assert len(result) == test_n
+    assert result == [mock_result_row for _i in range(3)]
