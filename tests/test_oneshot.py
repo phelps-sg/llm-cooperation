@@ -1,11 +1,15 @@
+from typing import Iterable
 from unittest.mock import Mock
 
 import numpy as np
 import pandas as pd
+import pytest
 from openai_pygenerator import content, user_message
 
 from llm_cooperation import Choice, Group
 from llm_cooperation.oneshot import (
+    OneShotResults,
+    ResultSingleShotGame,
     analyse,
     compute_scores,
     generate_samples,
@@ -124,3 +128,35 @@ def test_analyse(mocker):
     assert np.isnan(err_result[1])
     assert err_result[2] is None
     assert test_err_message in err_result[3]
+
+
+def test_results_to_df(results: Iterable[ResultSingleShotGame]):
+    df = OneShotResults(results).to_df()
+    assert len(df.columns) == 6
+    assert len(df) == 2
+    assert df["Group"][0] == str(Group.Altruistic)
+    assert df["Group"][1] == str(Group.Selfish)
+
+
+@pytest.fixture
+def results() -> Iterable[ResultSingleShotGame]:
+    return iter(
+        [
+            (
+                Group.Altruistic,
+                "You are altruistic",
+                30,
+                0.2,
+                Mock(spec=Choice),
+                ["project green"],
+            ),
+            (
+                Group.Selfish,
+                "You are selfish",
+                60,
+                0.5,
+                Mock(spec=Choice),
+                ["project blue"],
+            ),
+        ]
+    )

@@ -33,7 +33,7 @@ class OneShotResults(Results):
                 "Participant",
                 "Score",
                 "Cooperation frequency",
-                "Choices",
+                "Choice",
                 "Transcript",
             ],
         )
