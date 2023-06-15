@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pandas as pd
 
 from llm_cooperation import Choice, Group
-from llm_cooperation.oneshot import generate_samples, run_experiment
+from llm_cooperation.oneshot import compute_scores, generate_samples, run_experiment
 
 
 def test_run_experiment(mocker):
@@ -51,3 +51,14 @@ def test_generate_samples(mocker):
     )
     assert len(result) == test_n
     assert result == [mock_result_row for _i in range(3)]
+
+
+def test_compute_scores():
+    mock_choice = Mock(spec=Choice)
+    mock_payoff = 0.5
+    result = compute_scores(
+        conversation=["prompt", "answer"],
+        payoffs=lambda _: mock_payoff,
+        extract_choice=lambda _: mock_choice,
+    )
+    assert result == (mock_payoff, mock_choice)
