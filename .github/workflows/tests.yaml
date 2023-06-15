@@ -17,7 +17,7 @@ jobs:
           channels: conda-forge,defaults
           channel-priority: true
           activate-environment: anaconda-client-env
-          environment-file: etc/example-environment.yml
+          environment-file: environment-frozen.yml
       - shell: bash -el {0}
         run: |
           conda info
