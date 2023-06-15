@@ -1,3 +1,9 @@
+on:
+  pull_request:
+    branches: [ main, '**' ]
+  push:
+    branches: [ main ]
+
 jobs:
   example-6:
     name: Tests under mamba environment
