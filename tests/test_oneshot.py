@@ -1,10 +1,12 @@
 from unittest.mock import Mock
 
+import numpy as np
 import pandas as pd
-from openai_pygenerator import content
+from openai_pygenerator import content, user_message
 
 from llm_cooperation import Choice, Group
 from llm_cooperation.oneshot import (
+    analyse,
     compute_scores,
     generate_samples,
     play_game,
@@ -86,3 +88,39 @@ def test_play_game(mocker):
     assert len(result) == 2
     assert result[1] == mock_completion
     assert content(result[0]) == test_prompt
+
+
+def test_analyse(mocker):
+    mock_choice = Mock(spec=Choice)
+    test_score = 1.0
+    mocker.patch(
+        "llm_cooperation.oneshot.compute_scores", return_value=(test_score, mock_choice)
+    )
+
+    test_freq = 2.0
+    mock_compute_freq = Mock()
+    mock_compute_freq.return_value = test_freq
+
+    test_messages = [f"test{i}" for i in range(3)]
+
+    result = analyse(
+        conversation=[user_message(c) for c in test_messages],
+        payoffs=Mock(),
+        extract_choice=Mock(),
+        compute_freq=mock_compute_freq,
+    )
+    assert result == (test_score, test_freq, mock_choice, test_messages)
+
+    mock_compute_freq_with_ex = Mock()
+    test_err_message = "test exception"
+    mock_compute_freq_with_ex.side_effect = ValueError(test_err_message)
+    err_result = analyse(
+        conversation=[],
+        payoffs=Mock(),
+        extract_choice=Mock(),
+        compute_freq=mock_compute_freq_with_ex,
+    )
+    assert len(err_result) == 4
+    assert np.isnan(err_result[1])
+    assert err_result[2] is None
+    assert test_err_message in err_result[3]
