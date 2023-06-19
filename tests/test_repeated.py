@@ -98,6 +98,7 @@ def test_run_experiment(mocker):
 def test_results_to_df(results: Iterable[ResultRepeatedGame]):
     df = RepeatedGameResults(results).to_df()
     assert len(df.columns) == 7
+    # pylint: disable=R0801
     assert len(df) == 2
     assert df["Group"][0] == str(Group.Altruistic)
     assert df["Group"][1] == str(Group.Selfish)
