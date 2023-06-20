@@ -1,8 +1,7 @@
 from enum import Enum
 from typing import Dict, Hashable
 
-from openai import Completion
-from openai_pygenerator import content
+from openai_pygenerator import Completion, content
 
 from llm_cooperation import (
     AI_PARTICIPANTS,

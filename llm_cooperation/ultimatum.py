@@ -4,7 +4,7 @@ from enum import Enum, auto
 from typing import Hashable, List
 
 import numpy as np
-from openai_pygenerator import Completion, History, user_message
+from openai_pygenerator import Completion, user_message
 
 from llm_cooperation import (
     AI_PARTICIPANTS,
@@ -94,7 +94,7 @@ def next_round_ultimatum(
     ]
 
 
-def strategy_cooperate(history: History) -> UltimatumChoice:
+def strategy_cooperate(history: List[Completion]) -> UltimatumChoice:
     prev: Choice = extract_choice_ultimatum(history[-1])
     if isinstance(prev, ResponderChoice):
         return ProposerChoice(MAX_AMOUNT)

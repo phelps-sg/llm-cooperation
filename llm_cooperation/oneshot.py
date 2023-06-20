@@ -4,13 +4,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from openai_pygenerator import (
-    Completion,
-    History,
-    gpt_completions,
-    transcript,
-    user_message,
-)
+from openai_pygenerator import Completion, gpt_completions, transcript, user_message
 
 from llm_cooperation import CT, Group, Results, logger
 
@@ -41,9 +35,9 @@ class OneShotResults(Results):
 
 def play_game(
     role_prompt: str, generate_instruction_prompt: PromptGenerator
-) -> History:
+) -> List[Completion]:
     messages = [user_message(generate_instruction_prompt(role_prompt))]
-    messages += gpt_completions(messages)
+    messages += gpt_completions(messages, 1)
     return messages
 
 
