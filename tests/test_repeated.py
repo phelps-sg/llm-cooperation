@@ -3,9 +3,9 @@ from unittest.mock import Mock
 
 import pandas as pd
 import pytest
-from openai_pygenerator import Completion
+from openai_pygenerator import Completion, content
 
-from llm_cooperation import Group
+from llm_cooperation import Choice, Group
 from llm_cooperation.dilemma import (
     Cooperate,
     Defect,
@@ -63,6 +63,14 @@ def test_compute_scores(conversation):
         Choices(Defect, Defect),
         Choices(Cooperate, Defect),
     ]
+
+
+def test_next_round_default():
+    choice = Mock(Choice)
+    choice.description = "my choice"
+    result = next_round_default(lambda _: choice, [])
+    assert len(result) == 1
+    assert choice.description in content(result[0])
 
 
 def test_run_experiment(mocker):
