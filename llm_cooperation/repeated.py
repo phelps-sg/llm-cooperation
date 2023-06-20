@@ -23,6 +23,10 @@ class Choices(Generic[CT]):
     ai: CT
 
 
+RoundGenerator = Callable[[Strategy, List[Completion]], List[Completion]]
+CooperationFrequencyFunction = Callable[[List[Choices]], float]
+ChoiceExtractor = Callable[[Completion], CT]
+PayoffFunction = Callable[[CT, CT], Payoffs]
 PromptGenerator = Callable[[int, str], str]
 ResultRepeatedGame = Tuple[
     Group, str, str, float, float, Optional[List[Choices]], List[str]
@@ -51,24 +55,33 @@ class RepeatedGameResults(Results):
         )
 
 
+def next_round_default(
+    partner_strategy: Strategy, messages: List[Completion]
+) -> List[Completion]:
+    user_choice = partner_strategy(messages).description
+    return [
+        user_message(
+            f"Your partner chose {user_choice} in that round. "
+            """Now we will move on the next round.
+What is your choice for the next round?"""
+        )
+    ]
+
+
 def play_game(
     num_rounds: int,
     role_prompt: str,
     partner_strategy: Strategy,
     generate_instruction_prompt: PromptGenerator,
+    next_round: RoundGenerator,
 ) -> History:
-    messages = [user_message(generate_instruction_prompt(num_rounds, role_prompt))]
+    messages: List[Completion] = [
+        user_message(generate_instruction_prompt(num_rounds, role_prompt))
+    ]
     for _round in range(num_rounds):
         completion = gpt_completions(messages)
         messages += completion
-        user_choice = partner_strategy(messages).description
-        messages += [
-            user_message(
-                f"Your partner chose {user_choice} in that round. "
-                """Now we will move on the next round.
-What is your choice for the next round?"""
-            )
-        ]
+        messages += next_round(partner_strategy, messages)
     return messages
 
 
@@ -81,8 +94,8 @@ class Scores:
 def analyse_round(
     i: int,
     conversation: List[Completion],
-    payoffs: Callable[[CT, CT], Payoffs],
-    extract_choice: Callable[[Completion], CT],
+    payoffs: PayoffFunction,
+    extract_choice: ChoiceExtractor,
 ) -> Tuple[Scores, Choices]:
     assert is_assistant_role(conversation[i * 2])
     ai_choice = extract_choice(conversation[i * 2])
@@ -95,8 +108,8 @@ def analyse_round(
 
 def compute_scores(
     conversation: List[Completion],
-    payoffs: Callable[[CT, CT], Payoffs],
-    extract_choice: Callable[[Completion], CT],
+    payoffs: PayoffFunction,
+    extract_choice: ChoiceExtractor,
 ) -> Tuple[Scores, List[Choices]]:
     conversation = conversation[1:]
     num_messages = len(conversation)
@@ -113,9 +126,9 @@ def compute_scores(
 
 def analyse(
     conversation: List[Completion],
-    payoffs: Callable[[CT, CT], Payoffs],
-    extract_choice: Callable[[Completion], CT],
-    compute_freq: Callable[[List[Choices]], float],
+    payoffs: PayoffFunction,
+    extract_choice: ChoiceExtractor,
+    compute_freq: CooperationFrequencyFunction,
 ) -> Tuple[float, float, Optional[List[Choices]], List[str]]:
     try:
         history = transcript(conversation)
@@ -133,9 +146,10 @@ def generate_samples(
     num_rounds: int,
     partner_strategy: Strategy,
     generate_instruction_prompt: PromptGenerator,
-    payoffs: Callable[[CT, CT], Payoffs],
-    extract_choice: Callable[[Completion], CT],
-    compute_freq: Callable[[List[Choices]], float],
+    payoffs: PayoffFunction,
+    extract_choice: ChoiceExtractor,
+    compute_freq: CooperationFrequencyFunction,
+    next_round: RoundGenerator,
 ) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
     # pylint: disable=R0801
     for _i in range(num_samples):
@@ -144,6 +158,7 @@ def generate_samples(
             role_prompt=prompt,
             partner_strategy=partner_strategy,
             generate_instruction_prompt=generate_instruction_prompt,
+            next_round=next_round,
         )
         yield analyse(conversation, payoffs, extract_choice, compute_freq)
 
@@ -153,10 +168,11 @@ def run_experiment(
     partner_conditions: Dict[str, Strategy],
     num_rounds: int,
     num_samples: int,
-    generate_instruction_prompt: Callable[[int, str], str],
-    payoffs: Callable[[CT, CT], Payoffs],
-    extract_choice: Callable[[Completion], CT],
-    compute_freq: Callable[[List[Choices]], float],
+    generate_instruction_prompt: PromptGenerator,
+    payoffs: PayoffFunction,
+    extract_choice: ChoiceExtractor,
+    compute_freq: CooperationFrequencyFunction,
+    next_round: RoundGenerator = next_round_default,
 ) -> RepeatedGameResults:
     return RepeatedGameResults(
         (group, prompt, strategy_name, score, freq, choices, history)
@@ -172,5 +188,6 @@ def run_experiment(
             payoffs=payoffs,
             extract_choice=extract_choice,
             compute_freq=compute_freq,
+            next_round=next_round,
         )
     )

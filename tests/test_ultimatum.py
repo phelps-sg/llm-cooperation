@@ -1,10 +1,12 @@
 from typing import List
+from unittest.mock import Mock
 
 import numpy as np
 import pytest
+from openai_pygenerator import Completion, content, user_message
 
 from llm_cooperation import Choice, Payoffs, amount_as_str
-from llm_cooperation.repeated import Choices
+from llm_cooperation.repeated import Choices, analyse_round
 from llm_cooperation.ultimatum import (
     MAX_AMOUNT,
     Accept,
@@ -17,6 +19,7 @@ from llm_cooperation.ultimatum import (
     compute_freq_ultimatum,
     extract_choice_ultimatum,
     get_prompt_ultimatum,
+    next_round_ultimatum,
     payoffs_ultimatum,
     strategy_cooperate,
 )
@@ -134,3 +137,55 @@ def test_ultimatum_choice():
     assert Accept != Reject
     assert Accept == ResponderChoice(ResponderEnum.Accept)
     assert Reject == ResponderChoice(ResponderEnum.Reject)
+
+
+def assistant_message(description):
+    return {"role": "assistant", "content": description}
+
+
+def test_next_round_ultimatum(response, proposal):
+    initial_history = [assistant_message(proposal.description)]
+    test_strategy = Mock()
+    test_strategy.side_effect = [response, proposal]
+    result = next_round_ultimatum(test_strategy, initial_history)
+    assert response.description in content(result[0])
+    assert proposal.description in content(result[1])
+
+
+@pytest.mark.parametrize(
+    "user_class, ai_class",
+    [
+        (ResponderChoice, ProposerChoice),
+    ],
+)
+def test_analyse_round(user_class: type, ai_class: type, history: List[Completion]):
+    _scores, choices = analyse_round(
+        0, history, payoffs_ultimatum, extract_choice_ultimatum
+    )
+    assert isinstance(choices.user, user_class)
+    assert isinstance(choices.ai, ai_class)
+
+
+@pytest.fixture
+def history(response, proposal) -> List[Completion]:
+    return [
+        assistant_message(proposal.description),
+        user_message(response.description),
+        user_message(proposal.description),
+        assistant_message(response.description),
+        user_message(proposal.description),
+        assistant_message(response.description),
+        assistant_message(proposal.description),
+        user_message(response.description),
+        user_message(proposal.description),
+    ]
+
+
+@pytest.fixture
+def response() -> UltimatumChoice:
+    return Accept
+
+
+@pytest.fixture
+def proposal() -> UltimatumChoice:
+    return ProposerChoice(MAX_AMOUNT)

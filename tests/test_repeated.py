@@ -24,6 +24,7 @@ from llm_cooperation.repeated import (
     ResultRepeatedGame,
     Scores,
     compute_scores,
+    next_round_default,
     play_game,
     run_experiment,
 )
@@ -43,6 +44,7 @@ def test_run_repeated_game(mocker):
             partner_strategy=strategy_defect,
             generate_instruction_prompt=get_prompt_pd,
             role_prompt="You are a participant in a psychology experiment",
+            next_round=next_round_default,
         )
     )
     assert len(conversation) == 7
@@ -90,6 +92,7 @@ def test_run_experiment(mocker):
         payoffs=payoffs_pd,
         extract_choice=extract_choice_pd,
         compute_freq=compute_freq_pd,
+        next_round=next_round_default,
     ).to_df()
     assert len(result) == len(samples) * len(user_conditions) * 3
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)

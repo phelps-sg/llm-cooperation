@@ -4,12 +4,13 @@ from enum import Enum, auto
 from typing import Hashable, List
 
 import numpy as np
-from openai_pygenerator import Completion, History
+from openai_pygenerator import Completion, History, user_message
 
 from llm_cooperation import (
     AI_PARTICIPANTS,
     Choice,
     Payoffs,
+    Strategy,
     amount_as_str,
     run_and_record_experiment,
 )
@@ -73,6 +74,24 @@ Accept = ResponderChoice(ResponderEnum.Accept)
 Reject = ResponderChoice(ResponderEnum.Reject)
 
 dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
+
+
+def next_round_ultimatum(
+    partner_strategy: Strategy, history: List[Completion]
+) -> List[Completion]:
+    response = partner_strategy(history).description
+    response_message = user_message(
+        (
+            f"Your partner chose {response} in that round. "
+            "Now we will move on the next round."
+        )
+    )
+    intermediate_history = history + [response_message]
+    switch_roles = partner_strategy(intermediate_history).description
+    return [
+        response_message,
+        user_message(f"Your partner proposes {switch_roles}." "What is your response?"),
+    ]
 
 
 def strategy_cooperate(history: History) -> UltimatumChoice:
@@ -178,6 +197,7 @@ def run_experiment_ultimatum() -> RepeatedGameResults:
         extract_choice=extract_choice_ultimatum,
         payoffs=payoffs_ultimatum,
         compute_freq=compute_freq_ultimatum,
+        next_round=next_round_ultimatum,
     )
 
 
