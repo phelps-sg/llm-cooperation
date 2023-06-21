@@ -97,7 +97,7 @@ What is your {"proposal" if ai_to_propose else "offer"} for the next round?"""
 
 
 def strategy_cooperate(state: GameState) -> UltimatumChoice:
-    _scores, prev_choices = state.last_round
+    _scores, prev_choices = state.results_in_last_round
     if isinstance(prev_choices.ai, ResponderChoice):
         return ProposerChoice(MAX_AMOUNT)
     elif isinstance(prev_choices.ai, ProposerChoice):

@@ -127,8 +127,10 @@ def test_compute_freq_ultimatum(choices: List[Choices], expected: float):
     ],
 )
 def test_cooperate(last_response: str, expected: UltimatumChoice):
-    state = Mock(spec=["last_round"])
-    state.last_round = Scores(user=0, ai=0), Choices(ai=last_response, user=Accept)  # type: ignore
+    state = Mock(spec=["results_in_last_round"])
+    state.results_in_last_round = Scores(user=0, ai=0), Choices(
+        ai=last_response, user=Accept
+    )  # type: ignore
     assert strategy_cooperate(state) == expected
 
 

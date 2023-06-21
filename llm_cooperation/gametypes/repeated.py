@@ -57,7 +57,7 @@ class GameState:
     game_setup: GameSetup
 
     @property
-    def last_round(self) -> ResultForRound:
+    def results_in_last_round(self) -> ResultForRound:
         return self.game_setup.rounds.analyse_round(
             self.round - 1,
             self.messages,
