@@ -13,6 +13,7 @@ Economics*, working paper, May 2023, [arXiv:2305.07970](https://arxiv.org/abs/23
 1. Install [mambaforge](https://github.com/conda-forge/miniforge#mambaforge).
 2. In a shell:
 ~~~bash
+export OPENAI_API_KEY='<my key>'
 make install
 make run
 ~~~
