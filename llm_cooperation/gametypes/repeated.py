@@ -26,16 +26,34 @@ class Scores:
 
 
 @dataclass
+class RoundsSetup:
+    analyse_round: RoundAnalyser
+    analyse_rounds: RoundsAnalyser
+
+
+@dataclass
+class GameSetup:
+    num_rounds: int
+    role_prompt: str
+    partner_strategy: Strategy
+    generate_instruction_prompt: PromptGenerator
+    next_round: RoundGenerator
+    rounds: RoundsSetup
+    payoffs: PayoffFunction
+    extract_choice: ChoiceExtractor
+
+
+@dataclass
 class GameState:
     messages: List[Completion]
     round: int
-    analyse_round: RoundAnalyser
+    rounds: RoundsSetup
     payoffs: PayoffFunction
     extract_choice: ChoiceExtractor
 
     @property
     def last_round(self) -> ResultForRound:
-        return self.analyse_round(
+        return self.rounds.analyse_round(
             self.round - 1, self.messages, self.payoffs, self.extract_choice
         )
 
@@ -90,7 +108,7 @@ def play_game(
     partner_strategy: Strategy,
     generate_instruction_prompt: PromptGenerator,
     next_round: RoundGenerator,
-    analyse_round: RoundAnalyser,
+    rounds: RoundsSetup,
     payoffs: PayoffFunction,
     extract_choice: ChoiceExtractor,
 ) -> List[Completion]:
@@ -102,7 +120,7 @@ def play_game(
         messages += completion
         partner_response = next_round(
             partner_strategy,
-            GameState(messages, i, analyse_round, payoffs, extract_choice),
+            GameState(messages, i, rounds, payoffs, extract_choice),
         )
         messages += partner_response
     return messages
@@ -112,16 +130,16 @@ def compute_scores(
     conversation: List[Completion],
     payoffs: PayoffFunction,
     extract_choice: ChoiceExtractor,
-    analyse_rounds: RoundsAnalyser,
+    rounds: RoundsSetup,
 ) -> Tuple[Scores, List[Choices]]:
     conversation = conversation[1:]
     num_messages = len(conversation)
     if num_messages % 2 != 0:
         raise ValueError("Invalid conversation: The number of messages should be even.")
-    rounds = analyse_rounds(conversation, payoffs, extract_choice)
-    user_score = sum((scores.user for scores, _ in rounds))
-    ai_score = sum((scores.ai for scores, _ in rounds))
-    return Scores(user_score, ai_score), [choices for _, choices in rounds]
+    results = rounds.analyse_rounds(conversation, payoffs, extract_choice)
+    user_score = sum((scores.user for scores, _ in results))
+    ai_score = sum((scores.ai for scores, _ in results))
+    return Scores(user_score, ai_score), [choices for _, choices in results]
 
 
 def analyse(
@@ -129,12 +147,12 @@ def analyse(
     payoffs: PayoffFunction,
     extract_choice: ChoiceExtractor,
     compute_freq: CooperationFrequencyFunction,
-    analyse_rounds: RoundsAnalyser,
+    rounds: RoundsSetup,
 ) -> Tuple[float, float, Optional[List[Choices]], List[str]]:
     try:
         history = transcript(conversation)
         scores, choices = compute_scores(
-            list(conversation), payoffs, extract_choice, analyse_rounds
+            list(conversation), payoffs, extract_choice, rounds
         )
         freq = compute_freq(choices)
         return scores.ai, freq, choices, history
@@ -153,8 +171,7 @@ def generate_samples(
     extract_choice: ChoiceExtractor,
     compute_freq: CooperationFrequencyFunction,
     next_round: RoundGenerator,
-    analyse_rounds: RoundsAnalyser,
-    analyse_round: RoundAnalyser,
+    rounds: RoundsSetup,
 ) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
     # pylint: disable=R0801
     for _i in range(num_samples):
@@ -164,13 +181,11 @@ def generate_samples(
             partner_strategy=partner_strategy,
             generate_instruction_prompt=generate_instruction_prompt,
             next_round=next_round,
-            analyse_round=analyse_round,
+            rounds=rounds,
             payoffs=payoffs,
             extract_choice=extract_choice,
         )
-        yield analyse(
-            conversation, payoffs, extract_choice, compute_freq, analyse_rounds
-        )
+        yield analyse(conversation, payoffs, extract_choice, compute_freq, rounds)
 
 
 def run_experiment(
@@ -183,8 +198,7 @@ def run_experiment(
     extract_choice: ChoiceExtractor,
     compute_freq: CooperationFrequencyFunction,
     next_round: RoundGenerator,
-    analyse_round: RoundAnalyser,
-    analyse_rounds: RoundsAnalyser,
+    rounds: RoundsSetup,
 ) -> RepeatedGameResults:
     return RepeatedGameResults(
         (group, prompt, strategy_name, score, freq, choices, history)
@@ -201,7 +215,6 @@ def run_experiment(
             extract_choice=extract_choice,
             compute_freq=compute_freq,
             next_round=next_round,
-            analyse_round=analyse_round,
-            analyse_rounds=analyse_rounds,
+            rounds=rounds,
         )
     )

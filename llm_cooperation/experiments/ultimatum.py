@@ -210,8 +210,7 @@ def run_experiment_ultimatum() -> RepeatedGameResults:
         payoffs=payoffs_ultimatum,
         compute_freq=compute_freq_ultimatum,
         next_round=next_round_ultimatum,
-        analyse_round=alternating.analyse_round,
-        analyse_rounds=alternating.analyse_rounds,
+        rounds=alternating.rounds_setup,
     )
 
 

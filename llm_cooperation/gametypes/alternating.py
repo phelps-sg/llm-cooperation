@@ -8,6 +8,7 @@ from llm_cooperation.gametypes.repeated import (
     Choices,
     PayoffFunction,
     ResultForRound,
+    RoundsSetup,
     Scores,
 )
 
@@ -51,3 +52,6 @@ def analyse_round(
     logger.debug("ai_choice = %s", ai_choice)
     user, ai = payoffs(user_choice, ai_choice)
     return Scores(user, ai), Choices(user_choice, ai_choice)
+
+
+rounds_setup = RoundsSetup(analyse_round=analyse_round, analyse_rounds=analyse_rounds)

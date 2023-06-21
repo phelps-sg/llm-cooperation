@@ -171,8 +171,7 @@ def run_experiment_pd() -> RepeatedGameResults:
         extract_choice=extract_choice_pd,
         compute_freq=compute_freq_pd,
         next_round=next_round,
-        analyse_round=simultaneous.analyse_round,
-        analyse_rounds=simultaneous.analyse_rounds,
+        rounds=simultaneous.rounds_setup,
     )
 
 

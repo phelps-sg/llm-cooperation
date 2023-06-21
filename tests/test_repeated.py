@@ -23,6 +23,7 @@ from llm_cooperation.gametypes.repeated import (
     GameState,
     RepeatedGameResults,
     ResultRepeatedGame,
+    RoundsSetup,
     Scores,
     compute_scores,
     play_game,
@@ -42,7 +43,7 @@ def test_play_game(mocker):
     )
     choice_mock = Mock(spec=Choice)
     strategy_mock = Mock(return_value=choice_mock)
-    analyse_round_mock = Mock()
+    rounds_mock = Mock(spec=RoundsSetup)
     prompt_generator_mock = Mock(return_value=instruction_prompt)
     next_round_mock = create_autospec(next_round, side_effect=[[test_response]])
     payoffs_mock = Mock()
@@ -55,7 +56,7 @@ def test_play_game(mocker):
         partner_strategy=strategy_mock,
         generate_instruction_prompt=prompt_generator_mock,
         next_round=next_round_mock,
-        analyse_round=analyse_round_mock,
+        rounds=rounds_mock,
         payoffs=payoffs_mock,
         extract_choice=extract_choice_mock,
     )
@@ -73,7 +74,7 @@ def test_play_game(mocker):
                 GameState(
                     messages=expected_messages,
                     round=0,
-                    analyse_round=analyse_round_mock,
+                    rounds=rounds_mock,
                     payoffs=payoffs_mock,
                     extract_choice=extract_choice_mock,
                 ),
@@ -89,7 +90,7 @@ def test_compute_scores(conversation):
         conversation,
         payoffs=payoffs_pd,
         extract_choice=extract_choice_pd,
-        analyse_rounds=simultaneous.analyse_rounds,
+        rounds=simultaneous.rounds_setup,
     )
     assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)
     assert moves == [
@@ -138,8 +139,7 @@ def test_run_experiment(mocker):
         extract_choice=extract_choice_pd,
         compute_freq=compute_freq_pd,
         next_round=simultaneous.next_round,
-        analyse_round=simultaneous.analyse_round,
-        analyse_rounds=simultaneous.analyse_rounds,
+        rounds=simultaneous.rounds_setup,
     ).to_df()
     assert len(result) == len(samples) * len(user_conditions) * 3
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)

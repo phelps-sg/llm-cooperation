@@ -24,7 +24,6 @@ from llm_cooperation.experiments.dilemma import (
 )
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import play_game
-from llm_cooperation.gametypes.simultaneous import next_round
 from tests.common import make_completion
 
 
@@ -113,8 +112,8 @@ def test_run_repeated_game(mocker):
             partner_strategy=strategy_defect,
             generate_instruction_prompt=get_prompt_pd,
             role_prompt="You are a participant in a psychology experiment",
-            next_round=next_round,
-            analyse_round=simultaneous.next_round,
+            next_round=simultaneous.next_round,
+            rounds=simultaneous.rounds_setup,
             payoffs=payoffs_pd,
             extract_choice=extract_choice_pd,
         )
