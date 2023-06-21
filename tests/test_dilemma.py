@@ -23,7 +23,7 @@ from llm_cooperation.experiments.dilemma import (
     strategy_t4t_defect,
 )
 from llm_cooperation.gametypes import simultaneous
-from llm_cooperation.gametypes.repeated import play_game
+from llm_cooperation.gametypes.repeated import GameSetup, play_game
 from tests.common import make_completion
 
 
@@ -108,14 +108,16 @@ def test_run_repeated_game(mocker):
     )
     conversation: List[Completion] = list(
         play_game(
-            num_rounds=3,
             partner_strategy=strategy_defect,
-            generate_instruction_prompt=get_prompt_pd,
             role_prompt="You are a participant in a psychology experiment",
-            next_round=simultaneous.next_round,
-            rounds=simultaneous.rounds_setup,
-            payoffs=payoffs_pd,
-            extract_choice=extract_choice_pd,
+            game_setup=GameSetup(
+                num_rounds=3,
+                generate_instruction_prompt=get_prompt_pd,
+                next_round=simultaneous.next_round,
+                rounds=simultaneous.rounds_setup,
+                payoffs=payoffs_pd,
+                extract_choice=extract_choice_pd,
+            ),
         )
     )
     assert len(conversation) == 7

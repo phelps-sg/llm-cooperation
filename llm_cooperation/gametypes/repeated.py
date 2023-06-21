@@ -34,27 +34,29 @@ class RoundsSetup:
 @dataclass
 class GameSetup:
     num_rounds: int
-    role_prompt: str
-    partner_strategy: Strategy
     generate_instruction_prompt: PromptGenerator
     next_round: RoundGenerator
     rounds: RoundsSetup
     payoffs: PayoffFunction
     extract_choice: ChoiceExtractor
 
+    def instruction_prompt(self, role_prompt: str) -> str:
+        return self.generate_instruction_prompt(self.num_rounds, role_prompt)
+
 
 @dataclass
 class GameState:
     messages: List[Completion]
     round: int
-    rounds: RoundsSetup
-    payoffs: PayoffFunction
-    extract_choice: ChoiceExtractor
+    game_setup: GameSetup
 
     @property
     def last_round(self) -> ResultForRound:
-        return self.rounds.analyse_round(
-            self.round - 1, self.messages, self.payoffs, self.extract_choice
+        return self.game_setup.rounds.analyse_round(
+            self.round - 1,
+            self.messages,
+            self.game_setup.payoffs,
+            self.game_setup.extract_choice,
         )
 
 
@@ -103,24 +105,16 @@ class RepeatedGameResults(Results):
 
 
 def play_game(
-    num_rounds: int,
-    role_prompt: str,
-    partner_strategy: Strategy,
-    generate_instruction_prompt: PromptGenerator,
-    next_round: RoundGenerator,
-    rounds: RoundsSetup,
-    payoffs: PayoffFunction,
-    extract_choice: ChoiceExtractor,
+    role_prompt: str, partner_strategy: Strategy, game_setup: GameSetup
 ) -> List[Completion]:
     messages: List[Completion] = [
-        user_message(generate_instruction_prompt(num_rounds, role_prompt))
+        user_message(game_setup.instruction_prompt(role_prompt))
     ]
-    for i in range(num_rounds):
+    for i in range(game_setup.num_rounds):
         completion = gpt_completions(messages, 1)
         messages += completion
-        partner_response = next_round(
-            partner_strategy,
-            GameState(messages, i, rounds, payoffs, extract_choice),
+        partner_response = game_setup.next_round(
+            partner_strategy, GameState(messages, i, game_setup)
         )
         messages += partner_response
     return messages
@@ -164,41 +158,32 @@ def analyse(
 def generate_samples(
     prompt: str,
     num_samples: int,
-    num_rounds: int,
     partner_strategy: Strategy,
-    generate_instruction_prompt: PromptGenerator,
-    payoffs: PayoffFunction,
-    extract_choice: ChoiceExtractor,
     compute_freq: CooperationFrequencyFunction,
-    next_round: RoundGenerator,
-    rounds: RoundsSetup,
+    game_setup: GameSetup,
 ) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
     # pylint: disable=R0801
     for _i in range(num_samples):
         conversation = play_game(
-            num_rounds=num_rounds,
-            role_prompt=prompt,
             partner_strategy=partner_strategy,
-            generate_instruction_prompt=generate_instruction_prompt,
-            next_round=next_round,
-            rounds=rounds,
-            payoffs=payoffs,
-            extract_choice=extract_choice,
+            game_setup=game_setup,
+            role_prompt=prompt,
         )
-        yield analyse(conversation, payoffs, extract_choice, compute_freq, rounds)
+        yield analyse(
+            conversation,
+            game_setup.payoffs,
+            game_setup.extract_choice,
+            compute_freq,
+            game_setup.rounds,
+        )
 
 
 def run_experiment(
     ai_participants: Dict[Group, List[str]],
     partner_conditions: Dict[str, Strategy],
-    num_rounds: int,
     num_samples: int,
-    generate_instruction_prompt: PromptGenerator,
-    payoffs: PayoffFunction,
-    extract_choice: ChoiceExtractor,
     compute_freq: CooperationFrequencyFunction,
-    next_round: RoundGenerator,
-    rounds: RoundsSetup,
+    game_setup: GameSetup,
 ) -> RepeatedGameResults:
     return RepeatedGameResults(
         (group, prompt, strategy_name, score, freq, choices, history)
@@ -209,12 +194,7 @@ def run_experiment(
             prompt=prompt,
             partner_strategy=strategy_fn,
             num_samples=num_samples,
-            num_rounds=num_rounds,
-            generate_instruction_prompt=generate_instruction_prompt,
-            payoffs=payoffs,
-            extract_choice=extract_choice,
             compute_freq=compute_freq,
-            next_round=next_round,
-            rounds=rounds,
+            game_setup=game_setup,
         )
     )

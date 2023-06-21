@@ -12,6 +12,7 @@ from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experime
 from llm_cooperation.gametypes import alternating
 from llm_cooperation.gametypes.repeated import (
     Choices,
+    GameSetup,
     GameState,
     RepeatedGameResults,
     Strategy,
@@ -202,15 +203,17 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
 def run_experiment_ultimatum() -> RepeatedGameResults:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
-        partner_conditions={"cooperate": strategy_cooperate},
-        num_rounds=NUM_ROUNDS,
         num_samples=SAMPLE_SIZE,
-        generate_instruction_prompt=get_prompt_ultimatum,
-        extract_choice=extract_choice_ultimatum,
-        payoffs=payoffs_ultimatum,
+        partner_conditions={"cooperate": strategy_cooperate},
         compute_freq=compute_freq_ultimatum,
-        next_round=next_round_ultimatum,
-        rounds=alternating.rounds_setup,
+        game_setup=GameSetup(
+            num_rounds=NUM_ROUNDS,
+            generate_instruction_prompt=get_prompt_ultimatum,
+            extract_choice=extract_choice_ultimatum,
+            payoffs=payoffs_ultimatum,
+            next_round=next_round_ultimatum,
+            rounds=alternating.rounds_setup,
+        ),
     )
 
 

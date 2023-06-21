@@ -20,6 +20,7 @@ from llm_cooperation.experiments.dilemma import (
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import (
     Choices,
+    GameSetup,
     GameState,
     RepeatedGameResults,
     ResultRepeatedGame,
@@ -51,14 +52,16 @@ def test_play_game(mocker):
     n = 1
 
     result = play_game(
-        num_rounds=n,
         role_prompt="test-prompt",
         partner_strategy=strategy_mock,
-        generate_instruction_prompt=prompt_generator_mock,
-        next_round=next_round_mock,
-        rounds=rounds_mock,
-        payoffs=payoffs_mock,
-        extract_choice=extract_choice_mock,
+        game_setup=GameSetup(
+            num_rounds=n,
+            next_round=next_round_mock,
+            rounds=rounds_mock,
+            payoffs=payoffs_mock,
+            extract_choice=extract_choice_mock,
+            generate_instruction_prompt=prompt_generator_mock,
+        ),
     )
 
     expected_messages = [
@@ -74,9 +77,14 @@ def test_play_game(mocker):
                 GameState(
                     messages=expected_messages,
                     round=0,
-                    rounds=rounds_mock,
-                    payoffs=payoffs_mock,
-                    extract_choice=extract_choice_mock,
+                    game_setup=GameSetup(
+                        rounds=rounds_mock,
+                        payoffs=payoffs_mock,
+                        extract_choice=extract_choice_mock,
+                        next_round=next_round_mock,
+                        generate_instruction_prompt=prompt_generator_mock,
+                        num_rounds=n,
+                    ),
                 ),
             )
         ]
@@ -130,16 +138,18 @@ def test_run_experiment(mocker):
     }
 
     result: pd.DataFrame = run_experiment(
-        ai_participants,
-        user_conditions,
-        num_rounds=6,
+        ai_participants=ai_participants,
+        partner_conditions=user_conditions,
         num_samples=len(samples),
-        generate_instruction_prompt=get_prompt_pd,
-        payoffs=payoffs_pd,
-        extract_choice=extract_choice_pd,
         compute_freq=compute_freq_pd,
-        next_round=simultaneous.next_round,
-        rounds=simultaneous.rounds_setup,
+        game_setup=GameSetup(
+            num_rounds=6,
+            generate_instruction_prompt=get_prompt_pd,
+            payoffs=payoffs_pd,
+            extract_choice=extract_choice_pd,
+            next_round=simultaneous.next_round,
+            rounds=simultaneous.rounds_setup,
+        ),
     ).to_df()
     assert len(result) == len(samples) * len(user_conditions) * 3
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)
