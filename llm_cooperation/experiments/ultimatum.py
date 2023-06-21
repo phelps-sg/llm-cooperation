@@ -5,15 +5,16 @@ from enum import Enum, auto
 from typing import Hashable, List, Optional
 
 import numpy as np
-from openai_pygenerator import Completion, content
+from openai_pygenerator import Completion, content, user_message
 
 from llm_cooperation import Choice, Payoffs, amount_as_str
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
-from llm_cooperation.gametypes import alternating, simultaneous
+from llm_cooperation.gametypes import alternating
 from llm_cooperation.gametypes.repeated import (
     Choices,
     GameState,
     RepeatedGameResults,
+    Strategy,
     run_experiment,
 )
 
@@ -79,22 +80,18 @@ Reject = ResponderChoice(ResponderEnum.Reject)
 dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
 
 
-# def next_round_ultimatum(
-#     partner_strategy: Strategy, state: GameState
-# ) -> List[Completion]:
-#     response = partner_strategy(state).description
-#     response_message = user_message(
-#         (
-#             f"Your partner chose {response} in that round. "
-#             "Now we will move on the next round."
-#         )
-#     )
-#     intermediate_history = history + [response_message]
-#     switch_roles = partner_strategy(intermediate_history).description
-#     return [
-#         response_message,
-#         user_message(f"Your partner proposes {switch_roles}." "What is your response?"),
-#     ]
+def next_round_ultimatum(
+    partner_strategy: Strategy, state: GameState
+) -> List[Completion]:
+    user_choice = partner_strategy(state).description
+    ai_to_propose = isinstance(user_choice, ResponderChoice)
+    return [
+        user_message(
+            f"Your partner chose {user_choice} in that round. "
+            f"""Now we will move on to the next round.
+What is your {"proposal" if ai_to_propose else "offer"} for the next round?"""
+        )
+    ]
 
 
 def strategy_cooperate(state: GameState) -> UltimatumChoice:
@@ -212,7 +209,7 @@ def run_experiment_ultimatum() -> RepeatedGameResults:
         extract_choice=extract_choice_ultimatum,
         payoffs=payoffs_ultimatum,
         compute_freq=compute_freq_ultimatum,
-        next_round=simultaneous.next_round,
+        next_round=next_round_ultimatum,
         analyse_round=alternating.analyse_round,
         analyse_rounds=alternating.analyse_rounds,
     )
