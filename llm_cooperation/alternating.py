@@ -1,5 +1,5 @@
 import logging
-from typing import List, Tuple
+from typing import List
 
 from openai_pygenerator import Completion
 
@@ -29,7 +29,7 @@ def analyse_round(
     conversation: List[Completion],
     payoffs: PayoffFunction,
     extract_choice: ChoiceExtractor,
-) -> Tuple[Scores, Choices]:
+) -> ResultForRound:
     """
         Analyse round of this form:
 
