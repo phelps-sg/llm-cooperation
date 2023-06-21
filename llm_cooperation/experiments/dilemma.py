@@ -13,6 +13,7 @@ from llm_cooperation.gametypes.repeated import (
     Choices,
     GameSetup,
     GameState,
+    MeasurementSetup,
     RepeatedGameResults,
     run_experiment,
 )
@@ -158,7 +159,6 @@ def compute_freq_pd(choices: List[Choices]) -> float:
 
 def run_experiment_pd() -> RepeatedGameResults:
     return run_experiment(
-        num_samples=SAMPLE_SIZE,
         ai_participants=AI_PARTICIPANTS,
         partner_conditions={
             "unconditional cooperate": strategy_cooperate,
@@ -166,7 +166,10 @@ def run_experiment_pd() -> RepeatedGameResults:
             "tit for tat C": strategy_t4t_cooperate,
             "tit for tat D": strategy_t4t_defect,
         },
-        compute_freq=compute_freq_pd,
+        measurement_setup=MeasurementSetup(
+            num_samples=SAMPLE_SIZE,
+            compute_freq=compute_freq_pd,
+        ),
         game_setup=GameSetup(
             num_rounds=NUM_ROUNDS,
             generate_instruction_prompt=get_prompt_pd,

@@ -22,6 +22,7 @@ from llm_cooperation.gametypes.repeated import (
     Choices,
     GameSetup,
     GameState,
+    MeasurementSetup,
     RepeatedGameResults,
     ResultRepeatedGame,
     RoundsSetup,
@@ -140,8 +141,9 @@ def test_run_experiment(mocker):
     result: pd.DataFrame = run_experiment(
         ai_participants=ai_participants,
         partner_conditions=user_conditions,
-        num_samples=len(samples),
-        compute_freq=compute_freq_pd,
+        measurement_setup=MeasurementSetup(
+            num_samples=len(samples), compute_freq=compute_freq_pd
+        ),
         game_setup=GameSetup(
             num_rounds=6,
             generate_instruction_prompt=get_prompt_pd,

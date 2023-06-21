@@ -45,6 +45,12 @@ class GameSetup:
 
 
 @dataclass
+class MeasurementSetup:
+    num_samples: int
+    compute_freq: CooperationFrequencyFunction
+
+
+@dataclass
 class GameState:
     messages: List[Completion]
     round: int
@@ -157,13 +163,12 @@ def analyse(
 
 def generate_samples(
     prompt: str,
-    num_samples: int,
     partner_strategy: Strategy,
-    compute_freq: CooperationFrequencyFunction,
+    measurement_setup: MeasurementSetup,
     game_setup: GameSetup,
 ) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
     # pylint: disable=R0801
-    for _i in range(num_samples):
+    for _i in range(measurement_setup.num_samples):
         conversation = play_game(
             partner_strategy=partner_strategy,
             game_setup=game_setup,
@@ -173,7 +178,7 @@ def generate_samples(
             conversation,
             game_setup.payoffs,
             game_setup.extract_choice,
-            compute_freq,
+            measurement_setup.compute_freq,
             game_setup.rounds,
         )
 
@@ -181,8 +186,7 @@ def generate_samples(
 def run_experiment(
     ai_participants: Dict[Group, List[str]],
     partner_conditions: Dict[str, Strategy],
-    num_samples: int,
-    compute_freq: CooperationFrequencyFunction,
+    measurement_setup: MeasurementSetup,
     game_setup: GameSetup,
 ) -> RepeatedGameResults:
     return RepeatedGameResults(
@@ -193,8 +197,7 @@ def run_experiment(
         for score, freq, choices, history in generate_samples(
             prompt=prompt,
             partner_strategy=strategy_fn,
-            num_samples=num_samples,
-            compute_freq=compute_freq,
+            measurement_setup=measurement_setup,
             game_setup=game_setup,
         )
     )
