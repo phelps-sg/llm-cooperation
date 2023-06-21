@@ -195,8 +195,7 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
     if isinstance(player1, ProposerChoice) and isinstance(player2, ResponderChoice):
         return _payoffs(player1, player2)
     elif isinstance(player1, ResponderChoice) and isinstance(player2, ProposerChoice):
-        payoffs = _payoffs(player2, player1)
-        return payoffs[1], payoffs[0]
+        return _payoffs(player2, player1)[::-1]
     else:
         raise ValueError(f"Invalid choice combination: {player1}, {player2}")
 
