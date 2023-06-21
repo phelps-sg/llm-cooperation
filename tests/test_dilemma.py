@@ -1,6 +1,10 @@
-import pytest
+from typing import List
+from unittest.mock import Mock
 
-from llm_cooperation import Payoffs
+import pytest
+from openai_pygenerator import Completion
+
+from llm_cooperation import Payoffs, simultaneous
 from llm_cooperation.dilemma import (
     Cooperate,
     Defect,
@@ -18,6 +22,8 @@ from llm_cooperation.dilemma import (
     strategy_t4t_cooperate,
     strategy_t4t_defect,
 )
+from llm_cooperation.repeated import play_game
+from llm_cooperation.simultaneous import next_round
 from tests.common import make_completion
 
 
@@ -78,7 +84,9 @@ def test_payoffs(
     ],
 )
 def test_strategy(strategy, index, expected, conversation):
-    assert strategy(conversation[:index]) == expected
+    state = Mock(spec=["messages"])
+    state.messages = conversation[:index]
+    assert strategy(state) == expected
 
 
 def test_dilemma_choice():
@@ -88,3 +96,28 @@ def test_dilemma_choice():
     assert c1 == c2
     assert c1 != d
     assert Cooperate != Defect
+
+
+def test_run_repeated_game(mocker):
+    completions = [
+        {"role": "assistant", "content": "project green"},
+    ]
+    mocker.patch(
+        "openai_pygenerator.openai_pygenerator.generate_completions",
+        return_value=completions,
+    )
+    conversation: List[Completion] = list(
+        play_game(
+            num_rounds=3,
+            partner_strategy=strategy_defect,
+            generate_instruction_prompt=get_prompt_pd,
+            role_prompt="You are a participant in a psychology experiment",
+            next_round=next_round,
+            analyse_round=simultaneous.next_round,
+            payoffs=payoffs_pd,
+            extract_choice=extract_choice_pd,
+        )
+    )
+    assert len(conversation) == 7
+    # pylint: disable=unsubscriptable-object
+    assert Defect.description in conversation[-1]["content"]

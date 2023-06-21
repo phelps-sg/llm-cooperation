@@ -1,20 +1,29 @@
+import logging
 import re
 from abc import ABC
 from enum import Enum, auto
-from typing import Hashable, List
+from typing import Hashable, List, Optional
 
 import numpy as np
-from openai_pygenerator import Completion, user_message
+from openai_pygenerator import Completion, content
 
 from llm_cooperation import (
     AI_PARTICIPANTS,
     Choice,
     Payoffs,
-    Strategy,
+    alternating,
     amount_as_str,
     run_and_record_experiment,
+    simultaneous,
 )
-from llm_cooperation.repeated import Choices, RepeatedGameResults, run_experiment
+from llm_cooperation.repeated import (
+    Choices,
+    GameState,
+    RepeatedGameResults,
+    run_experiment,
+)
+
+logger = logging.getLogger(__name__)
 
 MAX_AMOUNT: float = 10.0
 MIN_AMOUNT: float = 0.0
@@ -76,32 +85,32 @@ Reject = ResponderChoice(ResponderEnum.Reject)
 dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
 
 
-def next_round_ultimatum(
-    partner_strategy: Strategy, history: List[Completion]
-) -> List[Completion]:
-    response = partner_strategy(history).description
-    response_message = user_message(
-        (
-            f"Your partner chose {response} in that round. "
-            "Now we will move on the next round."
-        )
-    )
-    intermediate_history = history + [response_message]
-    switch_roles = partner_strategy(intermediate_history).description
-    return [
-        response_message,
-        user_message(f"Your partner proposes {switch_roles}." "What is your response?"),
-    ]
+# def next_round_ultimatum(
+#     partner_strategy: Strategy, state: GameState
+# ) -> List[Completion]:
+#     response = partner_strategy(state).description
+#     response_message = user_message(
+#         (
+#             f"Your partner chose {response} in that round. "
+#             "Now we will move on the next round."
+#         )
+#     )
+#     intermediate_history = history + [response_message]
+#     switch_roles = partner_strategy(intermediate_history).description
+#     return [
+#         response_message,
+#         user_message(f"Your partner proposes {switch_roles}." "What is your response?"),
+#     ]
 
 
-def strategy_cooperate(history: List[Completion]) -> UltimatumChoice:
-    prev: Choice = extract_choice_ultimatum(history[-1])
-    if isinstance(prev, ResponderChoice):
+def strategy_cooperate(state: GameState) -> UltimatumChoice:
+    _scores, prev_choices = state.last_round
+    if isinstance(prev_choices.ai, ResponderChoice):
         return ProposerChoice(MAX_AMOUNT)
-    elif isinstance(prev, ProposerChoice):
+    elif isinstance(prev_choices.ai, ProposerChoice):
         return Accept
     else:
-        raise ValueError(f"Unknown choice type: {prev}")
+        raise ValueError(f"Unknown choice type: {prev_choices.ai}")
 
 
 def get_prompt_ultimatum(num_rounds: int, role_prompt: str) -> str:
@@ -151,14 +160,26 @@ def amount_from_str(s: str) -> float:
         raise ValueError(f"Cannot extract dollar amount from {s}")
 
 
-def extract_choice_ultimatum(completion: Completion) -> UltimatumChoice:
-    content = completion["content"].lower().strip()
-    if "accept" in content:
+def extract_responder_choice(completion: Completion) -> Optional[ResponderChoice]:
+    message = content(completion).lower().strip()
+    if "accept" in message:
         return Accept
-    elif "reject" in content:
+    elif "reject" in message:
         return Reject
-    else:
-        return ProposerChoice(amount_from_str(content))
+    return None
+
+
+def extract_proposer_choice(completion: Completion) -> ProposerChoice:
+    return ProposerChoice(amount_from_str(content(completion)))
+
+
+def extract_choice_ultimatum(completion: Completion, **kwargs: bool) -> UltimatumChoice:
+    proposer = kwargs["proposer"]
+    return (
+        extract_proposer_choice(completion)
+        if proposer
+        else extract_responder_choice(completion)
+    )
 
 
 def compute_freq_ultimatum(choices: List[Choices]) -> float:
@@ -197,7 +218,9 @@ def run_experiment_ultimatum() -> RepeatedGameResults:
         extract_choice=extract_choice_ultimatum,
         payoffs=payoffs_ultimatum,
         compute_freq=compute_freq_ultimatum,
-        next_round=next_round_ultimatum,
+        next_round=simultaneous.next_round,
+        analyse_round=alternating.analyse_round,
+        analyse_rounds=alternating.analyse_rounds,
     )
 
 

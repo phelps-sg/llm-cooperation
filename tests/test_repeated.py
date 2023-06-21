@@ -1,11 +1,11 @@
 from typing import Iterable, List
-from unittest.mock import Mock
+from unittest.mock import Mock, call, create_autospec
 
 import pandas as pd
 import pytest
-from openai_pygenerator import Completion, content
+from openai_pygenerator import content, user_message
 
-from llm_cooperation import Choice, Group
+from llm_cooperation import Choice, Group, simultaneous
 from llm_cooperation.dilemma import (
     Cooperate,
     Defect,
@@ -16,45 +16,79 @@ from llm_cooperation.dilemma import (
     extract_choice_pd,
     get_prompt_pd,
     payoffs_pd,
-    strategy_defect,
 )
 from llm_cooperation.repeated import (
     Choices,
+    GameState,
     RepeatedGameResults,
     ResultRepeatedGame,
     Scores,
     compute_scores,
-    next_round_default,
     play_game,
     run_experiment,
 )
+from llm_cooperation.simultaneous import next_round
+from tests.test_ultimatum import assistant_message
 
 
-def test_run_repeated_game(mocker):
-    completions = [
-        {"role": "assistant", "content": "project green"},
-    ]
+def test_play_game(mocker):
+    instruction_prompt = "You are a helpful assistant etc."
+    assistant_prompt = assistant_message("My choice is cooperate")
+    test_response = assistant_message("test-response")
     mocker.patch(
         "openai_pygenerator.openai_pygenerator.generate_completions",
-        return_value=completions,
+        side_effect=[[assistant_prompt]],
     )
-    conversation: List[Completion] = list(
-        play_game(
-            num_rounds=3,
-            partner_strategy=strategy_defect,
-            generate_instruction_prompt=get_prompt_pd,
-            role_prompt="You are a participant in a psychology experiment",
-            next_round=next_round_default,
-        )
+    choice_mock = Mock(spec=Choice)
+    strategy_mock = Mock(return_value=choice_mock)
+    analyse_round_mock = Mock()
+    prompt_generator_mock = Mock(return_value=instruction_prompt)
+    next_round_mock = create_autospec(next_round, side_effect=[[test_response]])
+    payoffs_mock = Mock()
+    extract_choice_mock = Mock()
+    n = 1
+
+    result = play_game(
+        num_rounds=n,
+        role_prompt="test-prompt",
+        partner_strategy=strategy_mock,
+        generate_instruction_prompt=prompt_generator_mock,
+        next_round=next_round_mock,
+        analyse_round=analyse_round_mock,
+        payoffs=payoffs_mock,
+        extract_choice=extract_choice_mock,
     )
-    assert len(conversation) == 7
-    # pylint: disable=unsubscriptable-object
-    assert Defect.description in conversation[-1]["content"]
+
+    expected_messages = [
+        user_message(instruction_prompt),
+        assistant_prompt,
+        test_response,
+    ]
+
+    next_round_mock.assert_has_calls(
+        [
+            call(
+                strategy_mock,
+                GameState(
+                    messages=expected_messages,
+                    round=0,
+                    analyse_round=analyse_round_mock,
+                    payoffs=payoffs_mock,
+                    extract_choice=extract_choice_mock,
+                ),
+            )
+        ]
+    )
+
+    assert result == expected_messages
 
 
 def test_compute_scores(conversation):
     scores, moves = compute_scores(
-        conversation, payoffs=payoffs_pd, extract_choice=extract_choice_pd
+        conversation,
+        payoffs=payoffs_pd,
+        extract_choice=extract_choice_pd,
+        analyse_rounds=simultaneous.analyse_rounds,
     )
     assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)
     assert moves == [
@@ -65,10 +99,10 @@ def test_compute_scores(conversation):
     ]
 
 
-def test_next_round_default():
+def test_next_round():
     choice = Mock(Choice)
     choice.description = "my choice"
-    result = next_round_default(lambda _: choice, [])
+    result = next_round(lambda _: choice, [])
     assert len(result) == 1
     assert choice.description in content(result[0])
 
@@ -100,7 +134,9 @@ def test_run_experiment(mocker):
         payoffs=payoffs_pd,
         extract_choice=extract_choice_pd,
         compute_freq=compute_freq_pd,
-        next_round=next_round_default,
+        next_round=simultaneous.next_round,
+        analyse_round=simultaneous.analyse_round,
+        analyse_rounds=simultaneous.analyse_rounds,
     ).to_df()
     assert len(result) == len(samples) * len(user_conditions) * 3
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)

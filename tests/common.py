@@ -1,4 +1,4 @@
-from openai import Completion
+from openai_pygenerator import Completion
 
 
 def make_completion(text: str) -> Completion:

@@ -4,10 +4,9 @@ import logging
 import os.path
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Callable, Hashable, List, Tuple, TypeVar
+from typing import Callable, Hashable, Tuple, TypeVar
 
 import pandas as pd
-from openai_pygenerator import Completion
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +98,6 @@ AI_PARTICIPANTS = {
     ],
 }
 
-Strategy = Callable[[List[Completion]], Choice]
 Payoffs = Tuple[float, float]
 
 

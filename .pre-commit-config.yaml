@@ -67,7 +67,7 @@ repos:
     - id: mypy
       exclude: 'jupyter-book/.*|tests/.*'
       args: [--config=mypy.ini]
-      additional_dependencies: [ pandas-stubs ]
+      additional_dependencies: [ pandas-stubs, openai-pygenerator ]
 
 # mypy for tests
 - repo: https://github.com/pre-commit/mirrors-mypy
@@ -77,7 +77,7 @@ repos:
       name: mypy-tests
       files: ^tests/
       args: [--config=mypy-tests.ini]
-      additional_dependencies: [ pandas-stubs ]
+      additional_dependencies: [ pandas-stubs, openai-pygenerator ]
 
 # pylint
 - repo: local

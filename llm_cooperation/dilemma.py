@@ -4,15 +4,22 @@ from enum import Enum, auto
 from typing import List
 
 import numpy as np
-from openai_pygenerator import Completion, History
+from openai_pygenerator import Completion
 
-from llm_cooperation import AI_PARTICIPANTS, Choice, Payoffs, run_and_record_experiment
+from llm_cooperation import (
+    AI_PARTICIPANTS,
+    Choice,
+    Payoffs,
+    run_and_record_experiment,
+    simultaneous,
+)
 from llm_cooperation.repeated import (
     Choices,
+    GameState,
     RepeatedGameResults,
-    next_round_default,
     run_experiment,
 )
+from llm_cooperation.simultaneous import next_round
 
 SAMPLE_SIZE: int = 30
 NUM_ROUNDS: int = 6
@@ -88,32 +95,32 @@ Choice: [{defect} | {cooperate}]
 """
 
 
-def strategy_defect(_history: History) -> DilemmaChoice:
+def strategy_defect(_state: GameState) -> DilemmaChoice:
     return Defect
 
 
-def strategy_cooperate(_history: History) -> DilemmaChoice:
+def strategy_cooperate(_state: GameState) -> DilemmaChoice:
     return Cooperate
 
 
 def strategy_tit_for_tat(
-    history: List[Completion], initial_choice: DilemmaChoice = Cooperate
+    state: GameState, initial_choice: DilemmaChoice = Cooperate
 ) -> DilemmaChoice:
-    if len(history) == 2:
+    if len(state.messages) == 2:
         return initial_choice
-    ai_choice = extract_choice_pd(history[-2])
+    ai_choice = extract_choice_pd(state.messages[-2])
     if ai_choice == Cooperate:
         return Cooperate
     else:
         return Defect
 
 
-def strategy_t4t_defect(history: List[Completion]) -> DilemmaChoice:
-    return strategy_tit_for_tat(history, initial_choice=Defect)
+def strategy_t4t_defect(state: GameState) -> DilemmaChoice:
+    return strategy_tit_for_tat(state, initial_choice=Defect)
 
 
-def strategy_t4t_cooperate(history: List[Completion]) -> DilemmaChoice:
-    return strategy_tit_for_tat(history, initial_choice=Cooperate)
+def strategy_t4t_cooperate(state: GameState) -> DilemmaChoice:
+    return strategy_tit_for_tat(state, initial_choice=Cooperate)
 
 
 def move_as_str(move: DilemmaEnum) -> str:
@@ -124,9 +131,8 @@ def move_as_str(move: DilemmaEnum) -> str:
     raise ValueError(f"Invalid choice {move}")
 
 
-def extract_choice_pd(
-    completion: Completion, regex: str = r"project (blue|green)"
-) -> DilemmaChoice:
+def extract_choice_pd(completion: Completion, **_kwargs: bool) -> DilemmaChoice:
+    regex: str = r"project (blue|green)"
     logger.debug("completion = %s", completion)
     lower = completion["content"].lower().strip()
     choice_match = re.search(regex, lower)
@@ -168,7 +174,9 @@ def run_experiment_pd() -> RepeatedGameResults:
         payoffs=payoffs_pd,
         extract_choice=extract_choice_pd,
         compute_freq=compute_freq_pd,
-        next_round=next_round_default,
+        next_round=next_round,
+        analyse_round=simultaneous.analyse_round,
+        analyse_rounds=simultaneous.analyse_rounds,
     )
 
 
