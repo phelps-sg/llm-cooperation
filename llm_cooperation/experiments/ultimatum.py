@@ -91,7 +91,7 @@ def prompt_for_round(ai_to_propose: bool, user_choice: Choice) -> str:
         )
     else:
         return (
-            f"Your partner offered {user_choice.description}"
+            f"Your partner offered {user_choice.description}. "
             "How do you respond? [Accept|Reject]"
         )
 
