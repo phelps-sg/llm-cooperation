@@ -1,7 +1,7 @@
 import pytest
 from openai_pygenerator import user_message
 
-from llm_cooperation.dictator import (
+from llm_cooperation.experiments.dictator import (
     BLACK,
     BLUE,
     BROWN,

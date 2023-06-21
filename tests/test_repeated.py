@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import Choice, Group, simultaneous
-from llm_cooperation.dilemma import (
+from llm_cooperation import Choice, Group
+from llm_cooperation.experiments.dilemma import (
     Cooperate,
     Defect,
     P,
@@ -17,7 +17,8 @@ from llm_cooperation.dilemma import (
     get_prompt_pd,
     payoffs_pd,
 )
-from llm_cooperation.repeated import (
+from llm_cooperation.gametypes import simultaneous
+from llm_cooperation.gametypes.repeated import (
     Choices,
     GameState,
     RepeatedGameResults,
@@ -27,7 +28,7 @@ from llm_cooperation.repeated import (
     play_game,
     run_experiment,
 )
-from llm_cooperation.simultaneous import next_round
+from llm_cooperation.gametypes.simultaneous import next_round
 from tests.test_ultimatum import assistant_message
 
 
@@ -108,7 +109,9 @@ def test_next_round():
 
 
 def test_run_experiment(mocker):
-    mock_run_sample = mocker.patch("llm_cooperation.repeated.generate_samples")
+    mock_run_sample = mocker.patch(
+        "llm_cooperation.gametypes.repeated.generate_samples"
+    )
     samples = [
         (5, 0.5, [Cooperate], ["project green"]),
         (3, 0.7, [Defect], ["project blue"]),

@@ -3,7 +3,7 @@ from typing import List
 
 from openai_pygenerator import Completion
 
-from llm_cooperation.repeated import (
+from llm_cooperation.gametypes.repeated import (
     ChoiceExtractor,
     Choices,
     PayoffFunction,

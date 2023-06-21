@@ -6,20 +6,16 @@ from typing import List
 import numpy as np
 from openai_pygenerator import Completion
 
-from llm_cooperation import (
-    AI_PARTICIPANTS,
-    Choice,
-    Payoffs,
-    run_and_record_experiment,
-    simultaneous,
-)
-from llm_cooperation.repeated import (
+from llm_cooperation import Choice, Payoffs
+from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
+from llm_cooperation.gametypes import simultaneous
+from llm_cooperation.gametypes.repeated import (
     Choices,
     GameState,
     RepeatedGameResults,
     run_experiment,
 )
-from llm_cooperation.simultaneous import next_round
+from llm_cooperation.gametypes.simultaneous import next_round
 
 SAMPLE_SIZE: int = 30
 NUM_ROUNDS: int = 6

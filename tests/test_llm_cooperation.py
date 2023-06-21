@@ -3,7 +3,8 @@ from unittest.mock import MagicMock
 
 import pandas as pd
 
-from llm_cooperation import Results, run_and_record_experiment
+from llm_cooperation import Results
+from llm_cooperation.experiments import run_and_record_experiment
 
 
 def test_run_and_record_experiment():

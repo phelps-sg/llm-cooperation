@@ -1,13 +1,13 @@
 import pytest
 
-from llm_cooperation import alternating
-from llm_cooperation.repeated import Choices
-from llm_cooperation.ultimatum import (
+from llm_cooperation.experiments.ultimatum import (
     Accept,
     ProposerChoice,
     extract_choice_ultimatum,
     payoffs_ultimatum,
 )
+from llm_cooperation.gametypes import alternating
+from llm_cooperation.gametypes.repeated import Choices
 
 
 @pytest.mark.parametrize(

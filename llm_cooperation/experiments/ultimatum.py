@@ -7,16 +7,10 @@ from typing import Hashable, List, Optional
 import numpy as np
 from openai_pygenerator import Completion, content
 
-from llm_cooperation import (
-    AI_PARTICIPANTS,
-    Choice,
-    Payoffs,
-    alternating,
-    amount_as_str,
-    run_and_record_experiment,
-    simultaneous,
-)
-from llm_cooperation.repeated import (
+from llm_cooperation import Choice, Payoffs, amount_as_str
+from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
+from llm_cooperation.gametypes import alternating, simultaneous
+from llm_cooperation.gametypes.repeated import (
     Choices,
     GameState,
     RepeatedGameResults,

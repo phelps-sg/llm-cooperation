@@ -4,8 +4,8 @@ from unittest.mock import Mock
 import pytest
 from openai_pygenerator import Completion
 
-from llm_cooperation import Payoffs, simultaneous
-from llm_cooperation.dilemma import (
+from llm_cooperation import Payoffs
+from llm_cooperation.experiments.dilemma import (
     Cooperate,
     Defect,
     DilemmaChoice,
@@ -22,8 +22,9 @@ from llm_cooperation.dilemma import (
     strategy_t4t_cooperate,
     strategy_t4t_defect,
 )
-from llm_cooperation.repeated import play_game
-from llm_cooperation.simultaneous import next_round
+from llm_cooperation.gametypes import simultaneous
+from llm_cooperation.gametypes.repeated import play_game
+from llm_cooperation.gametypes.simultaneous import next_round
 from tests.common import make_completion
 
 

@@ -7,7 +7,7 @@ import pytest
 from openai_pygenerator import content, user_message
 
 from llm_cooperation import Choice, Group
-from llm_cooperation.oneshot import (
+from llm_cooperation.gametypes.oneshot import (
     OneShotResults,
     ResultSingleShotGame,
     analyse,
@@ -21,7 +21,7 @@ from llm_cooperation.oneshot import (
 def test_run_experiment(mocker):
     mock_choice = Mock(spec=Choice)
 
-    mock_run_sample = mocker.patch("llm_cooperation.oneshot.generate_samples")
+    mock_run_sample = mocker.patch("llm_cooperation.gametypes.oneshot.generate_samples")
     samples = [
         (5, 0.5, mock_choice, ["project green"]),
         (3, 0.7, mock_choice, ["project blue"]),
@@ -48,8 +48,10 @@ def test_run_experiment(mocker):
 
 def test_generate_samples(mocker):
     mock_result_row = (0.5, 0.2, None, [])
-    mocker.patch("llm_cooperation.oneshot.analyse", return_value=mock_result_row)
-    mocker.patch("llm_cooperation.oneshot.play_game", return_value=[])
+    mocker.patch(
+        "llm_cooperation.gametypes.oneshot.analyse", return_value=mock_result_row
+    )
+    mocker.patch("llm_cooperation.gametypes.oneshot.play_game", return_value=[])
     test_n = 3
     result = list(
         generate_samples(
@@ -98,7 +100,8 @@ def test_analyse(mocker):
     mock_choice = Mock(spec=Choice)
     test_score = 1.0
     mocker.patch(
-        "llm_cooperation.oneshot.compute_scores", return_value=(test_score, mock_choice)
+        "llm_cooperation.gametypes.oneshot.compute_scores",
+        return_value=(test_score, mock_choice),
     )
 
     test_freq = 2.0

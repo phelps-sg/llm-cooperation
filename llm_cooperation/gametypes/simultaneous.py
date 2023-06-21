@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 from openai_pygenerator import Completion, is_assistant_role, user_message
 
-from llm_cooperation.repeated import (
+from llm_cooperation.gametypes.repeated import (
     ChoiceExtractor,
     Choices,
     GameState,

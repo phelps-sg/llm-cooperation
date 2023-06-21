@@ -3,13 +3,9 @@ from typing import Dict, Hashable
 
 from openai_pygenerator import Completion, content
 
-from llm_cooperation import (
-    AI_PARTICIPANTS,
-    Choice,
-    amount_as_str,
-    run_and_record_experiment,
-)
-from llm_cooperation.oneshot import OneShotResults, run_experiment
+from llm_cooperation import Choice, amount_as_str
+from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
+from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
 TOTAL_SHARE = 4
 

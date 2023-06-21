@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """ Script to output all available GPT models """
 import os
 

@@ -5,8 +5,7 @@ import numpy as np
 import pytest
 
 from llm_cooperation import Payoffs, amount_as_str
-from llm_cooperation.repeated import Choices, Scores
-from llm_cooperation.ultimatum import (
+from llm_cooperation.experiments.ultimatum import (
     MAX_AMOUNT,
     Accept,
     ProposerChoice,
@@ -21,6 +20,7 @@ from llm_cooperation.ultimatum import (
     payoffs_ultimatum,
     strategy_cooperate,
 )
+from llm_cooperation.gametypes.repeated import Choices, Scores
 from tests.common import make_completion
 
 
