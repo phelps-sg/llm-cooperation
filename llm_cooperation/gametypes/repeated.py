@@ -2,7 +2,17 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Callable, Dict, Generic, Iterable, List, Optional, Protocol, Tuple
+from typing import (
+    Callable,
+    Dict,
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    Protocol,
+    Tuple,
+    TypeVar,
+)
 
 import numpy as np
 import pandas as pd
@@ -59,15 +69,18 @@ class GameState:
     @property
     def results_in_last_round(self) -> ResultForRound:
         return self.game_setup.rounds.analyse_round(
-            self.round - 1,
-            self.messages,
+            self.round,
+            self.messages[1:],
             self.game_setup.payoffs,
             self.game_setup.extract_choice,
         )
 
 
-class ChoiceExtractor(Protocol):
-    def __call__(self, completion: Completion, **kwargs: bool) -> Choice:
+CT_co = TypeVar("CT_co", bound=Choice, covariant=True)
+
+
+class ChoiceExtractor(Protocol, Generic[CT_co]):
+    def __call__(self, completion: Completion, **kwargs: bool) -> CT_co:
         ...
 
 

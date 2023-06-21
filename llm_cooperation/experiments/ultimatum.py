@@ -105,13 +105,21 @@ def next_round_ultimatum(
 
 
 def strategy_cooperate(state: GameState) -> UltimatumChoice:
-    _scores, prev_choices = state.results_in_last_round
-    if isinstance(prev_choices.ai, ResponderChoice):
+    def ai_choice() -> UltimatumChoice:
+        if state.round > 0:
+            _scores, prev_choices = state.results_in_last_round
+            return prev_choices.ai
+        else:
+            return state.game_setup.extract_choice(state.messages[1], proposer=True)
+
+    ai = ai_choice()
+
+    if isinstance(ai, ResponderChoice):
         return ProposerChoice(MAX_AMOUNT)
-    elif isinstance(prev_choices.ai, ProposerChoice):
+    elif isinstance(ai, ProposerChoice):
         return Accept
     else:
-        raise ValueError(f"Unknown choice type: {prev_choices.ai}")
+        raise ValueError(f"Unknown choice type: {ai}")
 
 
 def get_prompt_ultimatum(num_rounds: int, role_prompt: str) -> str:
