@@ -82,18 +82,26 @@ Reject = ResponderChoice(ResponderEnum.Reject)
 dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
 
 
+def prompt_for_round(ai_to_propose: bool, user_choice: Choice) -> str:
+    if ai_to_propose:
+        return (
+            f"Your partner chose {user_choice.description} in that round. "
+            "Now we will move on to the next round."
+            "What is your proposal for the next round?"
+        )
+    else:
+        return (
+            f"Your partner offered {user_choice.description}"
+            "How do you respond? [Accept|Reject]"
+        )
+
+
 def next_round_ultimatum(
     partner_strategy: Strategy, state: GameState
 ) -> List[Completion]:
-    user_choice = partner_strategy(state).description
+    user_choice = partner_strategy(state)
     ai_to_propose = isinstance(user_choice, ResponderChoice)
-    return [
-        user_message(
-            f"Your partner chose {user_choice} in that round. "
-            f"""Now we will move on to the next round.
-What is your {"proposal" if ai_to_propose else "offer"} for the next round?"""
-        )
-    ]
+    return [user_message(prompt_for_round(ai_to_propose, user_choice))]
 
 
 def strategy_cooperate(state: GameState) -> UltimatumChoice:

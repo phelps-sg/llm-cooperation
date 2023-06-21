@@ -3,6 +3,7 @@ from unittest.mock import Mock
 
 import numpy as np
 import pytest
+from openai_pygenerator import content
 
 from llm_cooperation import Payoffs, amount_as_str
 from llm_cooperation.experiments.ultimatum import (
@@ -17,6 +18,7 @@ from llm_cooperation.experiments.ultimatum import (
     compute_freq_ultimatum,
     extract_choice_ultimatum,
     get_prompt_ultimatum,
+    next_round_ultimatum,
     payoffs_ultimatum,
     strategy_cooperate,
 )
@@ -147,10 +149,13 @@ def assistant_message(description):
     return {"role": "assistant", "content": description}
 
 
-# def test_next_round_ultimatum(response, proposal):
-#     initial_history = [assistant_message(proposal.description)]
-#     test_strategy = Mock()
-#     test_strategy.side_effect = [response, proposal]
-#     result = next_round_ultimatum(test_strategy, initial_history)
-#     assert response.description in content(result[0])
-#     assert proposal.description in content(result[1])
+@pytest.mark.parametrize(
+    "user_choice, expected_prompt",
+    [(Accept, "what is your proposal"), (ProposerChoice(10.0), "how do you respond")],
+)
+def test_next_round_ultimatum(user_choice: UltimatumChoice, expected_prompt):
+    state = Mock()
+    test_strategy = Mock()
+    test_strategy.side_effect = [user_choice]
+    result = content(next_round_ultimatum(test_strategy, state)[0]).lower()
+    assert expected_prompt.lower() in result
