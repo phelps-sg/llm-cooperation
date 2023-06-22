@@ -199,10 +199,9 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
 
 
 def run_experiment_ultimatum() -> RepeatedGameResults:
-    test_inst: Strategy = strategy_cooperate
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
-        partner_conditions={"cooperate": test_inst},
+        partner_conditions={"cooperate": strategy_cooperate},
         measurement_setup=MeasurementSetup(
             num_samples=SAMPLE_SIZE,
             compute_freq=compute_freq_ultimatum,
