@@ -56,20 +56,10 @@ class GameState:
     round: int
     game_setup: GameSetup
 
-    # @cached_property
-    # def last_ai_choice(self) -> CT_co:
-    #     return self.game_setup.extract_choice(
-    #         self.messages[-1], proposer=(self.round % 2) == 0
-    #     )
-
 
 class ChoiceExtractor(Protocol):
     def __call__(self, completion: Completion, **kwargs: bool) -> Choice:
         ...
-
-
-# class Strategy(Callable[[Arg(GameState), KwArg(bool)], CT], Generic[CT]):
-#     ...
 
 
 class Strategy(Protocol[CT_co]):
@@ -86,7 +76,6 @@ class PayoffFunction(Protocol[CT_contra]):
         ...
 
 
-# PayoffFunction = Callable[[CT_co, CT_co], Payoffs]
 PromptGenerator = Callable[[int, str], str]
 ResultForRound = Tuple[Scores, Choices]
 RoundAnalyser = Callable[
