@@ -45,9 +45,9 @@ class GameSetup(Generic[CT]):
 
 
 @dataclass
-class MeasurementSetup:
+class MeasurementSetup(Generic[CT_contra]):
     num_samples: int
-    compute_freq: CooperationFrequencyFunction
+    compute_freq: CooperationFrequencyFunction[CT_contra]
 
 
 @dataclass
@@ -68,7 +68,11 @@ class Strategy(Protocol[CT_co]):
 
 
 RoundGenerator = Callable[[Strategy, GameState], List[Completion]]
-CooperationFrequencyFunction = Callable[[List[Choices]], float]
+
+
+class CooperationFrequencyFunction(Protocol[CT]):
+    def __call__(self, choices: List[Choices[CT]]) -> float:
+        ...
 
 
 class PayoffFunction(Protocol[CT_contra]):
@@ -129,10 +133,10 @@ def play_game(
 
 def compute_scores(
     conversation: List[Completion],
-    payoffs: PayoffFunction,
+    payoffs: PayoffFunction[CT_contra],
     extract_choice: ChoiceExtractor,
     rounds: RoundsSetup,
-) -> Tuple[Scores, List[Choices]]:
+) -> Tuple[Scores, List[Choices[CT]]]:
     conversation = conversation[1:]
     num_messages = len(conversation)
     if num_messages % 2 != 0:
@@ -145,16 +149,17 @@ def compute_scores(
 
 def analyse(
     conversation: List[Completion],
-    payoffs: PayoffFunction,
+    payoffs: PayoffFunction[CT_contra],
     extract_choice: ChoiceExtractor,
-    compute_freq: CooperationFrequencyFunction,
+    compute_freq: CooperationFrequencyFunction[CT],
     rounds: RoundsSetup,
-) -> Tuple[float, float, Optional[List[Choices]], List[str]]:
+) -> Tuple[float, float, Optional[List[Choices[CT]]], List[str]]:
     try:
         history = transcript(conversation)
-        scores, choices = compute_scores(
+        result: Tuple[Scores, List[Choices[CT]]] = compute_scores(
             list(conversation), payoffs, extract_choice, rounds
         )
+        scores, choices = result
         freq = compute_freq(choices)
         return scores.ai, freq, choices, history
     except ValueError as e:
