@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from openai_pygenerator import content
 
-from llm_cooperation import Payoffs, amount_as_str
+from llm_cooperation import Choice, Payoffs, amount_as_str
 from llm_cooperation.experiments.ultimatum import (
     MAX_AMOUNT,
     Accept,
@@ -22,7 +22,7 @@ from llm_cooperation.experiments.ultimatum import (
     payoffs_ultimatum,
     strategy_cooperate,
 )
-from llm_cooperation.gametypes.repeated import Choices, Scores
+from llm_cooperation.gametypes.repeated import Choices, GameState
 from tests.common import make_completion
 
 
@@ -119,21 +119,12 @@ def test_compute_freq_ultimatum(choices: List[Choices], expected: float):
 
 
 @pytest.mark.parametrize(
-    "last_response, expected",
-    [
-        (Accept, ProposerChoice(MAX_AMOUNT)),
-        (Reject, ProposerChoice(MAX_AMOUNT)),
-        (ProposerChoice(5.00), Accept),
-        (ProposerChoice(10.00), Accept),
-        (ProposerChoice(0.00), Accept),
-    ],
+    "propose, expected",
+    [(True, ProposerChoice(MAX_AMOUNT)), (False, Accept)],
 )
-def test_cooperate(last_response: str, expected: UltimatumChoice):
-    state = Mock(spec=["results_in_last_round"])
-    state.results_in_last_round = Scores(user=0, ai=0), Choices(
-        ai=last_response, user=Accept
-    )  # type: ignore
-    assert strategy_cooperate(state) == expected
+def test_cooperate(propose: bool, expected: UltimatumChoice):
+    state = Mock()
+    assert strategy_cooperate(state, propose=propose) == expected
 
 
 def test_ultimatum_choice():
@@ -150,12 +141,20 @@ def assistant_message(description):
 
 
 @pytest.mark.parametrize(
-    "user_choice, expected_prompt",
-    [(Accept, "what is your proposal"), (ProposerChoice(10.0), "how do you respond")],
+    "user_response, user_proposal",
+    [(Accept, ProposerChoice(5.0)), (Reject, ProposerChoice(10.0))],
 )
-def test_next_round_ultimatum(user_choice: UltimatumChoice, expected_prompt):
+def test_next_round_ultimatum(
+    user_response: UltimatumChoice, user_proposal: UltimatumChoice
+):
+    # pylint: disable=unused-argument
+    def test_strategy(state: GameState, **kwargs: bool) -> Choice:
+        if kwargs["propose"]:
+            return user_proposal
+        else:
+            return user_response
+
     state = Mock()
-    test_strategy = Mock()
-    test_strategy.side_effect = [user_choice]
     result = content(next_round_ultimatum(test_strategy, state)[0]).lower()
-    assert expected_prompt.lower() in result
+    assert f"your partner proposes {user_proposal.description.lower()}" in result
+    assert f"your partner responded with {user_response.description.lower()}" in result

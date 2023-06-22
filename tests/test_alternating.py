@@ -1,4 +1,7 @@
+from typing import List
+
 import pytest
+from openai_pygenerator import Completion, user_message
 
 from llm_cooperation.experiments.ultimatum import (
     Accept,
@@ -8,6 +11,7 @@ from llm_cooperation.experiments.ultimatum import (
 )
 from llm_cooperation.gametypes import alternating
 from llm_cooperation.gametypes.repeated import Choices
+from tests.test_ultimatum import assistant_message
 
 
 @pytest.mark.parametrize(
@@ -26,3 +30,15 @@ def test_analyse_round(
         i, alternating_history, payoffs_ultimatum, extract_choice_ultimatum
     )
     assert choices == expected_choices
+
+
+@pytest.fixture
+def alternating_history() -> List[Completion]:
+    return [
+        assistant_message("Propose $10"),
+        user_message("Accept, Propose $10"),
+        assistant_message("Accept / Propose $7"),
+        user_message("Accept / Propose $10"),
+        assistant_message("I Accept, and then I propose $5"),
+        user_message("Accept / Propose $10"),
+    ]

@@ -15,6 +15,7 @@ from llm_cooperation.gametypes.repeated import (
     GameState,
     MeasurementSetup,
     RepeatedGameResults,
+    Strategy,
     run_experiment,
 )
 from llm_cooperation.gametypes.simultaneous import next_round
@@ -93,32 +94,31 @@ Choice: [{defect} | {cooperate}]
 """
 
 
-def strategy_defect(_state: GameState) -> DilemmaChoice:
+# pylint: disable=unused-argument
+def strategy_defect(state: GameState, **_kwargs: bool) -> Choice:
     return Defect
 
 
-def strategy_cooperate(_state: GameState) -> DilemmaChoice:
+# pylint: disable=unused-argument
+def strategy_cooperate(state: GameState, **_kwargs: bool) -> Choice:
     return Cooperate
 
 
-def strategy_tit_for_tat(
-    state: GameState, initial_choice: DilemmaChoice = Cooperate
-) -> DilemmaChoice:
-    if len(state.messages) == 2:
-        return initial_choice
-    ai_choice = extract_choice_pd(state.messages[-2])
-    if ai_choice == Cooperate:
-        return Cooperate
-    else:
-        return Defect
+def make_tit_for_tat(initial_choice: DilemmaChoice = Cooperate) -> Strategy:
+    def tit_for_tat(state: GameState, **_kwargs: bool) -> Choice:
+        if len(state.messages) == 2:
+            return initial_choice
+        ai_choice = extract_choice_pd(state.messages[-2])
+        if ai_choice == Cooperate:
+            return Cooperate
+        else:
+            return Defect
+
+    return tit_for_tat
 
 
-def strategy_t4t_defect(state: GameState) -> DilemmaChoice:
-    return strategy_tit_for_tat(state, initial_choice=Defect)
-
-
-def strategy_t4t_cooperate(state: GameState) -> DilemmaChoice:
-    return strategy_tit_for_tat(state, initial_choice=Cooperate)
+strategy_t4t_defect = make_tit_for_tat(initial_choice=Defect)
+strategy_t4t_cooperate = make_tit_for_tat(initial_choice=Cooperate)
 
 
 def move_as_str(move: DilemmaEnum) -> str:

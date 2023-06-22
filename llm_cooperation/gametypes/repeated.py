@@ -2,20 +2,11 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import (
-    Callable,
-    Dict,
-    Generic,
-    Iterable,
-    List,
-    Optional,
-    Protocol,
-    Tuple,
-    TypeVar,
-)
+from typing import Callable, Dict, Generic, Iterable, List, Optional, Protocol, Tuple
 
 import numpy as np
 import pandas as pd
+from mypy_extensions import Arg, KwArg
 from openai_pygenerator import Completion, gpt_completions, transcript, user_message
 
 from llm_cooperation import CT, Choice, Group, Payoffs, Results
@@ -66,25 +57,34 @@ class GameState:
     round: int
     game_setup: GameSetup
 
-    @property
-    def results_in_last_round(self) -> ResultForRound:
-        return self.game_setup.rounds.analyse_round(
-            self.round,
-            self.messages[1:],
-            self.game_setup.payoffs,
-            self.game_setup.extract_choice,
-        )
+    # @cached_property
+    # def last_ai_choice(self) -> CT_co:
+    #     return self.game_setup.extract_choice(
+    #         self.messages[-1], proposer=(self.round % 2) == 0
+    #     )
 
 
-CT_co = TypeVar("CT_co", bound=Choice, covariant=True)
-
-
-class ChoiceExtractor(Protocol, Generic[CT_co]):
-    def __call__(self, completion: Completion, **kwargs: bool) -> CT_co:
+class ChoiceExtractor(Protocol):
+    def __call__(self, completion: Completion, **kwargs: bool) -> Choice:
         ...
 
 
-Strategy = Callable[[GameState], Choice]
+Strategy = Callable[[Arg(GameState, "state"), KwArg(bool)], Choice]  # noqa F821
+
+# class Strategy(Protocol):
+#     def __call__(self, state: GameState, **kwargs: bool) -> Choice:
+#         ...
+
+
+# class RoundGenerator(Protocol):
+#     def __call__(
+#         self,
+#         strategy: Strategy,
+#         state: GameState,
+#     ) -> List[Completion]:
+#         ...
+
+
 RoundGenerator = Callable[[Strategy, GameState], List[Completion]]
 CooperationFrequencyFunction = Callable[[List[Choices]], float]
 PayoffFunction = Callable[[CT, CT], Payoffs]

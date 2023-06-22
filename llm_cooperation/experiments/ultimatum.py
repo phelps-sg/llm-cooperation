@@ -82,44 +82,28 @@ Reject = ResponderChoice(ResponderEnum.Reject)
 dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
 
 
-def prompt_for_round(ai_to_propose: bool, user_choice: Choice) -> str:
-    if ai_to_propose:
-        return (
-            f"Your partner chose {user_choice.description} in that round. "
-            "Now we will move on to the next round."
-            "What is your proposal for the next round?"
-        )
-    else:
-        return (
-            f"Your partner offered {user_choice.description}. "
-            "How do you respond? [Accept|Reject]"
-        )
-
-
 def next_round_ultimatum(
-    partner_strategy: Strategy, state: GameState
+    partner_strategy: Strategy,
+    state: GameState,
 ) -> List[Completion]:
-    user_choice = partner_strategy(state)
-    ai_to_propose = isinstance(user_choice, ResponderChoice)
-    return [user_message(prompt_for_round(ai_to_propose, user_choice))]
+    user_response = partner_strategy(state, propose=False)
+    user_proposal = partner_strategy(state, propose=True)
+    return [
+        user_message(
+            f"Your partner responded with {user_response.description} in that round. "
+            "Now we will move on to the next round. "
+            f"Your partner proposes {user_proposal.description}. "
+            "Respond with [Accept|Reject] and then make your next proposal."
+        )
+    ]
 
 
-def strategy_cooperate(state: GameState) -> UltimatumChoice:
-    def ai_choice() -> UltimatumChoice:
-        if state.round > 0:
-            _scores, prev_choices = state.results_in_last_round
-            return prev_choices.ai
-        else:
-            return state.game_setup.extract_choice(state.messages[1], proposer=True)
-
-    ai = ai_choice()
-
-    if isinstance(ai, ResponderChoice):
+# pylint: disable=unused-argument
+def strategy_cooperate(state: GameState, **kwargs: bool) -> Choice:
+    if kwargs["propose"]:
         return ProposerChoice(MAX_AMOUNT)
-    elif isinstance(ai, ProposerChoice):
-        return Accept
     else:
-        raise ValueError(f"Unknown choice type: {ai}")
+        return Accept
 
 
 def get_prompt_ultimatum(num_rounds: int, role_prompt: str) -> str:
@@ -183,12 +167,10 @@ def extract_proposer_choice(completion: Completion) -> ProposerChoice:
 
 
 def extract_choice_ultimatum(completion: Completion, **kwargs: bool) -> UltimatumChoice:
-    proposer = kwargs["proposer"]
-    return (
-        extract_proposer_choice(completion)
-        if proposer
-        else extract_responder_choice(completion)
-    )
+    if kwargs["proposer"]:
+        return extract_proposer_choice(completion)
+    else:
+        return extract_responder_choice(completion)
 
 
 def compute_freq_ultimatum(choices: List[Choices]) -> float:
@@ -217,9 +199,10 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
 
 
 def run_experiment_ultimatum() -> RepeatedGameResults:
+    test_inst: Strategy = strategy_cooperate
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
-        partner_conditions={"cooperate": strategy_cooperate},
+        partner_conditions={"cooperate": test_inst},
         measurement_setup=MeasurementSetup(
             num_samples=SAMPLE_SIZE,
             compute_freq=compute_freq_ultimatum,
