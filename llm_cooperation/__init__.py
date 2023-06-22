@@ -42,6 +42,8 @@ class Results(ABC):
 
 
 CT = TypeVar("CT", bound=Choice)
+CT_co = TypeVar("CT_co", bound=Choice, covariant=True)
+CT_contra = TypeVar("CT_contra", bound=Choice, contravariant=True)
 
 Payoffs = Tuple[float, float]
 

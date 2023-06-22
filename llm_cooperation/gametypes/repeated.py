@@ -6,10 +6,9 @@ from typing import Callable, Dict, Generic, Iterable, List, Optional, Protocol, 
 
 import numpy as np
 import pandas as pd
-from mypy_extensions import Arg, KwArg
 from openai_pygenerator import Completion, gpt_completions, transcript, user_message
 
-from llm_cooperation import CT, Choice, Group, Payoffs, Results
+from llm_cooperation import CT, Choice, CT_co, CT_contra, Group, Payoffs, Results
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +32,12 @@ class RoundsSetup:
 
 
 @dataclass
-class GameSetup:
+class GameSetup(Generic[CT]):
     num_rounds: int
     generate_instruction_prompt: PromptGenerator
     next_round: RoundGenerator
     rounds: RoundsSetup
-    payoffs: PayoffFunction
+    payoffs: PayoffFunction[CT]
     extract_choice: ChoiceExtractor
 
     def instruction_prompt(self, role_prompt: str) -> str:
@@ -69,25 +68,25 @@ class ChoiceExtractor(Protocol):
         ...
 
 
-Strategy = Callable[[Arg(GameState, "state"), KwArg(bool)], Choice]  # noqa F821
-
-# class Strategy(Protocol):
-#     def __call__(self, state: GameState, **kwargs: bool) -> Choice:
-#         ...
+# class Strategy(Callable[[Arg(GameState), KwArg(bool)], CT], Generic[CT]):
+#     ...
 
 
-# class RoundGenerator(Protocol):
-#     def __call__(
-#         self,
-#         strategy: Strategy,
-#         state: GameState,
-#     ) -> List[Completion]:
-#         ...
+class Strategy(Protocol[CT_co]):
+    def __call__(self, state: GameState, **kwargs: bool) -> CT_co:
+        ...
 
 
 RoundGenerator = Callable[[Strategy, GameState], List[Completion]]
 CooperationFrequencyFunction = Callable[[List[Choices]], float]
-PayoffFunction = Callable[[CT, CT], Payoffs]
+
+
+class PayoffFunction(Protocol[CT_contra]):
+    def __call__(self, player1: CT_contra, player2: CT_contra) -> Payoffs:
+        ...
+
+
+# PayoffFunction = Callable[[CT_co, CT_co], Payoffs]
 PromptGenerator = Callable[[int, str], str]
 ResultForRound = Tuple[Scores, Choices]
 RoundAnalyser = Callable[
@@ -198,9 +197,9 @@ def generate_samples(
 
 def run_experiment(
     ai_participants: Dict[Group, List[str]],
-    partner_conditions: Dict[str, Strategy],
+    partner_conditions: Dict[str, Strategy[CT_co]],
     measurement_setup: MeasurementSetup,
-    game_setup: GameSetup,
+    game_setup: GameSetup[CT_co],
 ) -> RepeatedGameResults:
     return RepeatedGameResults(
         (group, prompt, strategy_name, score, freq, choices, history)

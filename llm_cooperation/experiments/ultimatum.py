@@ -99,7 +99,7 @@ def next_round_ultimatum(
 
 
 # pylint: disable=unused-argument
-def strategy_cooperate(state: GameState, **kwargs: bool) -> Choice:
+def strategy_cooperate(state: GameState, **kwargs: bool) -> UltimatumChoice:
     if kwargs["propose"]:
         return ProposerChoice(MAX_AMOUNT)
     else:
