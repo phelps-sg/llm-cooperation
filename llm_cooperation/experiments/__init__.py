@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import logging
 import os
+from pathlib import Path
 from typing import Callable
+
+from openai_pygenerator import GPT_MODEL, GPT_TEMPERATURE
 
 from llm_cooperation import Group, Results
 
@@ -63,6 +66,14 @@ AI_PARTICIPANTS = {
 }
 
 
+def create_results_dir() -> str:
+    results_dir = os.path.join(
+        "results", f"model-{GPT_MODEL}", f"temp-{GPT_TEMPERATURE}"
+    )
+    Path(results_dir).mkdir(parents=True, exist_ok=True)
+    return results_dir
+
+
 def run_and_record_experiment(name: str, run: Callable[[], Results]) -> Results:
     logging.basicConfig(
         level=logging.DEBUG,
@@ -70,7 +81,8 @@ def run_and_record_experiment(name: str, run: Callable[[], Results]) -> Results:
     )
     results = run()
     df = results.to_df()
-    filename = os.path.join("results", f"{name}.pickle")
+    results_dir = create_results_dir()
+    filename = os.path.join(results_dir, f"{name}.pickle")
     logger.info("Experiment complete, saving results to %s", filename)
     df.to_pickle(filename)
     return results
