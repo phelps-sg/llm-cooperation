@@ -46,29 +46,37 @@ def test_dictator_choice(
 @pytest.mark.parametrize(
     "text, expected_result",
     [
-        ("Black", BLACK),
-        ("Brown", BROWN),
-        ("Green", GREEN),
-        ("Blue", BLUE),
-        ("White", WHITE),
+        ("Choice: Black", BLACK),
+        ("Choice: 'project black'", BLACK),
+        ("choice: 'Project BLACK'", BLACK),
+        ("choice:Brown", BROWN),
+        ("choice: Green", GREEN),
+        ("Choice:   Blue", BLUE),
+        ("Choice: White", WHITE),
     ],
 )
 def test_extract_choice_dictator(text: str, expected_result: DictatorChoice):
-    assert extract_choice_dictator(user_message(f"'project {text}'")) == expected_result
-    assert (
-        extract_choice_dictator(user_message(f"Project {text.upper()}"))
-        == expected_result
-    )
-    assert (
-        extract_choice_dictator(user_message(f"Project {text.lower()}"))
-        == expected_result
-    )
+    assert extract_choice_dictator(user_message(text)) == expected_result
+    assert extract_choice_dictator(user_message(text.upper())) == expected_result
+    assert extract_choice_dictator(user_message(text.lower())) == expected_result
 
 
-@pytest.mark.parametrize("test_choice", all_dictator_choices)
-def test_payoffs_dictator(test_choice: DictatorChoice):
+@pytest.mark.parametrize(
+    "test_choice, expected_payoff",
+    [(BLACK, 4), (BROWN, 3), (GREEN, 2), (BLUE, 1), (WHITE, 0)],
+)
+def test_payoffs_dictator(test_choice: DictatorChoice, expected_payoff):
     result = payoffs_dictator(test_choice)
-    assert result == test_choice.payoff_ego
+    assert result == expected_payoff
+
+
+@pytest.mark.parametrize(
+    "test_choice, expected_payoff",
+    [(BLACK, 0), (BROWN, 1), (GREEN, 2), (BLUE, 3), (WHITE, 4)],
+)
+def test_payoff_allo(test_choice: DictatorChoice, expected_payoff):
+    result = test_choice.payoff_allo
+    assert result == expected_payoff
 
 
 @pytest.mark.parametrize("test_choice", all_dictator_choices)

@@ -1,3 +1,4 @@
+import re
 from enum import Enum
 from typing import Dict, Hashable
 
@@ -33,7 +34,11 @@ color_mappings: Dict[DictatorEnum, str] = {
 }
 
 reverse_color_mappings: Dict[str, DictatorEnum] = {
-    value: key for key, value in color_mappings.items()
+    "black": DictatorEnum.BLACK,
+    "brown": DictatorEnum.BROWN,
+    "green": DictatorEnum.GREEN,
+    "blue": DictatorEnum.BLUE,
+    "white": DictatorEnum.WHITE,
 }
 
 
@@ -109,16 +114,21 @@ You will make decisions that are consistent with the role outlined earlier,
 but you are not allowed to communicate with your partner apart from informing
 them of your choice. Your decision will be
 final and cannot be changed after you have made it. Here is your investment
-partner. Just give me your choice without any explanation.  What is your choice?
+partner. Give your response in the format below:
+
+Explanation: [why you picked your choice]
 Choice: [{choice_menu()}]
 """
 
 
 def extract_choice_dictator(completion: Completion) -> DictatorChoice:
     text = content(completion).lower()
-    for key, value in reverse_color_mappings.items():
-        if key in text:
-            return DictatorChoice(value)
+    match = re.search(r"choice:\s*(.*)", text)
+    if match:
+        choice = match.group(1)
+        for key, value in reverse_color_mappings.items():
+            if key in choice:
+                return DictatorChoice(value)
     raise ValueError(f"Cannot determine choice from {completion}")
 
 
