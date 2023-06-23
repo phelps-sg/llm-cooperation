@@ -109,7 +109,7 @@ You will make decisions that are consistent with the role outlined earlier,
 but you are not allowed to communicate with your partner apart from informing
 them of your choice. Your decision will be
 final and cannot be changed after you have made it. Here is your investment
-partner. What is your choice?
+partner. Just give me your choice without any explanation.  What is your choice?
 Choice: [{choice_menu()}]
 """
 
