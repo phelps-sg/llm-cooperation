@@ -175,7 +175,7 @@ def extract_choice_ultimatum(completion: Completion, **kwargs: bool) -> Ultimatu
 
 def compute_freq_ultimatum(choices: List[Choices]) -> float:
     return float(
-        np.mean([c.amount for c in choices if isinstance(c, ProposerChoice)])
+        np.nanmean([c.amount for c in choices if isinstance(c, ProposerChoice)])
         / MAX_AMOUNT
     )
 

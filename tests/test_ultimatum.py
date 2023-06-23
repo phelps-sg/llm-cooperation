@@ -112,6 +112,7 @@ def test_payoffs_ultimatum(
         ([ProposerChoice(10.0), Accept, ProposerChoice(5.0), Reject], 0.75),
         ([ProposerChoice(10.0), Accept, ProposerChoice(10.0), Reject], 1.0),
         ([ProposerChoice(0.0), Accept, ProposerChoice(0.0), Reject], 0.0),
+        ([ProposerChoice(np.nan), ProposerChoice(5.0)], 0.5),
     ],
 )
 def test_compute_freq_ultimatum(choices: List[Choices], expected: float):
