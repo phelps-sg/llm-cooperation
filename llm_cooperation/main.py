@@ -28,7 +28,7 @@ experiments: Dict[str, Callable[[], Results]] = {
 def run_all() -> None:
     for experiment, run in experiments.items():
         logger.info(
-            "Running experiment %s with model %s and temperature %d ...",
+            "Running experiment %s with model %s and temperature %.02f ...",
             experiment,
             oai.GPT_MODEL,
             oai.GPT_TEMPERATURE,
