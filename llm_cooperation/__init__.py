@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import Enum
 from typing import Hashable, Tuple, TypeVar
 
+import openai_pygenerator
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -39,6 +41,17 @@ Group = Enum(
 class Results(ABC):
     def to_df(self) -> pd.DataFrame:
         pass
+
+
+@dataclass
+class ModelSetup:
+    model: str
+    temperature: float
+
+
+DEFAULT_MODEL_SETUP = ModelSetup(
+    model=openai_pygenerator.GPT_MODEL, temperature=openai_pygenerator.GPT_TEMPERATURE
+)
 
 
 CT = TypeVar("CT", bound=Choice)

@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import Choice, Group
+from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Group
 from llm_cooperation.experiments.dilemma import (
     Cooperate,
     Defect,
@@ -62,6 +62,7 @@ def test_play_game(mocker):
             payoffs=payoffs_mock,
             extract_choice=extract_choice_mock,
             generate_instruction_prompt=prompt_generator_mock,
+            model_setup=DEFAULT_MODEL_SETUP,
         ),
     )
 
@@ -85,6 +86,7 @@ def test_play_game(mocker):
                         next_round=next_round_mock,
                         generate_instruction_prompt=prompt_generator_mock,
                         num_rounds=n,
+                        model_setup=DEFAULT_MODEL_SETUP,
                     ),
                 ),
             )
@@ -151,6 +153,7 @@ def test_run_experiment(mocker):
             extract_choice=extract_choice_pd,
             next_round=simultaneous.next_round,
             rounds=simultaneous.rounds_setup,
+            model_setup=DEFAULT_MODEL_SETUP,
         ),
     ).to_df()
     assert len(result) == len(samples) * len(user_conditions) * 3

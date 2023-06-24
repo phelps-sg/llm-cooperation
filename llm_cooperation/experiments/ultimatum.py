@@ -7,7 +7,13 @@ from typing import Hashable, List, Optional
 import numpy as np
 from openai_pygenerator import Completion, content, user_message
 
-from llm_cooperation import Choice, Payoffs, amount_as_str
+from llm_cooperation import (
+    DEFAULT_MODEL_SETUP,
+    Choice,
+    ModelSetup,
+    Payoffs,
+    amount_as_str,
+)
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes import alternating
 from llm_cooperation.gametypes.repeated import (
@@ -198,7 +204,9 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
         raise ValueError(f"Invalid choice combination: {player1}, {player2}")
 
 
-def run_experiment_ultimatum() -> RepeatedGameResults:
+def run_experiment_ultimatum(
+    model_setup: ModelSetup = DEFAULT_MODEL_SETUP,
+) -> RepeatedGameResults:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         partner_conditions={"cooperate": strategy_cooperate},
@@ -213,6 +221,7 @@ def run_experiment_ultimatum() -> RepeatedGameResults:
             payoffs=payoffs_ultimatum,
             next_round=next_round_ultimatum,
             rounds=alternating.rounds_setup,
+            model_setup=model_setup,
         ),
     )
 

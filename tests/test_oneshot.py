@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import Choice, Group
+from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Group
 from llm_cooperation.gametypes.oneshot import (
     OneShotResults,
     ResultSingleShotGame,
@@ -41,6 +41,7 @@ def test_run_experiment(mocker):
         payoffs=Mock(),
         extract_choice=Mock(),
         compute_freq=Mock(),
+        model_setup=DEFAULT_MODEL_SETUP,
     ).to_df()
     assert len(result) == 3 * len(samples)
     assert mock_run_sample.call_count == len(samples)
@@ -61,6 +62,7 @@ def test_generate_samples(mocker):
             payoffs=Mock(),
             extract_choice=Mock(),
             compute_freq=Mock(),
+            model_setup=DEFAULT_MODEL_SETUP,
         )
     )
     assert len(result) == test_n
@@ -88,7 +90,9 @@ def test_play_game(mocker):
     mock_generate = Mock()
     mock_generate.return_value = test_prompt
     result = play_game(
-        role_prompt="test-role-prompt", generate_instruction_prompt=mock_generate
+        role_prompt="test-role-prompt",
+        generate_instruction_prompt=mock_generate,
+        model_setup=DEFAULT_MODEL_SETUP,
     )
     print(result)
     assert len(result) == 2

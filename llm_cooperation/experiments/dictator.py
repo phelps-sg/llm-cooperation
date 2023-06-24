@@ -4,7 +4,7 @@ from typing import Dict, Hashable
 
 from openai_pygenerator import Completion, content
 
-from llm_cooperation import Choice, amount_as_str
+from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, ModelSetup, amount_as_str
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
@@ -136,7 +136,9 @@ def compute_freq_dictator(history: DictatorChoice) -> float:
     return history.donation / TOTAL_SHARE
 
 
-def run_experiment_dictator() -> OneShotResults:
+def run_experiment_dictator(
+    model_setup: ModelSetup = DEFAULT_MODEL_SETUP,
+) -> OneShotResults:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         num_samples=SAMPLE_SIZE,
@@ -144,6 +146,7 @@ def run_experiment_dictator() -> OneShotResults:
         extract_choice=extract_choice_dictator,
         payoffs=payoffs_dictator,
         compute_freq=compute_freq_dictator,
+        model_setup=model_setup,
     )
 
 

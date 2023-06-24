@@ -8,12 +8,12 @@ from openai_pygenerator import (
     GPT_MODEL,
     GPT_TEMPERATURE,
     Completion,
-    gpt_completions,
+    completer,
     transcript,
     user_message,
 )
 
-from llm_cooperation import CT, Group, Results, logger
+from llm_cooperation import CT, Group, ModelSetup, Results, logger
 
 PromptGenerator = Callable[[str], str]
 ResultSingleShotGame = Tuple[
@@ -45,8 +45,13 @@ class OneShotResults(Results):
 
 
 def play_game(
-    role_prompt: str, generate_instruction_prompt: PromptGenerator
+    role_prompt: str,
+    generate_instruction_prompt: PromptGenerator,
+    model_setup: ModelSetup,
 ) -> List[Completion]:
+    gpt_completions = completer(
+        model=model_setup.model, temperature=model_setup.temperature
+    )
     messages = [user_message(generate_instruction_prompt(role_prompt))]
     messages += gpt_completions(messages, 1)
     return messages
@@ -86,12 +91,14 @@ def generate_samples(
     payoffs: Callable[[CT], float],
     extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[CT], float],
+    model_setup: ModelSetup,
 ) -> Iterable[Tuple[float, float, Optional[CT], List[str]]]:
     # pylint: disable=R0801
     for _i in range(num_samples):
         conversation = play_game(
             role_prompt=prompt,
             generate_instruction_prompt=generate_instruction_prompt,
+            model_setup=model_setup,
         )
         yield analyse(conversation, payoffs, extract_choice, compute_freq)
 
@@ -103,6 +110,7 @@ def run_experiment(
     payoffs: Callable[[CT], float],
     extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[CT], float],
+    model_setup: ModelSetup,
 ) -> OneShotResults:
     return OneShotResults(
         (group, prompt, score, freq, choices, history, GPT_MODEL, GPT_TEMPERATURE)
@@ -115,5 +123,6 @@ def run_experiment(
             payoffs=payoffs,
             extract_choice=extract_choice,
             compute_freq=compute_freq,
+            model_setup=model_setup,
         )
     )

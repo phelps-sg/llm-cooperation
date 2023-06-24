@@ -10,12 +10,21 @@ from openai_pygenerator import (
     GPT_MODEL,
     GPT_TEMPERATURE,
     Completion,
-    gpt_completions,
+    completer,
     transcript,
     user_message,
 )
 
-from llm_cooperation import CT, Choice, CT_co, CT_contra, Group, Payoffs, Results
+from llm_cooperation import (
+    CT,
+    Choice,
+    CT_co,
+    CT_contra,
+    Group,
+    ModelSetup,
+    Payoffs,
+    Results,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +55,7 @@ class GameSetup(Generic[CT]):
     rounds: RoundsSetup
     payoffs: PayoffFunction[CT]
     extract_choice: ChoiceExtractor
+    model_setup: ModelSetup
 
     def instruction_prompt(self, role_prompt: str) -> str:
         return self.generate_instruction_prompt(self.num_rounds, role_prompt)
@@ -138,6 +148,10 @@ class RepeatedGameResults(Results):
 def play_game(
     role_prompt: str, partner_strategy: Strategy, game_setup: GameSetup
 ) -> List[Completion]:
+    gpt_completions = completer(
+        model=game_setup.model_setup.model,
+        temperature=game_setup.model_setup.temperature,
+    )
     messages: List[Completion] = [
         user_message(game_setup.instruction_prompt(role_prompt))
     ]
