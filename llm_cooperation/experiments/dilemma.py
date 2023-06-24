@@ -95,17 +95,19 @@ Choice: [{defect} | {cooperate}]
 
 
 # pylint: disable=unused-argument
-def strategy_defect(state: GameState, **_kwargs: bool) -> Choice:
+def strategy_defect(state: GameState, **_kwargs: bool) -> DilemmaChoice:
     return Defect
 
 
 # pylint: disable=unused-argument
-def strategy_cooperate(state: GameState, **_kwargs: bool) -> Choice:
+def strategy_cooperate(state: GameState, **_kwargs: bool) -> DilemmaChoice:
     return Cooperate
 
 
-def make_tit_for_tat(initial_choice: DilemmaChoice = Cooperate) -> Strategy:
-    def tit_for_tat(state: GameState, **_kwargs: bool) -> Choice:
+def make_tit_for_tat(
+    initial_choice: DilemmaChoice = Cooperate,
+) -> Strategy[DilemmaChoice]:
+    def tit_for_tat(state: GameState, **_kwargs: bool) -> DilemmaChoice:
         if len(state.messages) == 2:
             return initial_choice
         ai_choice = extract_choice_pd(state.messages[-2])
