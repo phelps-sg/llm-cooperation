@@ -26,15 +26,15 @@ experiments: Dict[str, Experiment] = {
 
 
 def run_all() -> None:
-    for experiment, run in experiments.items():
+    for name, experiment in experiments.items():
         logger.info(
             "Running experiment %s with model %s and temperature %.02f ...",
-            experiment,
+            name,
             oai.GPT_MODEL,
             oai.GPT_TEMPERATURE,
         )
-        run_and_record_experiment(experiment, run)
-        logger.info("Experiment %s completed.", experiment)
+        run_and_record_experiment(name, experiment)
+        logger.info("Experiment %s completed.", name)
 
 
 if __name__ == "__main__":
