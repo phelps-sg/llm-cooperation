@@ -39,6 +39,7 @@ Group = Enum(
 
 
 class Results(ABC):
+    @abstractmethod
     def to_df(self) -> pd.DataFrame:
         pass
 

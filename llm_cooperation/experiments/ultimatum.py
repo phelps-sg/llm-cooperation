@@ -2,7 +2,7 @@ import logging
 import re
 from abc import ABC
 from enum import Enum, auto
-from typing import Hashable, List, Optional
+from typing import Hashable, List
 
 import numpy as np
 from openai_pygenerator import Completion, content, user_message
@@ -153,13 +153,13 @@ def amount_from_str(s: str) -> float:
         raise ValueError(f"Cannot extract dollar amount from {s}")
 
 
-def extract_responder_choice(completion: Completion) -> Optional[ResponderChoice]:
+def extract_responder_choice(completion: Completion) -> ResponderChoice:
     message = content(completion).lower().strip()
     if "accept" in message:
         return Accept
     elif "reject" in message:
         return Reject
-    return None
+    raise ValueError(f"Cannot determine responder choice from {completion}")
 
 
 def extract_proposer_choice(completion: Completion) -> ProposerChoice:
