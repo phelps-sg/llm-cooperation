@@ -26,26 +26,22 @@ def project(color: str) -> str:
 
 
 color_mappings: Dict[DictatorEnum, str] = {
-    DictatorEnum.BLACK: project("black"),
-    DictatorEnum.BROWN: project("brown"),
-    DictatorEnum.GREEN: project("green"),
-    DictatorEnum.BLUE: project("blue"),
-    DictatorEnum.WHITE: project("white"),
+    DictatorEnum.BLACK: "black",
+    DictatorEnum.BROWN: "brown",
+    DictatorEnum.GREEN: "green",
+    DictatorEnum.BLUE: "blue",
+    DictatorEnum.WHITE: "white",
 }
 
 reverse_color_mappings: Dict[str, DictatorEnum] = {
-    "black": DictatorEnum.BLACK,
-    "brown": DictatorEnum.BROWN,
-    "green": DictatorEnum.GREEN,
-    "blue": DictatorEnum.BLUE,
-    "white": DictatorEnum.WHITE,
+    value: key for key, value in color_mappings.items()
 }
 
 
 class DictatorChoice(Choice):
     @property
     def description(self) -> str:
-        return color_mappings[self._value]
+        return project(color_mappings[self._value])
 
     def __init__(self, value: DictatorEnum):
         self._value: DictatorEnum = value
