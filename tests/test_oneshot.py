@@ -135,7 +135,7 @@ def test_analyse(mocker):
 
 def test_results_to_df(results: Iterable[ResultSingleShotGame]):
     df = OneShotResults(results).to_df()
-    assert len(df.columns) == 6
+    assert len(df.columns) == 8
     # pylint: disable=R0801
     assert len(df) == 2
     assert df["Group"][0] == str(Group.Altruistic)
@@ -153,6 +153,8 @@ def results() -> Iterable[ResultSingleShotGame]:
                 0.2,
                 Mock(spec=Choice),
                 ["project green"],
+                "gpt-turbo-3.5",
+                0.2,
             ),
             (
                 Group.Selfish,
@@ -161,6 +163,8 @@ def results() -> Iterable[ResultSingleShotGame]:
                 0.5,
                 Mock(spec=Choice),
                 ["project blue"],
+                "gpt-4",
+                0.1,
             ),
         ]
     )

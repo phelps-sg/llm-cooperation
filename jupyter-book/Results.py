@@ -17,11 +17,102 @@
 
 # %% tags=["hide-input"]
 import pandas as pd
+from llm_cooperation.experiments.dictator import *
+from llm_cooperation import Choice
+
+# %%
+results = pd.read_pickle("../results/dictator-gpt-4.pickle")
+results
+
+# %%
+colors = results.Choice.map(lambda x: x.payoff_allo if x is not None else None)
+
+# %%
+black_example = results[results.Choice == BLACK].iloc[0].Choice
+
+# %%
+black_examp
+
+# %%
+colors
+
+# %%
+colors
+
+# %%
+colors = pd.DataFrame(colors)
+colors[colors["Choice"] == "project black"]
+
+# %%
+table1 = results.groupby("Group")["Cooperation frequency"].describe().round(2)
+table1
+
+# %%
+table2 = (
+    results.groupby(["Group", "Participant"])["Cooperation frequency"]
+    .describe()
+    .round(2)
+)
+table2
+
+# %%
+first_row = results.iloc[1]
+first_row
+
+# %%
+first_row.Group
+
+# %%
+first_row.Participant
+
+# %%
+first_row.Transcript
+
+# %%
+altruist = results[results.Group == "Group.Altruistic"].iloc[0]
+altruist
+
+# %%
+altruist.Transcript
+
+# %%
+import numpy as np
+
+donation = [
+    choice.payoff_allo
+    for choice in results[results.Participant == participant1].Choice.values
+]
+np.mean(donation)
+
+# %%
+np.var(donation)
+
+# %%
+results.groupby("Participant").mean()
+
+# %%
+first_row.Transcript
+
+# %%
+first_row.Choice.payoff_allo
+
+# %%
+first_row.Choice.payoff_ego
 
 # %% tags=["hide-input"]
 
 results = pd.read_pickle("../results/dilemma.pickle")
 N = len(results)
+
+# %%
+import pandas as pd
+from llm_cooperation.experiments.ultimatum import *
+from llm_cooperation import *
+
+results = pd.read_pickle("../results/ultimatum.pickle")
+
+# %% [raw]
+#
 
 # %% [markdown]
 # The data consists of a total of

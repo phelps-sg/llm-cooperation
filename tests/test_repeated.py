@@ -159,7 +159,7 @@ def test_run_experiment(mocker):
 
 def test_results_to_df(results: Iterable[ResultRepeatedGame]):
     df = RepeatedGameResults(results).to_df()
-    assert len(df.columns) == 7
+    assert len(df.columns) == 9
     # pylint: disable=R0801
     assert len(df) == 2
     assert df["Group"][0] == str(Group.Altruistic)
@@ -178,6 +178,8 @@ def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame]:
                 0.2,
                 cooperate_choices,
                 ["project green", "project green", "project green"],
+                "gpt-turbo-3.5",
+                0.2,
             ),
             (
                 Group.Selfish,
@@ -187,6 +189,8 @@ def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame]:
                 0.5,
                 defect_choices,
                 ["project blue", "project blue", "project blue"],
+                "gpt-4",
+                0.1,
             ),
         ]
     )

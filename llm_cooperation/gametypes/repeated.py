@@ -6,7 +6,14 @@ from typing import Callable, Dict, Generic, Iterable, List, Optional, Protocol, 
 
 import numpy as np
 import pandas as pd
-from openai_pygenerator import Completion, gpt_completions, transcript, user_message
+from openai_pygenerator import (
+    GPT_MODEL,
+    GPT_TEMPERATURE,
+    Completion,
+    gpt_completions,
+    transcript,
+    user_message,
+)
 
 from llm_cooperation import CT, Choice, CT_co, CT_contra, Group, Payoffs, Results
 
@@ -89,7 +96,7 @@ RoundsAnalyser = Callable[
     [List[Completion], PayoffFunction, ChoiceExtractor], List[ResultForRound]
 ]
 ResultRepeatedGame = Tuple[
-    Group, str, str, float, float, Optional[List[Choices]], List[str]
+    Group, str, str, float, float, Optional[List[Choices]], List[str], str, float
 ]
 
 
@@ -100,8 +107,19 @@ class RepeatedGameResults(Results):
     def to_df(self) -> pd.DataFrame:
         return pd.DataFrame(
             [
-                (str(group), prompt, strategy_name, score, freq, choices, history)
-                for group, prompt, strategy_name, score, freq, choices, history in self._rows
+                (
+                    str(group),
+                    prompt,
+                    strategy,
+                    score,
+                    freq,
+                    choices,
+                    history,
+                    model,
+                    temp,
+                )
+                # pylint: disable=line-too-long
+                for group, prompt, strategy, score, freq, choices, history, model, temp in self._rows
             ],
             columns=[
                 "Group",
@@ -111,6 +129,8 @@ class RepeatedGameResults(Results):
                 "Cooperation frequency",
                 "Choices",
                 "Transcript",
+                "Model",
+                "Temperature",
             ],
         )
 
@@ -196,7 +216,17 @@ def run_experiment(
     game_setup: GameSetup[CT_co],
 ) -> RepeatedGameResults:
     return RepeatedGameResults(
-        (group, prompt, strategy_name, score, freq, choices, history)
+        (
+            group,
+            prompt,
+            strategy_name,
+            score,
+            freq,
+            choices,
+            history,
+            GPT_MODEL,
+            GPT_TEMPERATURE,
+        )
         for group, prompts in ai_participants.items()
         for prompt in prompts
         for strategy_name, strategy_fn in partner_conditions.items()

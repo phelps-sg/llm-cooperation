@@ -4,12 +4,21 @@ from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from openai_pygenerator import Completion, gpt_completions, transcript, user_message
+from openai_pygenerator import (
+    GPT_MODEL,
+    GPT_TEMPERATURE,
+    Completion,
+    gpt_completions,
+    transcript,
+    user_message,
+)
 
 from llm_cooperation import CT, Group, Results, logger
 
 PromptGenerator = Callable[[str], str]
-ResultSingleShotGame = Tuple[Group, str, float, float, Optional[CT], List[str]]
+ResultSingleShotGame = Tuple[
+    Group, str, float, float, Optional[CT], List[str], str, float
+]
 
 
 class OneShotResults(Results):
@@ -19,8 +28,8 @@ class OneShotResults(Results):
     def to_df(self) -> pd.DataFrame:
         return pd.DataFrame(
             [
-                (str(group), prompt, score, freq, choices, history)
-                for group, prompt, score, freq, choices, history in self._rows
+                (str(group), prompt, score, freq, choices, history, model, temp)
+                for group, prompt, score, freq, choices, history, model, temp in self._rows
             ],
             columns=[
                 "Group",
@@ -29,6 +38,8 @@ class OneShotResults(Results):
                 "Cooperation frequency",
                 "Choice",
                 "Transcript",
+                "Model",
+                "Temperature",
             ],
         )
 
@@ -94,7 +105,7 @@ def run_experiment(
     compute_freq: Callable[[CT], float],
 ) -> OneShotResults:
     return OneShotResults(
-        (group, prompt, score, freq, choices, history)
+        (group, prompt, score, freq, choices, history, GPT_MODEL, GPT_TEMPERATURE)
         for group, prompts in ai_participants.items()
         for prompt in prompts
         for score, freq, choices, history in generate_samples(
