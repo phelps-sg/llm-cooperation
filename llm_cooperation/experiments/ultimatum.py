@@ -83,8 +83,8 @@ dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
 
 
 def next_round_ultimatum(
-    partner_strategy: Strategy,
-    state: GameState,
+    partner_strategy: Strategy[UltimatumChoice],
+    state: GameState[UltimatumChoice],
 ) -> List[Completion]:
     user_response = partner_strategy(state, propose=False)
     user_proposal = partner_strategy(state, propose=True)
@@ -99,7 +99,9 @@ def next_round_ultimatum(
 
 
 # pylint: disable=unused-argument
-def strategy_cooperate(state: GameState, **kwargs: bool) -> UltimatumChoice:
+def strategy_cooperate(
+    state: GameState[UltimatumChoice], **kwargs: bool
+) -> UltimatumChoice:
     if kwargs["propose"]:
         return ProposerChoice(MAX_AMOUNT)
     else:
@@ -173,7 +175,7 @@ def extract_choice_ultimatum(completion: Completion, **kwargs: bool) -> Ultimatu
         return extract_responder_choice(completion)
 
 
-def compute_freq_ultimatum(choices: List[Choices]) -> float:
+def compute_freq_ultimatum(choices: List[Choices[UltimatumChoice]]) -> float:
     return float(
         np.nanmean([c.amount for c in choices if isinstance(c, ProposerChoice)])
         / MAX_AMOUNT

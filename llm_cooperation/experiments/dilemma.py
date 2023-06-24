@@ -95,19 +95,21 @@ Choice: [{defect} | {cooperate}]
 
 
 # pylint: disable=unused-argument
-def strategy_defect(state: GameState, **_kwargs: bool) -> DilemmaChoice:
+def strategy_defect(state: GameState[DilemmaChoice], **_kwargs: bool) -> DilemmaChoice:
     return Defect
 
 
 # pylint: disable=unused-argument
-def strategy_cooperate(state: GameState, **_kwargs: bool) -> DilemmaChoice:
+def strategy_cooperate(
+    state: GameState[DilemmaChoice], **_kwargs: bool
+) -> DilemmaChoice:
     return Cooperate
 
 
 def make_tit_for_tat(
     initial_choice: DilemmaChoice = Cooperate,
 ) -> Strategy[DilemmaChoice]:
-    def tit_for_tat(state: GameState, **_kwargs: bool) -> DilemmaChoice:
+    def tit_for_tat(state: GameState[DilemmaChoice], **_kwargs: bool) -> DilemmaChoice:
         if len(state.messages) == 2:
             return initial_choice
         ai_choice = extract_choice_pd(state.messages[-2])
@@ -155,7 +157,7 @@ def payoffs_pd(player1: DilemmaChoice, player2: DilemmaChoice) -> Payoffs:
     )
 
 
-def compute_freq_pd(choices: List[Choices]) -> float:
+def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 

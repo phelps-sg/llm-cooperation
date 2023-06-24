@@ -8,16 +8,7 @@ import numpy as np
 import pandas as pd
 from openai_pygenerator import Completion, completer, transcript, user_message
 
-from llm_cooperation import (
-    CT,
-    Choice,
-    CT_co,
-    CT_contra,
-    Group,
-    ModelSetup,
-    Payoffs,
-    Results,
-)
+from llm_cooperation import CT, CT_co, CT_contra, Group, ModelSetup, Payoffs, Results
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +38,7 @@ class GameSetup(Generic[CT]):
     next_round: RoundGenerator
     rounds: RoundsSetup
     payoffs: PayoffFunction[CT]
-    extract_choice: ChoiceExtractor
+    extract_choice: ChoiceExtractor[CT]
     model_setup: ModelSetup
 
     def instruction_prompt(self, role_prompt: str) -> str:
@@ -61,14 +52,14 @@ class MeasurementSetup(Generic[CT_contra]):
 
 
 @dataclass
-class GameState:
+class GameState(Generic[CT]):
     messages: List[Completion]
     round: int
-    game_setup: GameSetup
+    game_setup: GameSetup[CT]
 
 
-class ChoiceExtractor(Protocol):
-    def __call__(self, completion: Completion, **kwargs: bool) -> Choice:
+class ChoiceExtractor(Protocol[CT_co]):
+    def __call__(self, completion: Completion, **kwargs: bool) -> CT_co:
         ...
 
 
@@ -98,6 +89,7 @@ RoundAnalyser = Callable[
 RoundsAnalyser = Callable[
     [List[Completion], PayoffFunction, ChoiceExtractor], List[ResultForRound]
 ]
+
 ResultRepeatedGame = Tuple[
     Group, str, str, float, float, Optional[List[Choices]], List[str], str, float
 ]
@@ -139,7 +131,7 @@ class RepeatedGameResults(Results):
 
 
 def play_game(
-    role_prompt: str, partner_strategy: Strategy, game_setup: GameSetup
+    role_prompt: str, partner_strategy: Strategy[CT], game_setup: GameSetup[CT]
 ) -> List[Completion]:
     gpt_completions = completer(
         model=game_setup.model_setup.model,
@@ -161,7 +153,7 @@ def play_game(
 def compute_scores(
     conversation: List[Completion],
     payoffs: PayoffFunction[CT_contra],
-    extract_choice: ChoiceExtractor,
+    extract_choice: ChoiceExtractor[CT],
     rounds: RoundsSetup,
 ) -> Tuple[Scores, List[Choices[CT]]]:
     conversation = conversation[1:]
@@ -177,7 +169,7 @@ def compute_scores(
 def analyse(
     conversation: List[Completion],
     payoffs: PayoffFunction[CT_contra],
-    extract_choice: ChoiceExtractor,
+    extract_choice: ChoiceExtractor[CT],
     compute_freq: CooperationFrequencyFunction[CT],
     rounds: RoundsSetup,
 ) -> Tuple[float, float, Optional[List[Choices[CT]]], List[str]]:
@@ -196,10 +188,10 @@ def analyse(
 
 def generate_samples(
     prompt: str,
-    partner_strategy: Strategy,
-    measurement_setup: MeasurementSetup,
-    game_setup: GameSetup,
-) -> Iterable[Tuple[float, float, Optional[List[Choices]], List[str]]]:
+    partner_strategy: Strategy[CT],
+    measurement_setup: MeasurementSetup[CT],
+    game_setup: GameSetup[CT],
+) -> Iterable[Tuple[float, float, Optional[List[Choices[CT]]], List[str]]]:
     # pylint: disable=R0801
     for _i in range(measurement_setup.num_samples):
         conversation = play_game(
@@ -218,9 +210,9 @@ def generate_samples(
 
 def run_experiment(
     ai_participants: Dict[Group, List[str]],
-    partner_conditions: Dict[str, Strategy[CT_co]],
-    measurement_setup: MeasurementSetup,
-    game_setup: GameSetup[CT_co],
+    partner_conditions: Dict[str, Strategy[CT]],
+    measurement_setup: MeasurementSetup[CT],
+    game_setup: GameSetup[CT],
 ) -> RepeatedGameResults:
     return RepeatedGameResults(
         (

@@ -5,6 +5,7 @@ from typing import List, Tuple
 
 from openai_pygenerator import Completion, is_assistant_role, user_message
 
+from llm_cooperation import CT
 from llm_cooperation.gametypes.repeated import (
     ChoiceExtractor,
     Choices,
@@ -22,9 +23,9 @@ logger = logging.getLogger(__name__)
 def analyse_round(
     i: int,
     conversation: List[Completion],
-    payoffs: PayoffFunction,
-    extract_choice: ChoiceExtractor,
-) -> Tuple[Scores, Choices]:
+    payoffs: PayoffFunction[CT],
+    extract_choice: ChoiceExtractor[CT],
+) -> Tuple[Scores, Choices[CT]]:
     assert is_assistant_role(conversation[i * 2])
     ai_choice = extract_choice(conversation[i * 2])
     user_choice = extract_choice(conversation[i * 2 + 1])
@@ -35,7 +36,9 @@ def analyse_round(
 
 
 def analyse_rounds(
-    history: List[Completion], payoffs: PayoffFunction, extract_choice: ChoiceExtractor
+    history: List[Completion],
+    payoffs: PayoffFunction[CT],
+    extract_choice: ChoiceExtractor[CT],
 ) -> List[ResultForRound]:
     num_messages = len(history)
     if num_messages % 2 != 0:
@@ -46,7 +49,9 @@ def analyse_rounds(
     ]
 
 
-def next_round(partner_strategy: Strategy, state: GameState) -> List[Completion]:
+def next_round(
+    partner_strategy: Strategy[CT], state: GameState[CT]
+) -> List[Completion]:
     user_choice = partner_strategy(state).description
     return [
         user_message(

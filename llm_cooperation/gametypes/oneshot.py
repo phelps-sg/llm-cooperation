@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Callable, Dict, Generic, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -14,9 +14,9 @@ ResultSingleShotGame = Tuple[
 ]
 
 
-class OneShotResults(Results):
-    def __init__(self, rows: Iterable[ResultSingleShotGame]):
-        self._rows: Iterable[ResultSingleShotGame] = rows
+class OneShotResults(Results, Generic[CT]):
+    def __init__(self, rows: Iterable[ResultSingleShotGame[CT]]):
+        self._rows: Iterable[ResultSingleShotGame[CT]] = rows
 
     def to_df(self) -> pd.DataFrame:
         return pd.DataFrame(
@@ -104,7 +104,7 @@ def run_experiment(
     extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[CT], float],
     model_setup: ModelSetup,
-) -> OneShotResults:
+) -> OneShotResults[CT]:
     return OneShotResults(
         (
             group,

@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from openai_pygenerator import content
 
-from llm_cooperation import Choice, Payoffs, amount_as_str
+from llm_cooperation import Payoffs, amount_as_str
 from llm_cooperation.experiments.ultimatum import (
     MAX_AMOUNT,
     Accept,
@@ -149,7 +149,7 @@ def test_next_round_ultimatum(
     user_response: UltimatumChoice, user_proposal: UltimatumChoice
 ):
     # pylint: disable=unused-argument
-    def test_strategy(state: GameState, **kwargs: bool) -> Choice:
+    def test_strategy(state: GameState, **kwargs: bool) -> UltimatumChoice:
         if kwargs["propose"]:
             return user_proposal
         else:
