@@ -17,6 +17,6 @@ def test_run_and_record_experiment(mocker):
     )
     create_results_dir_mock.return_value = results_dir
     name = "test_experiment"
-    run_and_record_experiment(name, lambda: results_mock)
+    run_and_record_experiment(name, experiment=lambda _setup: results_mock)
     filename = os.path.join(results_dir, f"{name}.pickle")
     df_mock.to_pickle.assert_called_once_with(filename)

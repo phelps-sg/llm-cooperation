@@ -1,9 +1,9 @@
 import logging
-from typing import Callable, Dict
+from typing import Dict
 
 import openai_pygenerator as oai
 
-from llm_cooperation import Results
+from llm_cooperation import Experiment
 from llm_cooperation.experiments import (
     dictator,
     dilemma,
@@ -18,7 +18,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
-experiments: Dict[str, Callable[[], Results]] = {
+experiments: Dict[str, Experiment] = {
     "dilemma": dilemma.run_experiment_pd,
     "ultimatum": ultimatum.run_experiment_ultimatum,
     "dictator": dictator.run_experiment_dictator,

@@ -4,7 +4,7 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Hashable, Tuple, TypeVar
+from typing import Callable, Hashable, Tuple, TypeVar
 
 import openai_pygenerator
 import pandas as pd
@@ -48,6 +48,8 @@ class ModelSetup:
     model: str
     temperature: float
 
+
+Experiment = Callable[[ModelSetup], Results]
 
 DEFAULT_MODEL_SETUP = ModelSetup(
     model=openai_pygenerator.GPT_MODEL, temperature=openai_pygenerator.GPT_TEMPERATURE

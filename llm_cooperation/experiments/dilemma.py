@@ -6,7 +6,7 @@ from typing import List
 import numpy as np
 from openai_pygenerator import Completion
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, ModelSetup, Payoffs
+from llm_cooperation import Choice, ModelSetup, Payoffs
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import (
@@ -157,9 +157,7 @@ def compute_freq_pd(choices: List[Choices]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
-def run_experiment_pd(
-    model_setup: ModelSetup = DEFAULT_MODEL_SETUP,
-) -> RepeatedGameResults:
+def run_experiment_pd(model_setup: ModelSetup) -> RepeatedGameResults:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         partner_conditions={
@@ -185,4 +183,4 @@ def run_experiment_pd(
 
 
 if __name__ == "__main__":
-    run_and_record_experiment(name="dilemma", run=run_experiment_pd)
+    run_and_record_experiment(name="dilemma", experiment=run_experiment_pd)

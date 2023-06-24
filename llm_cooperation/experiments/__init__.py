@@ -7,7 +7,7 @@ from typing import Callable
 
 from openai_pygenerator import GPT_MODEL, GPT_TEMPERATURE
 
-from llm_cooperation import Group, Results
+from llm_cooperation import DEFAULT_MODEL_SETUP, Experiment, Group, ModelSetup, Results
 
 logger = logging.getLogger(__name__)
 
@@ -74,8 +74,10 @@ def create_results_dir() -> str:
     return results_dir
 
 
-def run_and_record_experiment(name: str, run: Callable[[], Results]) -> Results:
-    results = run()
+def run_and_record_experiment(
+    name: str, experiment: Experiment, model_setup: ModelSetup = DEFAULT_MODEL_SETUP
+) -> Results:
+    results = experiment(model_setup)
     df = results.to_df()
     results_dir = create_results_dir()
     filename = os.path.join(results_dir, f"{name}.pickle")
