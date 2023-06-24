@@ -4,14 +4,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from openai_pygenerator import (
-    GPT_MODEL,
-    GPT_TEMPERATURE,
-    Completion,
-    completer,
-    transcript,
-    user_message,
-)
+from openai_pygenerator import Completion, completer, transcript, user_message
 
 from llm_cooperation import CT, Group, ModelSetup, Results, logger
 
@@ -113,7 +106,16 @@ def run_experiment(
     model_setup: ModelSetup,
 ) -> OneShotResults:
     return OneShotResults(
-        (group, prompt, score, freq, choices, history, GPT_MODEL, GPT_TEMPERATURE)
+        (
+            group,
+            prompt,
+            score,
+            freq,
+            choices,
+            history,
+            model_setup.model,
+            model_setup.temperature,
+        )
         for group, prompts in ai_participants.items()
         for prompt in prompts
         for score, freq, choices, history in generate_samples(

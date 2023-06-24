@@ -6,14 +6,7 @@ from typing import Callable, Dict, Generic, Iterable, List, Optional, Protocol, 
 
 import numpy as np
 import pandas as pd
-from openai_pygenerator import (
-    GPT_MODEL,
-    GPT_TEMPERATURE,
-    Completion,
-    completer,
-    transcript,
-    user_message,
-)
+from openai_pygenerator import Completion, completer, transcript, user_message
 
 from llm_cooperation import (
     CT,
@@ -238,8 +231,8 @@ def run_experiment(
             freq,
             choices,
             history,
-            GPT_MODEL,
-            GPT_TEMPERATURE,
+            game_setup.model_setup.model,
+            game_setup.model_setup.temperature,
         )
         for group, prompts in ai_participants.items()
         for prompt in prompts
