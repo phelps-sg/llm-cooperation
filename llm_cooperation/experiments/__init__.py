@@ -75,10 +75,6 @@ def create_results_dir() -> str:
 
 
 def run_and_record_experiment(name: str, run: Callable[[], Results]) -> Results:
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
     results = run()
     df = results.to_df()
     results_dir = create_results_dir()
