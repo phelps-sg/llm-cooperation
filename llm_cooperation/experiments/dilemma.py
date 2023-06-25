@@ -161,7 +161,9 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
-def run_experiment_pd(model_setup: ModelSetup) -> RepeatedGameResults:
+def run_experiment_pd(
+    model_setup: ModelSetup, sample_size: int = SAMPLE_SIZE
+) -> RepeatedGameResults:
     game_setup: GameSetup[DilemmaChoice] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_pd,
@@ -172,7 +174,7 @@ def run_experiment_pd(model_setup: ModelSetup) -> RepeatedGameResults:
         model_setup=model_setup,
     )
     measurement_setup: MeasurementSetup[DilemmaChoice] = MeasurementSetup(
-        num_samples=SAMPLE_SIZE,
+        num_samples=sample_size,
         compute_freq=compute_freq_pd,
     )
     return run_experiment(

@@ -136,10 +136,12 @@ def compute_freq_dictator(history: DictatorChoice) -> float:
     return history.donation / TOTAL_SHARE
 
 
-def run_experiment_dictator(model_setup: ModelSetup) -> OneShotResults[DictatorChoice]:
+def run_experiment_dictator(
+    model_setup: ModelSetup, sample_size: int = SAMPLE_SIZE
+) -> OneShotResults[DictatorChoice]:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
-        num_samples=SAMPLE_SIZE,
+        num_samples=sample_size,
         generate_instruction_prompt=get_prompt_dictator,
         extract_choice=extract_choice_dictator,
         payoffs=payoffs_dictator,

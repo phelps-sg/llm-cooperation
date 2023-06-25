@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 
 import pandas as pd
 
-from llm_cooperation import Results
-from llm_cooperation.experiments import run_and_record_experiment
+from llm_cooperation import DEFAULT_MODEL_SETUP, Results
+from llm_cooperation.experiments import DEFAULT_SAMPLE_SIZE, run_and_record_experiment
 
 
 def test_run_and_record_experiment(mocker):
@@ -17,6 +17,11 @@ def test_run_and_record_experiment(mocker):
     )
     create_results_dir_mock.return_value = results_dir
     name = "test_experiment"
-    run_and_record_experiment(name, experiment=lambda _setup: results_mock)
+    run_and_record_experiment(
+        name,
+        experiment=lambda _setup, _n: results_mock,
+        model_setup=DEFAULT_MODEL_SETUP,
+        sample_size=DEFAULT_SAMPLE_SIZE,
+    )
     filename = os.path.join(results_dir, f"{name}.pickle")
     df_mock.to_pickle.assert_called_once_with(filename)

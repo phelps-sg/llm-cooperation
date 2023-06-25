@@ -2,6 +2,7 @@ import pytest
 
 from llm_cooperation import ModelSetup
 from llm_cooperation.main import (
+    Configuration,
     Grid,
     Settings,
     experiments,
@@ -36,7 +37,9 @@ def test_run_all(mocker, grid):
     run_and_record = mocker.patch(
         "llm_cooperation.main.run_and_record_experiment", return_value=None
     )
-    mocker.patch("llm_cooperation.main.get_grid", return_value=grid)
+    mocker.patch(
+        "llm_cooperation.main.get_config", return_value=Configuration(grid, 30)
+    )
     run_all()
     assert run_and_record.call_count == 6 * len(list(experiments.items()))
 

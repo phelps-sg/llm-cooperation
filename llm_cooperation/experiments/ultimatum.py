@@ -200,7 +200,9 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
         raise ValueError(f"Invalid choice combination: {player1}, {player2}")
 
 
-def run_experiment_ultimatum(model_setup: ModelSetup) -> RepeatedGameResults:
+def run_experiment_ultimatum(
+    model_setup: ModelSetup, sample_size: int = SAMPLE_SIZE
+) -> RepeatedGameResults:
     game_setup: GameSetup[UltimatumChoice] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_ultimatum,
@@ -211,7 +213,7 @@ def run_experiment_ultimatum(model_setup: ModelSetup) -> RepeatedGameResults:
         model_setup=model_setup,
     )
     measurement_setup: MeasurementSetup[UltimatumChoice] = MeasurementSetup(
-        num_samples=SAMPLE_SIZE,
+        num_samples=sample_size,
         compute_freq=compute_freq_ultimatum,
     )
     return run_experiment(

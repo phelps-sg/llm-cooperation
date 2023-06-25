@@ -50,7 +50,7 @@ class ModelSetup:
     temperature: float
 
 
-Experiment = Callable[[ModelSetup], Results]
+Experiment = Callable[[ModelSetup, int], Results]
 
 DEFAULT_MODEL_SETUP = ModelSetup(
     model=openai_pygenerator.GPT_MODEL, temperature=openai_pygenerator.GPT_TEMPERATURE

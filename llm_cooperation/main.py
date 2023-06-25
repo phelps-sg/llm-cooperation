@@ -1,11 +1,13 @@
 import itertools
 import logging
+from dataclasses import dataclass
 from typing import Dict, Iterable, List
 
 import openai_pygenerator as oai
 
 from llm_cooperation import Experiment, ModelSetup
 from llm_cooperation.experiments import (
+    DEFAULT_SAMPLE_SIZE,
     dictator,
     dilemma,
     run_and_record_experiment,
@@ -29,19 +31,27 @@ ConfigValue = float | str
 Grid = Dict[str, List[ConfigValue]]
 Settings = Dict[str, ConfigValue]
 
+
+@dataclass
+class Configuration:
+    grid: Grid
+    sample_size: int
+
+
 DEFAULT_GRID: Grid = {"temperature": [oai.GPT_TEMPERATURE], "model": [oai.GPT_MODEL]}
 
 
-def get_grid() -> Grid:
+def get_config() -> Configuration:
     try:
         config = __import__("llm_config")
-        return config.grid
+        return Configuration(grid=config.grid, sample_size=config.sample_size)
     except ModuleNotFoundError:
-        logger.info("Could not find llm_config.py in PYTHONPATH")
+        logger.exception("Could not find llm_config.py in PYTHONPATH")
     except KeyError:
-        logger.info("Could not find grid in llm_config.py")
-    logger.info("Using default grid")
-    return DEFAULT_GRID
+        logger.exception("Could not find settings in llm_config.py")
+
+    logger.info("Using default grid and sample size")
+    return Configuration(grid=DEFAULT_GRID, sample_size=DEFAULT_SAMPLE_SIZE)
 
 
 def setup_from_settings(settings: Settings) -> ModelSetup:
@@ -61,7 +71,8 @@ def settings_generator(grid: Grid) -> Iterable[Settings]:
 
 
 def run_all() -> None:
-    for settings in settings_generator(get_grid()):
+    configuration = get_config()
+    for settings in settings_generator(configuration.grid):
         setup = setup_from_settings(settings)
         for name, experiment in experiments.items():
             logger.info(
@@ -70,7 +81,9 @@ def run_all() -> None:
                 setup.model,
                 setup.temperature,
             )
-            run_and_record_experiment(name, experiment, setup)
+            run_and_record_experiment(
+                name, experiment, setup, configuration.sample_size
+            )
             logger.info("Experiment %s completed.", name)
 
 

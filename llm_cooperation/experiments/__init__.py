@@ -11,6 +11,8 @@ from llm_cooperation import DEFAULT_MODEL_SETUP, Experiment, Group, ModelSetup, 
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_SAMPLE_SIZE = 30
+
 # pylint: disable=line-too-long
 AI_PARTICIPANTS = {
     # Competitive Prompts:
@@ -75,9 +77,12 @@ def create_results_dir() -> str:
 
 
 def run_and_record_experiment(
-    name: str, experiment: Experiment, model_setup: ModelSetup = DEFAULT_MODEL_SETUP
+    name: str,
+    experiment: Experiment,
+    model_setup: ModelSetup = DEFAULT_MODEL_SETUP,
+    sample_size: int = DEFAULT_SAMPLE_SIZE,
 ) -> Results:
-    results = experiment(model_setup)
+    results = experiment(model_setup, sample_size)
     df = results.to_df()
     results_dir = create_results_dir()
     filename = os.path.join(results_dir, f"{name}.pickle")
