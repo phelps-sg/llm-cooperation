@@ -201,22 +201,24 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
 
 
 def run_experiment_ultimatum(model_setup: ModelSetup) -> RepeatedGameResults:
+    game_setup: GameSetup[UltimatumChoice] = GameSetup(
+        num_rounds=NUM_ROUNDS,
+        generate_instruction_prompt=get_prompt_ultimatum,
+        extract_choice=extract_choice_ultimatum,
+        payoffs=payoffs_ultimatum,
+        next_round=next_round_ultimatum,
+        rounds=alternating.rounds_setup,
+        model_setup=model_setup,
+    )
+    measurement_setup: MeasurementSetup[UltimatumChoice] = MeasurementSetup(
+        num_samples=SAMPLE_SIZE,
+        compute_freq=compute_freq_ultimatum,
+    )
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         partner_conditions={"cooperate": strategy_cooperate},
-        measurement_setup=MeasurementSetup(
-            num_samples=SAMPLE_SIZE,
-            compute_freq=compute_freq_ultimatum,
-        ),
-        game_setup=GameSetup(
-            num_rounds=NUM_ROUNDS,
-            generate_instruction_prompt=get_prompt_ultimatum,
-            extract_choice=extract_choice_ultimatum,
-            payoffs=payoffs_ultimatum,
-            next_round=next_round_ultimatum,
-            rounds=alternating.rounds_setup,
-            model_setup=model_setup,
-        ),
+        measurement_setup=measurement_setup,
+        game_setup=game_setup,
     )
 
 

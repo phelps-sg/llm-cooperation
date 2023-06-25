@@ -162,6 +162,19 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
 
 
 def run_experiment_pd(model_setup: ModelSetup) -> RepeatedGameResults:
+    game_setup: GameSetup[DilemmaChoice] = GameSetup(
+        num_rounds=NUM_ROUNDS,
+        generate_instruction_prompt=get_prompt_pd,
+        payoffs=payoffs_pd,
+        extract_choice=extract_choice_pd,
+        next_round=next_round,
+        rounds=simultaneous.rounds_setup,
+        model_setup=model_setup,
+    )
+    measurement_setup: MeasurementSetup[DilemmaChoice] = MeasurementSetup(
+        num_samples=SAMPLE_SIZE,
+        compute_freq=compute_freq_pd,
+    )
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         partner_conditions={
@@ -170,19 +183,8 @@ def run_experiment_pd(model_setup: ModelSetup) -> RepeatedGameResults:
             "tit for tat C": strategy_t4t_cooperate,
             "tit for tat D": strategy_t4t_defect,
         },
-        measurement_setup=MeasurementSetup(
-            num_samples=SAMPLE_SIZE,
-            compute_freq=compute_freq_pd,
-        ),
-        game_setup=GameSetup(
-            num_rounds=NUM_ROUNDS,
-            generate_instruction_prompt=get_prompt_pd,
-            payoffs=payoffs_pd,
-            extract_choice=extract_choice_pd,
-            next_round=next_round,
-            rounds=simultaneous.rounds_setup,
-            model_setup=model_setup,
-        ),
+        measurement_setup=measurement_setup,
+        game_setup=game_setup,
     )
 
 
