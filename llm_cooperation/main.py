@@ -36,22 +36,32 @@ Settings = Dict[str, ConfigValue]
 class Configuration:
     grid: Grid
     sample_size: int
+    experiment_names: Iterable[str]
 
 
 DEFAULT_GRID: Grid = {"temperature": [oai.GPT_TEMPERATURE], "model": [oai.GPT_MODEL]}
+DEFAULT_CONFIGURATION = Configuration(
+    grid=DEFAULT_GRID,
+    sample_size=DEFAULT_SAMPLE_SIZE,
+    experiment_names=experiments.keys(),
+)
 
 
 def get_config() -> Configuration:
     try:
         config = __import__("llm_config")
-        return Configuration(grid=config.grid, sample_size=config.sample_size)
+        return Configuration(
+            grid=config.grid,
+            sample_size=config.sample_size,
+            experiment_names=config.experiments,
+        )
     except ModuleNotFoundError:
         logger.exception("Could not find llm_config.py in PYTHONPATH")
     except KeyError:
         logger.exception("Could not find settings in llm_config.py")
 
-    logger.info("Using default grid and sample size")
-    return Configuration(grid=DEFAULT_GRID, sample_size=DEFAULT_SAMPLE_SIZE)
+    logger.info("Using defaults.")
+    return DEFAULT_CONFIGURATION
 
 
 def setup_from_settings(settings: Settings) -> ModelSetup:
@@ -74,7 +84,8 @@ def run_all() -> None:
     configuration = get_config()
     for settings in settings_generator(configuration.grid):
         setup = setup_from_settings(settings)
-        for name, experiment in experiments.items():
+        for name in configuration.experiment_names:
+            experiment = experiments[name]
             logger.info(
                 "Running experiment %s with model %s and temperature %.02f ...",
                 name,
