@@ -46,9 +46,9 @@ class GameSetup(Generic[CT]):
 
 
 @dataclass
-class MeasurementSetup(Generic[CT_contra]):
+class MeasurementSetup(Generic[CT]):
     num_samples: int
-    compute_freq: CooperationFrequencyFunction[CT_contra]
+    compute_freq: CooperationFrequencyFunction[CT]
 
 
 @dataclass
