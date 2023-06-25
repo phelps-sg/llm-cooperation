@@ -3,8 +3,22 @@ from unittest.mock import MagicMock
 
 import pandas as pd
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Results
-from llm_cooperation.experiments import DEFAULT_SAMPLE_SIZE, run_and_record_experiment
+from llm_cooperation import DEFAULT_MODEL_SETUP, ModelSetup, Results
+from llm_cooperation.experiments import (
+    DEFAULT_SAMPLE_SIZE,
+    create_results_dir,
+    run_and_record_experiment,
+)
+
+
+def test_create_results_dir(mocker):
+    model_setup = ModelSetup(model="test-model", temperature=0.2)
+    create_dir = mocker.patch("llm_cooperation.experiments.create_dir")
+    create_results_dir(model_setup)
+    create_dir.assert_called_once()
+    first_arg = create_dir.call_args[0][0]
+    assert "test-model" in first_arg
+    assert "0.2" in first_arg
 
 
 def test_run_and_record_experiment(mocker):
