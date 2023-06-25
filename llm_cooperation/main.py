@@ -54,7 +54,7 @@ def settings_generator(grid: Grid) -> Iterable[Settings]:
     keys = list(grid.keys())
     value_combinations = itertools.product(*grid.values())
     for values in value_combinations:
-        settings: Dict[str, ConfigValue] = dict()
+        settings: Settings = dict()
         for i, value in enumerate(values):
             settings[keys[i]] = value
         yield settings
