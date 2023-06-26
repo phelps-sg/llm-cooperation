@@ -18,7 +18,6 @@ from llm_cooperation.gametypes.repeated import (
     Strategy,
     run_experiment,
 )
-from llm_cooperation.gametypes.simultaneous import next_round
 
 SAMPLE_SIZE: int = 30
 NUM_ROUNDS: int = 6
@@ -169,7 +168,7 @@ def run_experiment_pd(
         generate_instruction_prompt=get_prompt_pd,
         payoffs=payoffs_pd,
         extract_choice=extract_choice_pd,
-        next_round=next_round,
+        next_round=simultaneous.next_round,
         rounds=simultaneous.rounds_setup,
         model_setup=model_setup,
     )
