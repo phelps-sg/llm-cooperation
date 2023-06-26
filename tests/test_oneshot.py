@@ -73,7 +73,7 @@ def test_compute_scores():
     mock_choice = Mock(spec=Choice)
     mock_payoff = 0.5
     result = compute_scores(
-        conversation=["prompt", "answer"],
+        conversation=[user_message("prompt"), user_message("answer")],
         payoffs=lambda _: mock_payoff,
         extract_choice=lambda _: mock_choice,
     )
