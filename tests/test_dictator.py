@@ -6,6 +6,7 @@ from llm_cooperation.experiments.dictator import (
     BLUE,
     BROWN,
     GREEN,
+    TOTAL_SHARE,
     WHITE,
     DictatorChoice,
     DictatorEnum,
@@ -82,7 +83,7 @@ def test_payoff_allo(test_choice: DictatorChoice, expected_payoff):
 @pytest.mark.parametrize("test_choice", all_dictator_choices)
 def test_compute_freq_dictator(test_choice: DictatorChoice):
     result = compute_freq_dictator(test_choice)
-    assert result == test_choice.payoff_allo
+    assert result == test_choice.payoff_allo / TOTAL_SHARE
 
 
 def test_get_prompt_dictator():

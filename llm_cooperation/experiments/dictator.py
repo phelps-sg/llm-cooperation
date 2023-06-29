@@ -137,7 +137,7 @@ def payoffs_dictator(player1: DictatorChoice) -> float:
 
 
 def compute_freq_dictator(history: DictatorChoice) -> float:
-    return history.donation
+    return history.donation / TOTAL_SHARE
 
 
 def run_experiment_dictator() -> OneShotResults:
