@@ -12,7 +12,7 @@ from llm_cooperation.experiments import (
 
 
 def test_create_results_dir(mocker):
-    model_setup = ModelSetup(model="test-model", temperature=0.2)
+    model_setup = ModelSetup(model="test-model", temperature=0.2, max_tokens=100)
     create_dir = mocker.patch("llm_cooperation.experiments.create_dir")
     create_results_dir(model_setup)
     create_dir.assert_called_once()

@@ -8,6 +8,7 @@ from typing import Callable, Hashable, Tuple, TypeVar
 
 import openai_pygenerator
 import pandas as pd
+from openai_pygenerator import Completer
 
 logger = logging.getLogger(__name__)
 
@@ -48,12 +49,15 @@ class Results(ABC):
 class ModelSetup:
     model: str
     temperature: float
+    max_tokens: int
 
 
 Experiment = Callable[[ModelSetup, int], Results]
 
 DEFAULT_MODEL_SETUP = ModelSetup(
-    model=openai_pygenerator.GPT_MODEL, temperature=openai_pygenerator.GPT_TEMPERATURE
+    model=openai_pygenerator.GPT_MODEL,
+    temperature=openai_pygenerator.GPT_TEMPERATURE,
+    max_tokens=openai_pygenerator.GPT_MAX_TOKENS,
 )
 
 
@@ -66,3 +70,11 @@ Payoffs = Tuple[float, float]
 
 def amount_as_str(amount: float) -> str:
     return f"${amount:.02f}"
+
+
+def completer_for(model_setup: ModelSetup) -> Completer:
+    return openai_pygenerator.completer(
+        model=model_setup.model,
+        temperature=model_setup.temperature,
+        max_tokens=model_setup.max_tokens,
+    )

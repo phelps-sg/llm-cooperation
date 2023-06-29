@@ -16,8 +16,8 @@ from llm_cooperation.main import (
     "settings, expected_result",
     [
         (
-            {"model": "gpt-turbo-3.5", "temperature": 0.5},
-            ModelSetup(model="gpt-turbo-3.5", temperature=0.5),
+            {"model": "gpt-turbo-3.5", "temperature": 0.5, "max_tokens": 100},
+            ModelSetup(model="gpt-turbo-3.5", temperature=0.5, max_tokens=100),
         )
     ],
 )
@@ -47,4 +47,4 @@ def test_run_all(mocker, grid):
 
 @pytest.fixture
 def grid() -> Grid:
-    return {"temperature": [0.2, 0.3], "model": ["x", "y", "z"]}
+    return {"temperature": [0.2, 0.3], "max_tokens": [100], "model": ["x", "y", "z"]}

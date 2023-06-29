@@ -39,7 +39,11 @@ class Configuration:
     experiment_names: Iterable[str]
 
 
-DEFAULT_GRID: Grid = {"temperature": [oai.GPT_TEMPERATURE], "model": [oai.GPT_MODEL]}
+DEFAULT_GRID: Grid = {
+    "temperature": [oai.GPT_TEMPERATURE],
+    "model": [oai.GPT_MODEL],
+    "max_tokens": [oai.GPT_MAX_TOKENS],
+}
 DEFAULT_CONFIGURATION = Configuration(
     grid=DEFAULT_GRID,
     sample_size=DEFAULT_SAMPLE_SIZE,
@@ -66,7 +70,11 @@ def get_config() -> Configuration:
 
 def setup_from_settings(settings: Settings) -> ModelSetup:
     return ModelSetup(
-        model=str(settings["model"]), temperature=float(settings["temperature"])
+        model=str(settings["model"]),
+        temperature=float(
+            settings["temperature"],
+        ),
+        max_tokens=int(settings["max_tokens"]),
     )
 
 

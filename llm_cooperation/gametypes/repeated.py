@@ -6,9 +6,18 @@ from typing import Callable, Dict, Generic, Iterable, List, Optional, Protocol, 
 
 import numpy as np
 import pandas as pd
-from openai_pygenerator import Completion, completer, transcript, user_message
+from openai_pygenerator import Completion, transcript, user_message
 
-from llm_cooperation import CT, CT_co, CT_contra, Group, ModelSetup, Payoffs, Results
+from llm_cooperation import (
+    CT,
+    CT_co,
+    CT_contra,
+    Group,
+    ModelSetup,
+    Payoffs,
+    Results,
+    completer_for,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -133,10 +142,7 @@ class RepeatedGameResults(Results):
 def play_game(
     role_prompt: str, partner_strategy: Strategy[CT], game_setup: GameSetup[CT]
 ) -> List[Completion]:
-    gpt_completions = completer(
-        model=game_setup.model_setup.model,
-        temperature=game_setup.model_setup.temperature,
-    )
+    gpt_completions = completer_for(game_setup.model_setup)
     messages: List[Completion] = [
         user_message(game_setup.instruction_prompt(role_prompt))
     ]

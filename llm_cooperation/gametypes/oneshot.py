@@ -4,9 +4,9 @@ from typing import Callable, Dict, Generic, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from openai_pygenerator import Completion, completer, transcript, user_message
+from openai_pygenerator import Completion, transcript, user_message
 
-from llm_cooperation import CT, Group, ModelSetup, Results, logger
+from llm_cooperation import CT, Group, ModelSetup, Results, completer_for, logger
 
 PromptGenerator = Callable[[str], str]
 ResultSingleShotGame = Tuple[
@@ -42,9 +42,7 @@ def play_game(
     generate_instruction_prompt: PromptGenerator,
     model_setup: ModelSetup,
 ) -> List[Completion]:
-    gpt_completions = completer(
-        model=model_setup.model, temperature=model_setup.temperature
-    )
+    gpt_completions = completer_for(model_setup)
     messages = [user_message(generate_instruction_prompt(role_prompt))]
     messages += gpt_completions(messages, 1)
     return messages
