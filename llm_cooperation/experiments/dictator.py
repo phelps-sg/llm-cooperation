@@ -110,7 +110,8 @@ You will make decisions that are consistent with the role outlined earlier,
 but you are not allowed to communicate with your partner apart from informing
 them of your choice. Your decision will be
 final and cannot be changed after you have made it. Here is your investment
-partner. Give your response in the format below:
+partner. Take care to specify your choice on a separate line after
+your explanation, in the format below.
 
 Explanation: [why you picked your choice]
 Choice: [{choice_menu()}]
