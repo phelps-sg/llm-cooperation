@@ -10,7 +10,7 @@ from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
 TOTAL_SHARE = 4
 
-SAMPLE_SIZE = 3
+SAMPLE_SIZE = 30
 
 
 class DictatorEnum(Enum):
