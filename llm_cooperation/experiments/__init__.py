@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
+from typing import Callable
 
 from llm_cooperation import DEFAULT_MODEL_SETUP, Experiment, Group, ModelSetup, Results
 
@@ -98,9 +99,20 @@ def run_and_record_experiment(
     sample_size: int = DEFAULT_SAMPLE_SIZE,
 ) -> Results:
     results = experiment(model_setup, sample_size)
+    logger.info("Experiment complete.")
     df = results.to_df()
     results_dir = create_results_dir(model_setup)
-    filename = os.path.join(results_dir, f"{name}.pickle")
-    logger.info("Experiment complete, saving results to %s", filename)
-    df.to_pickle(filename)
+
+    def results_filename(file_type: str) -> str:
+        return os.path.join(results_dir, f"{name}.{file_type}")
+
+    def save_to(fn: Callable[[str], None], file_type: str) -> None:
+        filename = results_filename(file_type)
+        logger.info("Saving results to %s... ", filename)
+        fn(filename)
+        logger.info("Save complete.")
+
+    save_to(df.to_pickle, "pickle")
+    save_to(df.to_csv, "csv")
+
     return results

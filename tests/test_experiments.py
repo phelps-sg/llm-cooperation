@@ -37,5 +37,9 @@ def test_run_and_record_experiment(mocker):
         model_setup=DEFAULT_MODEL_SETUP,
         sample_size=DEFAULT_SAMPLE_SIZE,
     )
-    filename = os.path.join(results_dir, f"{name}.pickle")
-    df_mock.to_pickle.assert_called_once_with(filename)
+
+    pickle_filename = os.path.join(results_dir, f"{name}.pickle")
+    df_mock.to_pickle.assert_called_once_with(pickle_filename)
+
+    csv_filename = os.path.join(results_dir, f"{name}.csv")
+    df_mock.to_csv.assert_called_once_with(csv_filename)
