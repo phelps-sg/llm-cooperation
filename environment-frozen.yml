@@ -411,4 +411,4 @@ dependencies:
   - zlib=1.2.13=hd590300_5
   - zstd=1.5.2=h3eb15da_6
   - pip:
-      - openai-pygenerator==0.4.7
+      - openai-pygenerator==0.4.8
