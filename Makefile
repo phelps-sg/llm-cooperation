@@ -15,7 +15,7 @@ create-results-dir:
 	mkdir -p ./results
 
 run: create-results-dir
-	$(CONDA_ACTIVATE); python llm_cooperation/main.py > results/experiment.log 2>&1
+	$(CONDA_ACTIVATE); python llm_cooperation/main.py >> results/experiment.log 2>&1
 
 clean:
 	$(CONDA_ACTIVATE); jupyter-book clean jupyter-book/
