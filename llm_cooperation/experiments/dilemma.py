@@ -6,7 +6,7 @@ from typing import List
 import numpy as np
 from openai_pygenerator import Completion
 
-from llm_cooperation import Choice, ModelSetup, Payoffs
+from llm_cooperation import ChainOfThoughtCondition, Choice, ModelSetup, Payoffs
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import (
@@ -61,21 +61,22 @@ Cooperate = DilemmaChoice(DilemmaEnum.C)
 Defect = DilemmaChoice(DilemmaEnum.D)
 
 
-def get_prompt_pd(n: int, role_prompt: str) -> str:
+def get_prompt_pd(condition: ChainOfThoughtCondition, role_prompt: str) -> str:
     cooperate = """'project green'"""
     defect = """'project blue'"""
+    choice_template = f"""Choice: [{defect} | {cooperate}]"""
 
     def payout(amount: int) -> str:
         return f"${amount}.00"
 
-    return f"""
+    base_prompt = f"""
 {role_prompt}
 This is a study of investment choices in different situations.
 You will be making your choices with an investment partner
 who is another person. She is in the next room waiting.
 In a minute I will take you there yo meet your investment partner.
 You and your partner will be choosing between two investment projects and
-you will do so for a total of {n} rounds, where in each round both you and
+you will do so for a total of {NUM_ROUNDS} rounds, where in each round both you and
 your partner will choose a project. The object is to earn as much money as possible.
 If you and your partner choose {cooperate} you will both earn {payout(R)}.
 If you choose {defect} but your partner chooses {cooperate} then you
@@ -86,21 +87,43 @@ receive {payout(S)} and your partner will receive {payout(T)}.
 I will tell you what your partner chooses in subsequent prompts,
 but you will make your choice ahead of your partner telling me your choice.
 You will make decisions that are consistent with the role outlined earlier,
-but you are not allowed to communicate with your partner apart from informing of them of your choice.
-Here is your investment partner.
-What is your first choice?
-Choice: [{defect} | {cooperate}]
+but you are not allowed to communicate with your partner apart from informing
+of them of your choice."""
+
+    if condition:
+        base_prompt = (
+            base_prompt
+            + f"""
+For each round, give your answer in the format below on two separate lines:
+Explanation: [why you made my choice]
+{choice_template}"""
+        )
+    else:
+        base_prompt = (
+            base_prompt
+            + f"""
+For each round, state your choice without explanation in the format below:
+{choice_template}"""
+        )
+
+    return (
+        base_prompt
+        + """
+Here is your investment partner. What is your first choice in the first round?
 """
+    )
 
 
 # pylint: disable=unused-argument
-def strategy_defect(state: GameState[DilemmaChoice], **_kwargs: bool) -> DilemmaChoice:
+def strategy_defect(
+    state: GameState[DilemmaChoice, ChainOfThoughtCondition], **_kwargs: bool
+) -> DilemmaChoice:
     return Defect
 
 
 # pylint: disable=unused-argument
 def strategy_cooperate(
-    state: GameState[DilemmaChoice], **_kwargs: bool
+    state: GameState[DilemmaChoice, ChainOfThoughtCondition], **_kwargs: bool
 ) -> DilemmaChoice:
     return Cooperate
 
@@ -108,7 +131,9 @@ def strategy_cooperate(
 def make_tit_for_tat(
     initial_choice: DilemmaChoice = Cooperate,
 ) -> Strategy[DilemmaChoice]:
-    def tit_for_tat(state: GameState[DilemmaChoice], **_kwargs: bool) -> DilemmaChoice:
+    def tit_for_tat(
+        state: GameState[DilemmaChoice, ChainOfThoughtCondition], **_kwargs: bool
+    ) -> DilemmaChoice:
         if len(state.messages) == 2:
             return initial_choice
         ai_choice = extract_choice_pd(state.messages[-2])
@@ -163,7 +188,7 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
 def run_experiment_pd(
     model_setup: ModelSetup, sample_size: int = SAMPLE_SIZE
 ) -> RepeatedGameResults:
-    game_setup: GameSetup[DilemmaChoice] = GameSetup(
+    game_setup: GameSetup[DilemmaChoice, ChainOfThoughtCondition] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_pd,
         payoffs=payoffs_pd,
@@ -184,6 +209,7 @@ def run_experiment_pd(
             "tit for tat C": strategy_t4t_cooperate,
             "tit for tat D": strategy_t4t_defect,
         },
+        participant_conditions={"chain-of-thought": True, "no-chain-of-thought": False},
         measurement_setup=measurement_setup,
         game_setup=game_setup,
     )

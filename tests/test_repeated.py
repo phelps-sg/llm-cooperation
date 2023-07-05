@@ -54,6 +54,7 @@ def test_play_game(mocker):
 
     result = play_game(
         role_prompt="test-prompt",
+        participant_condition=False,
         partner_strategy=strategy_mock,
         game_setup=GameSetup(
             num_rounds=n,
@@ -139,10 +140,12 @@ def test_run_experiment(mocker):
         "strategy_A": Mock(),
         "strategy_B": Mock(),
     }
+    participant_conditions = {"chain-of-thought": Mock(), "no-chain-of-thought": Mock()}
 
     result: pd.DataFrame = run_experiment(
         ai_participants=ai_participants,
         partner_conditions=user_conditions,
+        participant_conditions=participant_conditions,
         measurement_setup=MeasurementSetup(
             num_samples=len(samples), compute_freq=compute_freq_pd
         ),
@@ -156,17 +159,23 @@ def test_run_experiment(mocker):
             model_setup=DEFAULT_MODEL_SETUP,
         ),
     ).to_df()
-    assert len(result) == len(samples) * len(user_conditions) * 3
-    assert mock_run_sample.call_count == len(samples) * len(user_conditions)
+    assert (
+        len(result)
+        == len(samples) * len(user_conditions) * len(participant_conditions) * 3
+    )
+    assert mock_run_sample.call_count == len(samples) * len(user_conditions) * len(
+        participant_conditions
+    )
 
 
 def test_results_to_df(results: Iterable[ResultRepeatedGame]):
     df = RepeatedGameResults(results).to_df()
-    assert len(df.columns) == 9
+    assert len(df.columns) == 10
     # pylint: disable=R0801
     assert len(df) == 2
     assert df["Group"][0] == str(Group.Altruistic)
     assert df["Group"][1] == str(Group.Selfish)
+    assert df["Participant Condition"][0] == "chain-of-thought"
 
 
 @pytest.fixture
@@ -176,6 +185,7 @@ def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame]:
             (
                 Group.Altruistic,
                 "You are altruistic",
+                "chain-of-thought",
                 "unconditional cooperate",
                 30,
                 0.2,
@@ -187,6 +197,7 @@ def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame]:
             (
                 Group.Selfish,
                 "You are selfish",
+                "no-chain-of-thought",
                 "unconditional cooperate",
                 60,
                 0.5,

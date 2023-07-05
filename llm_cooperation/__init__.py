@@ -4,7 +4,7 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Hashable, Tuple, TypeVar
+from typing import Any, Callable, Hashable, NewType, Tuple, TypeVar
 
 import openai_pygenerator
 import pandas as pd
@@ -64,8 +64,11 @@ DEFAULT_MODEL_SETUP = ModelSetup(
 CT = TypeVar("CT", bound=Choice)
 CT_co = TypeVar("CT_co", bound=Choice, covariant=True)
 CT_contra = TypeVar("CT_contra", bound=Choice, contravariant=True)
+PT = TypeVar("PT")
+PT_contra = TypeVar("PT_contra", contravariant=True)
 
 Payoffs = Tuple[float, float]
+ChainOfThoughtCondition = bool
 
 
 def amount_as_str(amount: float) -> str:

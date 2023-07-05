@@ -110,6 +110,7 @@ def test_run_repeated_game(mocker):
         play_game(
             partner_strategy=strategy_defect,
             role_prompt="You are a participant in a psychology experiment",
+            participant_condition=False,
             game_setup=GameSetup(
                 num_rounds=3,
                 generate_instruction_prompt=get_prompt_pd,

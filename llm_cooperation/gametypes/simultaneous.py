@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 from openai_pygenerator import Completion, is_assistant_role, user_message
 
-from llm_cooperation import CT
+from llm_cooperation import CT, PT
 from llm_cooperation.gametypes.repeated import (
     ChoiceExtractor,
     Choices,
@@ -50,7 +50,7 @@ def analyse_rounds(
 
 
 def next_round(
-    partner_strategy: Strategy[CT], state: GameState[CT]
+    partner_strategy: Strategy[CT], state: GameState[CT, PT]
 ) -> List[Completion]:
     user_choice = partner_strategy(state).description
     return [

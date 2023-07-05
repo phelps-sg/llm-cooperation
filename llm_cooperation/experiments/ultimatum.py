@@ -7,7 +7,13 @@ from typing import Hashable, List
 import numpy as np
 from openai_pygenerator import Completion, content, user_message
 
-from llm_cooperation import Choice, ModelSetup, Payoffs, amount_as_str
+from llm_cooperation import (
+    ChainOfThoughtCondition,
+    Choice,
+    ModelSetup,
+    Payoffs,
+    amount_as_str,
+)
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes import alternating
 from llm_cooperation.gametypes.repeated import (
@@ -84,7 +90,7 @@ dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
 
 def next_round_ultimatum(
     partner_strategy: Strategy[UltimatumChoice],
-    state: GameState[UltimatumChoice],
+    state: GameState[UltimatumChoice, ChainOfThoughtCondition],
 ) -> List[Completion]:
     user_response = partner_strategy(state, propose=False)
     user_proposal = partner_strategy(state, propose=True)
@@ -100,7 +106,7 @@ def next_round_ultimatum(
 
 # pylint: disable=unused-argument
 def strategy_cooperate(
-    state: GameState[UltimatumChoice], **kwargs: bool
+    state: GameState[UltimatumChoice, ChainOfThoughtCondition], **kwargs: bool
 ) -> UltimatumChoice:
     if kwargs["propose"]:
         return ProposerChoice(MAX_AMOUNT)
@@ -108,13 +114,15 @@ def strategy_cooperate(
         return Accept
 
 
-def get_prompt_ultimatum(num_rounds: int, role_prompt: str) -> str:
+def get_prompt_ultimatum(condition: bool, role_prompt: str) -> str:
+    logger.debug("condition = %s", condition)
+    logger.debug("role_prompt = %s", role_prompt)
     return f"""
     {role_prompt}
 This is a study of resource allocation choices. You will be making your decisions
 with another participant who is also taking part in this study.
 They are ready and waiting. In a moment I will bring you into the virtual room to meet them.
-You and your partner will participate in a total of {num_rounds} rounds of resource allocation decisions.
+You and your partner will participate in a total of {NUM_ROUNDS} rounds of resource allocation decisions.
 The objective is to earn as much virtual currency as possible in total across all rounds.
 In each round you will play one of two roles: proposer or responder.
 
@@ -203,7 +211,7 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
 def run_experiment_ultimatum(
     model_setup: ModelSetup, sample_size: int = SAMPLE_SIZE
 ) -> RepeatedGameResults:
-    game_setup: GameSetup[UltimatumChoice] = GameSetup(
+    game_setup: GameSetup[UltimatumChoice, ChainOfThoughtCondition] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_ultimatum,
         extract_choice=extract_choice_ultimatum,
@@ -218,6 +226,7 @@ def run_experiment_ultimatum(
     )
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
+        participant_conditions={"chain-of-thought": True, "no-chain-of-thought": False},
         partner_conditions={"cooperate": strategy_cooperate},
         measurement_setup=measurement_setup,
         game_setup=game_setup,
