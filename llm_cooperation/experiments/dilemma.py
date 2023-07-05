@@ -69,8 +69,18 @@ def get_prompt_pd(condition: ChainOfThoughtCondition, role_prompt: str) -> str:
     def payout(amount: int) -> str:
         return f"${amount}.00"
 
-    base_prompt = f"""
-{role_prompt}
+    def round_instructions() -> str:
+        if condition:
+            return f"""
+For each round, give your answer in the format below on two separate lines:
+Explanation: [why I made my choice]
+{choice_template}"""
+        else:
+            return f"""
+    For each round, state your choice without explanation in the format below:
+    {choice_template}"""
+
+    return f"""{role_prompt}
 This is a study of investment choices in different situations.
 You will be making your choices with an investment partner
 who is another person. She is in the next room waiting.
@@ -88,30 +98,10 @@ I will tell you what your partner chooses in subsequent prompts,
 but you will make your choice ahead of your partner telling me your choice.
 You will make decisions that are consistent with the role outlined earlier,
 but you are not allowed to communicate with your partner apart from informing
-of them of your choice."""
-
-    if condition:
-        base_prompt = (
-            base_prompt
-            + f"""
-For each round, give your answer in the format below on two separate lines:
-Explanation: [why I made my choice]
-{choice_template}"""
-        )
-    else:
-        base_prompt = (
-            base_prompt
-            + f"""
-For each round, state your choice without explanation in the format below:
-{choice_template}"""
-        )
-
-    return (
-        base_prompt
-        + """
-Here is your investment partner. What is your first choice in the first round?
+of them of your choice.
+{round_instructions()}
+Here is your investment partner. What is your choice in the first round?
 """
-    )
 
 
 # pylint: disable=unused-argument
