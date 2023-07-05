@@ -45,6 +45,12 @@ def test_get_instruction_prompt():
         ("Project GREEN", Cooperate),
         ("Project BLUE", Defect),
         ("'project green'", Cooperate),
+        ("Choice: 'project green'", Cooperate),
+        (
+            """Explanation: Because project green is bad for me.
+Choice: Project BLUE""",
+            Defect,
+        ),
     ],
 )
 def test_extract_choice_pd(text: str, expected_move: DilemmaChoice):

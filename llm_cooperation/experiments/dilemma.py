@@ -95,7 +95,7 @@ of them of your choice."""
             base_prompt
             + f"""
 For each round, give your answer in the format below on two separate lines:
-Explanation: [why you made my choice]
+Explanation: [why I made my choice]
 {choice_template}"""
         )
     else:
@@ -157,18 +157,32 @@ def move_as_str(move: DilemmaEnum) -> str:
     raise ValueError(f"Invalid choice {move}")
 
 
+def choice_from_str(choice: str) -> DilemmaChoice:
+    if choice == "green":
+        return Cooperate
+    elif choice == "blue":
+        return Defect
+    else:
+        raise ValueError(f"Cannot determine choice from {choice}")
+
+
 def extract_choice_pd(completion: Completion, **_kwargs: bool) -> DilemmaChoice:
-    regex: str = r"project (blue|green)"
+    regex: str = r".*project (blue|green)"
+    choice_regex: str = f"choice:{regex}"
     logger.debug("completion = %s", completion)
     lower = completion["content"].lower().strip()
-    choice_match = re.search(regex, lower)
-    if choice_match:
-        choice = choice_match.group(1)
-        if choice == "green":
-            return Cooperate
-        elif choice == "blue":
-            return Defect
-    raise ValueError(f"Could not match choice in {completion}")
+
+    def matched_choice(m: re.Match) -> DilemmaChoice:
+        return choice_from_str(m.group(1))
+
+    match = re.search(choice_regex, lower)
+    if match is not None:
+        return matched_choice(match)
+    else:
+        match = re.search(regex, lower)
+        if match is not None:
+            return matched_choice(match)
+    raise ValueError(f"Cannot determine choice from {completion}")
 
 
 def payoffs_pd(player1: DilemmaChoice, player2: DilemmaChoice) -> Payoffs:
