@@ -6,6 +6,7 @@ from openai_pygenerator import Completion, user_message
 from llm_cooperation.experiments.ultimatum import (
     Accept,
     ProposerChoice,
+    Reject,
     extract_choice_ultimatum,
     payoffs_ultimatum,
 )
@@ -19,6 +20,9 @@ from tests.test_ultimatum import assistant_message
     [
         (0, Choices(ai=ProposerChoice(10.0), user=Accept)),
         (1, Choices(user=ProposerChoice(10.0), ai=Accept)),
+        (2, Choices(ai=ProposerChoice(7.0), user=Reject)),
+        (3, Choices(user=ProposerChoice(10.0), ai=Accept)),
+        (4, Choices(ai=ProposerChoice(5.00), user=Accept)),
     ],
 )
 def test_analyse_round(
@@ -36,9 +40,12 @@ def test_analyse_round(
 def alternating_history() -> List[Completion]:
     return [
         assistant_message("Propose $10"),
-        user_message("Accept, Propose $10"),
-        assistant_message("Accept / Propose $7"),
-        user_message("Accept / Propose $10"),
+        user_message("Accept,\n Propose $10"),
+        assistant_message(
+            """I accept your offer.
+For the next round I propose $7"""
+        ),
+        user_message("Reject / Propose $10"),
         assistant_message("I Accept, and then I propose $5"),
-        user_message("Accept / Propose $10"),
+        user_message("Accept"),
     ]
