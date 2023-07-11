@@ -18,6 +18,36 @@ make install
 make run
 ~~~
 
+## Configuration
+
+To run specific experiments and parameter combinations follow instructions below.
+
+1. In a shell:
+
+~~~bash
+mkdir ~/.llm-cooperation
+cat > ~/.llm-cooperation/llm_config.py << EOF
+
+grid = {
+        "temperature": [0.1, 0.6],
+        "model": ["gpt-3.5-turbo", "gpt-4"]
+}
+
+sample_size = 3
+
+experiments = ["dictator", "dilemma"]
+EOF
+~~~
+
+2. Edit `$HOME/.llm-cooperation/llm_config.py` with required values.
+
+3. In a shell:
+~~~bash
+export OPENAI_API_KEY='<key>'
+make run
+~~~
+
+
 ## Contributing
 
 If you have a new experiment then please submit a pull request.

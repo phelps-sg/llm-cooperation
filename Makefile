@@ -14,6 +14,7 @@ book:
 create-results-dir:
 	mkdir -p ./results
 
+run: export PYTHONPATH=$(HOME)/.llm-cooperation
 run: create-results-dir
 	$(CONDA_ACTIVATE); python llm_cooperation/main.py >> results/experiment.log 2>&1
 
