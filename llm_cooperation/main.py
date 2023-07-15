@@ -22,9 +22,9 @@ logging.basicConfig(
 )
 
 experiments: Dict[str, Experiment] = {
-    "dilemma": dilemma.run_experiment_pd,
-    "ultimatum": ultimatum.run_experiment_ultimatum,
-    "dictator": dictator.run_experiment_dictator,
+    "dilemma": dilemma.run,
+    "ultimatum": ultimatum.run,
+    "dictator": dictator.run,
 }
 
 ConfigValue = float | str

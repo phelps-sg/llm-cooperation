@@ -94,11 +94,11 @@ def create_results_dir(model_setup: ModelSetup) -> str:
 
 def run_and_record_experiment(
     name: str,
-    experiment: Experiment,
+    run: Experiment,
     model_setup: ModelSetup = DEFAULT_MODEL_SETUP,
     sample_size: int = DEFAULT_SAMPLE_SIZE,
 ) -> Results:
-    results = experiment(model_setup, sample_size)
+    results = run(model_setup, sample_size)
     logger.info("Experiment complete.")
     df = results.to_df()
     results_dir = create_results_dir(model_setup)

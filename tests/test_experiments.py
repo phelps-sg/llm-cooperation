@@ -33,7 +33,7 @@ def test_run_and_record_experiment(mocker):
     name = "test_experiment"
     run_and_record_experiment(
         name,
-        experiment=lambda _setup, _n: results_mock,
+        run=lambda _setup, _n: results_mock,
         model_setup=DEFAULT_MODEL_SETUP,
         sample_size=DEFAULT_SAMPLE_SIZE,
     )
