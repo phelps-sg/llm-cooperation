@@ -16,11 +16,6 @@ from llm_cooperation.experiments import (
 
 logger = logging.getLogger(__name__)
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-
 experiments: Dict[str, Experiment] = {
     "dilemma": dilemma.run,
     "ultimatum": ultimatum.run,
