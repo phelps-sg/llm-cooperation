@@ -4,7 +4,7 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Hashable, NewType, Tuple, TypeVar
+from typing import Callable, Hashable, Tuple, TypeVar
 
 import openai_pygenerator
 import pandas as pd
@@ -64,7 +64,6 @@ DEFAULT_MODEL_SETUP = ModelSetup(
     temperature=openai_pygenerator.GPT_TEMPERATURE,
     max_tokens=openai_pygenerator.GPT_MAX_TOKENS,
 )
-
 
 CT = TypeVar("CT", bound=Choice)
 CT_co = TypeVar("CT_co", bound=Choice, covariant=True)
