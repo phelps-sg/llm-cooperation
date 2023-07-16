@@ -39,6 +39,7 @@ DEFAULT_GRID: Grid = {
     "model": [oai.GPT_MODEL],
     "max_tokens": [oai.GPT_MAX_TOKENS],
 }
+
 DEFAULT_CONFIGURATION = Configuration(
     grid=DEFAULT_GRID,
     sample_size=DEFAULT_SAMPLE_SIZE,
