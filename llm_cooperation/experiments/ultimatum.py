@@ -1,19 +1,13 @@
 import logging
 import re
-from abc import ABC
+from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Hashable, List
+from typing import List
 
 import numpy as np
 from openai_pygenerator import Completion, content, user_message
 
-from llm_cooperation import (
-    ChainOfThoughtCondition,
-    Choice,
-    ModelSetup,
-    Payoffs,
-    amount_as_str,
-)
+from llm_cooperation import ChainOfThoughtCondition, ModelSetup, Payoffs, amount_as_str
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes import alternating
 from llm_cooperation.gametypes.repeated import (
@@ -43,44 +37,34 @@ class ResponderEnum(Enum):
     Reject = auto()
 
 
-class UltimatumChoice(Choice, ABC):
-    pass
-
-
-class ProposerChoice(UltimatumChoice):
-    def __init__(self, value: float):
-        self._value: float = value
-
-    @property
-    def value(self) -> Hashable:
-        return self._value
+@dataclass
+class ProposerChoice:
+    value: float
 
     @property
     def amount(self) -> float:
-        return self._value
+        return self.value
 
     @property
     def description(self) -> str:
-        return amount_as_str(self._value)
+        return amount_as_str(self.value)
 
 
-class ResponderChoice(UltimatumChoice):
-    def __init__(self, value: ResponderEnum):
-        self._value = value
-
-    @property
-    def value(self) -> Hashable:
-        return self._value
+@dataclass
+class ResponderChoice:
+    value: ResponderEnum
 
     @property
     def description(self) -> str:
-        if self._value is ResponderEnum.Accept:
+        if self.value is ResponderEnum.Accept:
             return "Accept"
-        elif self._value is ResponderEnum.Reject:
+        elif self.value is ResponderEnum.Reject:
             return "Reject"
         else:
-            raise ValueError(f"Invalid value: ${self._value}")
+            raise ValueError(f"Invalid value: ${self.value}")
 
+
+UltimatumChoice = ProposerChoice | ResponderChoice
 
 Accept = ResponderChoice(ResponderEnum.Accept)
 Reject = ResponderChoice(ResponderEnum.Reject)

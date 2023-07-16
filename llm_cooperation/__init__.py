@@ -4,7 +4,7 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Hashable, Tuple, TypeVar
+from typing import Callable, Hashable, Protocol, Tuple, TypeVar
 
 import openai_pygenerator
 import pandas as pd
@@ -18,24 +18,14 @@ logging.basicConfig(
 )
 
 
-class Choice(ABC):
+class Choice(Protocol):
     @property
-    @abstractmethod
     def value(self) -> Hashable:
-        pass
+        ...
 
     @property
-    @abstractmethod
     def description(self) -> str:
-        pass
-
-    def __eq__(self, o: object) -> bool:
-        if issubclass(type(o), Choice):
-            return self.value.__eq__(o.value)  # type: ignore
-        return False
-
-    def __hash__(self) -> int:
-        return self.value.__hash__()
+        ...
 
 
 Group = Enum(
@@ -68,6 +58,7 @@ DEFAULT_MODEL_SETUP = ModelSetup(
 CT = TypeVar("CT", bound=Choice)
 CT_co = TypeVar("CT_co", bound=Choice, covariant=True)
 CT_contra = TypeVar("CT_contra", bound=Choice, contravariant=True)
+
 PT = TypeVar("PT")
 PT_contra = TypeVar("PT_contra", contravariant=True)
 

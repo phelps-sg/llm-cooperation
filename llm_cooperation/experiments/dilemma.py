@@ -1,5 +1,6 @@
 import logging
 import re
+from dataclasses import dataclass
 from enum import Enum, auto
 from functools import partial
 from typing import List
@@ -7,7 +8,7 @@ from typing import List
 import numpy as np
 from openai_pygenerator import Completion
 
-from llm_cooperation import ChainOfThoughtCondition, Choice, ModelSetup, Payoffs
+from llm_cooperation import ChainOfThoughtCondition, ModelSetup, Payoffs
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import (
@@ -40,17 +41,13 @@ class DilemmaEnum(Enum):
     D = auto()
 
 
-class DilemmaChoice(Choice):
-    def __init__(self, value: DilemmaEnum):
-        self._value = value
+@dataclass
+class DilemmaChoice:
+    value: DilemmaEnum
 
     @property
     def description(self) -> str:
         return move_as_str(self.value)
-
-    @property
-    def value(self) -> DilemmaEnum:
-        return self._value
 
     @property
     def as_int(self) -> int:

@@ -18,11 +18,11 @@ from tests.test_ultimatum import assistant_message
 @pytest.mark.parametrize(
     "i, expected_choices",
     [
-        (0, Choices(ai=ProposerChoice(10.0), user=Accept)),
-        (1, Choices(user=ProposerChoice(10.0), ai=Accept)),
-        (2, Choices(ai=ProposerChoice(7.0), user=Reject)),
-        (3, Choices(user=ProposerChoice(10.0), ai=Accept)),
-        (4, Choices(ai=ProposerChoice(5.00), user=Accept)),
+        (0, Choices(ai=ProposerChoice(10.0), user=Accept)),  # type: ignore
+        (1, Choices(user=ProposerChoice(10.0), ai=Accept)),  # type: ignore
+        (2, Choices(ai=ProposerChoice(7.0), user=Reject)),  # type: ignore
+        (3, Choices(user=ProposerChoice(10.0), ai=Accept)),  # type: ignore
+        (4, Choices(ai=ProposerChoice(5.00), user=Accept)),  # type: ignore
     ],
 )
 def test_analyse_round(

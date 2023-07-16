@@ -1,10 +1,11 @@
 import re
+from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Hashable
+from typing import Dict
 
 from openai_pygenerator import Completion, content
 
-from llm_cooperation import Choice, ModelSetup, amount_as_str
+from llm_cooperation import ModelSetup, amount_as_str
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
@@ -38,21 +39,17 @@ reverse_color_mappings: Dict[str, DictatorEnum] = {
 }
 
 
-class DictatorChoice(Choice):
+@dataclass
+class DictatorChoice:
+    value: DictatorEnum
+
     @property
     def description(self) -> str:
-        return project(color_mappings[self._value])
-
-    def __init__(self, value: DictatorEnum):
-        self._value: DictatorEnum = value
-
-    @property
-    def value(self) -> Hashable:
-        return self._value
+        return project(color_mappings[self.value])
 
     @property
     def donation(self) -> float:
-        return float(self._value.value)
+        return float(self.value.value)
 
     @property
     def payoff_ego(self) -> float:
