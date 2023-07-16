@@ -1,6 +1,7 @@
 import logging
 import re
 from enum import Enum, auto
+from functools import partial
 from typing import List
 
 import numpy as np
@@ -15,7 +16,6 @@ from llm_cooperation.gametypes.repeated import (
     GameState,
     MeasurementSetup,
     RepeatedGameResults,
-    Strategy,
     run_experiment,
 )
 
@@ -118,25 +118,22 @@ def strategy_cooperate(
     return Cooperate
 
 
-def make_tit_for_tat(
-    initial_choice: DilemmaChoice = Cooperate,
-) -> Strategy[DilemmaChoice]:
-    def tit_for_tat(
-        state: GameState[DilemmaChoice, ChainOfThoughtCondition], **_kwargs: bool
-    ) -> DilemmaChoice:
-        if len(state.messages) == 2:
-            return initial_choice
-        ai_choice = extract_choice_pd(state.messages[-2])
-        if ai_choice == Cooperate:
-            return Cooperate
-        else:
-            return Defect
-
-    return tit_for_tat
+def strategy_t4t(
+    initial_choice: DilemmaChoice,
+    state: GameState[DilemmaChoice, ChainOfThoughtCondition],
+    **_kwargs: bool,
+) -> DilemmaChoice:
+    if len(state.messages) == 2:
+        return initial_choice
+    ai_choice = extract_choice_pd(state.messages[-2])
+    if ai_choice == Cooperate:
+        return Cooperate
+    else:
+        return Defect
 
 
-strategy_t4t_defect = make_tit_for_tat(initial_choice=Defect)
-strategy_t4t_cooperate = make_tit_for_tat(initial_choice=Cooperate)
+strategy_t4t_defect = partial(strategy_t4t, Defect)
+strategy_t4t_cooperate = partial(strategy_t4t, Cooperate)
 
 
 def move_as_str(move: DilemmaEnum) -> str:
