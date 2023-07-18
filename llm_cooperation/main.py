@@ -1,5 +1,6 @@
 import itertools
 import logging
+import os
 from dataclasses import dataclass
 from typing import Dict, Iterable, List
 
@@ -10,6 +11,7 @@ from llm_cooperation.experiments import (
     DEFAULT_SAMPLE_SIZE,
     dictator,
     dilemma,
+    principalagent,
     run_and_record_experiment,
     ultimatum,
 )
@@ -20,6 +22,7 @@ experiments: Dict[str, Experiment] = {
     "dilemma": dilemma.run,
     "ultimatum": ultimatum.run,
     "dictator": dictator.run,
+    "principal-agent": principalagent.run,
 }
 
 ConfigValue = float | str
@@ -56,6 +59,7 @@ def get_config() -> Configuration:
             experiment_names=config.experiments,
         )
     except ModuleNotFoundError:
+        logger.debug("PYTHONPATH = %s", os.getenv("PYTHONPATH"))
         logger.exception("Could not find llm_config.py in PYTHONPATH")
     except KeyError:
         logger.exception("Could not find settings in llm_config.py")
