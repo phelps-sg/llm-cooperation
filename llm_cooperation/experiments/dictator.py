@@ -88,7 +88,8 @@ def choice_menu() -> str:
     return " | ".join([f"'{c.description}'" for c in all_dictator_choices])
 
 
-def get_prompt_dictator(role_prompt: str) -> str:
+# pylint: disable=unused-argument
+def get_prompt_dictator(condition: bool, role_prompt: str) -> str:
     return f"""
 {role_prompt}
 This is a study of investment choices in different situations.
@@ -139,6 +140,7 @@ def run(
 ) -> OneShotResults[DictatorChoice]:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
+        participant_conditions={"dummy": False},
         num_samples=sample_size,
         generate_instruction_prompt=get_prompt_dictator,
         extract_choice=extract_choice_dictator,

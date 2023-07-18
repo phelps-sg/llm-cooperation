@@ -6,7 +6,7 @@ from typing import Callable, Dict, Generic, Iterable, List, Optional, Protocol, 
 
 import numpy as np
 import pandas as pd
-from openai_pygenerator import Completion, transcript, user_message
+from openai_pygenerator import Completion, transcript
 
 from llm_cooperation import (
     CT,
@@ -16,10 +16,9 @@ from llm_cooperation import (
     Group,
     ModelSetup,
     Payoffs,
-    PT_contra,
     Results,
-    completer_for,
 )
+from llm_cooperation.gametypes import PromptGenerator, start_game
 
 logger = logging.getLogger(__name__)
 
@@ -89,11 +88,6 @@ class PayoffFunction(Protocol[CT_contra]):
         ...
 
 
-class PromptGenerator(Protocol[PT_contra]):
-    def __call__(self, condition: PT_contra, role_prompt: str) -> str:
-        ...
-
-
 # PromptGenerator = Callable[[ParticipantCondition, str], str]
 ResultForRound = Tuple[Scores, Choices]
 RoundAnalyser = Callable[
@@ -104,7 +98,16 @@ RoundsAnalyser = Callable[
 ]
 
 ResultRepeatedGame = Tuple[
-    Group, str, str, str, float, float, Optional[List[Choices]], List[str], str, float
+    Group,
+    str,
+    str,
+    str,
+    float,
+    float,
+    Optional[List[Choices]],
+    List[str],
+    str,
+    float,
 ]
 
 
@@ -151,12 +154,12 @@ def play_game(
     partner_strategy: Strategy[CT],
     game_setup: GameSetup[CT, PT],
 ) -> List[Completion]:
-    gpt_completions = completer_for(game_setup.model_setup)
-    messages: List[Completion] = [
-        user_message(
-            game_setup.generate_instruction_prompt(participant_condition, role_prompt)
-        )
-    ]
+    gpt_completions, messages = start_game(
+        game_setup.generate_instruction_prompt,
+        game_setup.model_setup,
+        participant_condition,
+        role_prompt,
+    )
     for i in range(game_setup.num_rounds):
         completion = gpt_completions(messages, 1)
         messages += completion

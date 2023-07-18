@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Dict, Iterable
 from unittest.mock import Mock
 
 import numpy as np
@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Group
+from llm_cooperation import DEFAULT_MODEL_SETUP, PT, Choice, Group
 from llm_cooperation.gametypes.oneshot import (
     OneShotResults,
     ResultSingleShotGame,
@@ -18,7 +18,7 @@ from llm_cooperation.gametypes.oneshot import (
 )
 
 
-def test_run_experiment(mocker):
+def test_run_experiment(mocker, participant_conditions: Dict[str, PT]):
     mock_choice = Mock(spec=Choice)
 
     mock_run_sample = mocker.patch("llm_cooperation.gametypes.oneshot.generate_samples")
@@ -35,7 +35,8 @@ def test_run_experiment(mocker):
     }
 
     result: pd.DataFrame = run_experiment(
-        ai_participants,
+        ai_participants=ai_participants,
+        participant_conditions=participant_conditions,
         num_samples=len(samples),
         generate_instruction_prompt=Mock(),
         payoffs=Mock(),
@@ -43,8 +44,8 @@ def test_run_experiment(mocker):
         compute_freq=Mock(),
         model_setup=DEFAULT_MODEL_SETUP,
     ).to_df()
-    assert len(result) == 3 * len(samples)
-    assert mock_run_sample.call_count == len(samples)
+    assert len(result) == 3 * len(samples) * len(participant_conditions)
+    assert mock_run_sample.call_count == len(samples) * len(participant_conditions)
 
 
 def test_generate_samples(mocker):
@@ -57,6 +58,7 @@ def test_generate_samples(mocker):
     result = list(
         generate_samples(
             prompt="test-prompt",
+            participant_condition=None,
             num_samples=test_n,
             generate_instruction_prompt=Mock(),
             payoffs=Mock(),
@@ -91,6 +93,7 @@ def test_play_game(mocker):
     mock_generate.return_value = test_prompt
     result = play_game(
         role_prompt="test-role-prompt",
+        participant_condition=None,
         generate_instruction_prompt=mock_generate,
         model_setup=DEFAULT_MODEL_SETUP,
     )
@@ -139,7 +142,7 @@ def test_analyse(mocker):
 
 def test_results_to_df(results: Iterable[ResultSingleShotGame]):
     df = OneShotResults(results).to_df()
-    assert len(df.columns) == 8
+    assert len(df.columns) == 9
     # pylint: disable=R0801
     assert len(df) == 2
     assert df["Group"][0] == str(Group.Altruistic)
@@ -153,6 +156,7 @@ def results() -> Iterable[ResultSingleShotGame]:
             (
                 Group.Altruistic,
                 "You are altruistic",
+                "condition-true",
                 30,
                 0.2,
                 Mock(spec=Choice),
@@ -163,6 +167,7 @@ def results() -> Iterable[ResultSingleShotGame]:
             (
                 Group.Selfish,
                 "You are selfish",
+                "condition-false",
                 60,
                 0.5,
                 Mock(spec=Choice),
@@ -172,3 +177,8 @@ def results() -> Iterable[ResultSingleShotGame]:
             ),
         ]
     )
+
+
+@pytest.fixture
+def participant_conditions() -> Dict[str, bool]:
+    return {"+": True, "-": False}
