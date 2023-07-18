@@ -137,7 +137,7 @@ def compute_freq_dictator(history: DictatorChoice) -> float:
 
 def run(
     model_setup: ModelSetup, sample_size: int = SAMPLE_SIZE
-) -> OneShotResults[DictatorChoice]:
+) -> OneShotResults[DictatorChoice, str]:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         participant_conditions={"dummy": False},

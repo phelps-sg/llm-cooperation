@@ -10,13 +10,13 @@ from llm_cooperation import CT, PT, RT, Group, ModelSetup, Results, logger
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
 ResultSingleShotGame = Tuple[
-    Group, str, str, float, float, Optional[CT], List[str], str, float
+    Group, RT, str, float, float, Optional[CT], List[str], str, float
 ]
 
 
-class OneShotResults(Results, Generic[CT]):
-    def __init__(self, rows: Iterable[ResultSingleShotGame[CT]]):
-        self._rows: Iterable[ResultSingleShotGame[CT]] = rows
+class OneShotResults(Results, Generic[CT, RT]):
+    def __init__(self, rows: Iterable[ResultSingleShotGame[RT, CT]]):
+        self._rows: Iterable[ResultSingleShotGame[RT, CT]] = rows
 
     def to_df(self) -> pd.DataFrame:
         return pd.DataFrame(
@@ -92,7 +92,7 @@ def analyse(
 
 
 def generate_samples(
-    prompt: str,
+    prompt: RT,
     num_samples: int,
     generate_instruction_prompt: PromptGenerator[PT, RT],
     payoffs: Callable[[CT], float],
@@ -113,7 +113,7 @@ def generate_samples(
 
 
 def run_experiment(
-    ai_participants: Dict[Group, List[str]],
+    ai_participants: Dict[Group, List[RT]],
     participant_conditions: Dict[str, PT],
     num_samples: int,
     generate_instruction_prompt: PromptGenerator[PT, RT],
@@ -121,7 +121,7 @@ def run_experiment(
     extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[CT], float],
     model_setup: ModelSetup,
-) -> OneShotResults[CT]:
+) -> OneShotResults[CT, RT]:
     return OneShotResults(
         (
             group,
