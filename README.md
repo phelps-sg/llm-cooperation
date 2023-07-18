@@ -30,7 +30,8 @@ cat > ~/.llm-cooperation/llm_config.py << EOF
 
 grid = {
         "temperature": [0.1, 0.6],
-        "model": ["gpt-3.5-turbo", "gpt-4"]
+        "model": ["gpt-3.5-turbo", "gpt-4"],
+        "max_tokens": [300]
 }
 
 sample_size = 3
