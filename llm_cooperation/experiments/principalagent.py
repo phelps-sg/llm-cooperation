@@ -8,8 +8,6 @@ from llm_cooperation import Group, ModelSetup
 from llm_cooperation.experiments import run_and_record_experiment
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
-SAMPLE_SIZE: int = 10
-
 
 @dataclass
 class PAChoice:
@@ -77,9 +75,7 @@ def compute_freq_pa(_choice: PAChoice) -> float:
     return np.nan
 
 
-def run(
-    model_setup: ModelSetup, sample_size: int = SAMPLE_SIZE
-) -> OneShotResults[PAChoice, PARole]:
+def run(model_setup: ModelSetup, sample_size: int) -> OneShotResults[PAChoice, PARole]:
     return run_experiment(
         ai_participants={
             Group.Control: [
