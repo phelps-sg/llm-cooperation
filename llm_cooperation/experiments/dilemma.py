@@ -20,7 +20,6 @@ from llm_cooperation.gametypes.repeated import (
     run_experiment,
 )
 
-SAMPLE_SIZE: int = 30
 NUM_ROUNDS: int = 6
 
 T = 7
@@ -183,7 +182,7 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
-def run(model_setup: ModelSetup, sample_size: int = SAMPLE_SIZE) -> RepeatedGameResults:
+def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
     game_setup: GameSetup[DilemmaChoice, ChainOfThoughtCondition, str] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_pd,

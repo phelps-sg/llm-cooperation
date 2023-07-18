@@ -26,10 +26,7 @@ MAX_AMOUNT: float = 10.0
 MIN_AMOUNT: float = 0.0
 
 # NUM_ROUNDS = 22
-# SAMPLE_SIZE = 30
-
 NUM_ROUNDS: int = 6
-SAMPLE_SIZE: int = 3
 
 
 class ResponderEnum(Enum):
@@ -192,7 +189,7 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
         raise ValueError(f"Invalid choice combination: {player1}, {player2}")
 
 
-def run(model_setup: ModelSetup, sample_size: int = SAMPLE_SIZE) -> RepeatedGameResults:
+def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
     game_setup: GameSetup[UltimatumChoice, ChainOfThoughtCondition, str] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_ultimatum,
