@@ -74,7 +74,7 @@ dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
 
 def next_round_ultimatum(
     partner_strategy: Strategy[UltimatumChoice],
-    state: GameState[UltimatumChoice, ChainOfThoughtCondition],
+    state: GameState[UltimatumChoice, ChainOfThoughtCondition, str],
 ) -> List[Completion]:
     user_response = partner_strategy(state, propose=False)
     user_proposal = partner_strategy(state, propose=True)
@@ -90,7 +90,7 @@ def next_round_ultimatum(
 
 # pylint: disable=unused-argument
 def strategy_cooperate(
-    state: GameState[UltimatumChoice, ChainOfThoughtCondition], **kwargs: bool
+    state: GameState[UltimatumChoice, ChainOfThoughtCondition, str], **kwargs: bool
 ) -> UltimatumChoice:
     if kwargs["propose"]:
         return ProposerChoice(MAX_AMOUNT)
@@ -193,7 +193,7 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
 
 
 def run(model_setup: ModelSetup, sample_size: int = SAMPLE_SIZE) -> RepeatedGameResults:
-    game_setup: GameSetup[UltimatumChoice, ChainOfThoughtCondition] = GameSetup(
+    game_setup: GameSetup[UltimatumChoice, ChainOfThoughtCondition, str] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_ultimatum,
         extract_choice=extract_choice_ultimatum,

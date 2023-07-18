@@ -11,6 +11,7 @@ from openai_pygenerator import Completion, transcript
 from llm_cooperation import (
     CT,
     PT,
+    RT,
     CT_co,
     CT_contra,
     Group,
@@ -42,9 +43,9 @@ class RoundsSetup:
 
 
 @dataclass
-class GameSetup(Generic[CT, PT]):
+class GameSetup(Generic[CT, PT, RT]):
     num_rounds: int
-    generate_instruction_prompt: PromptGenerator[PT]
+    generate_instruction_prompt: PromptGenerator[PT, RT]
     next_round: RoundGenerator
     rounds: RoundsSetup
     payoffs: PayoffFunction[CT]
@@ -59,10 +60,10 @@ class MeasurementSetup(Generic[CT]):
 
 
 @dataclass
-class GameState(Generic[CT, PT]):
+class GameState(Generic[CT, PT, RT]):
     messages: List[Completion]
     round: int
-    game_setup: GameSetup[CT, PT]
+    game_setup: GameSetup[CT, PT, RT]
 
 
 class ChoiceExtractor(Protocol[CT_co]):
@@ -99,7 +100,7 @@ RoundsAnalyser = Callable[
 
 ResultRepeatedGame = Tuple[
     Group,
-    str,
+    RT,
     str,
     str,
     float,
@@ -149,10 +150,10 @@ class RepeatedGameResults(Results):
 
 
 def play_game(
-    role_prompt: str,
+    role_prompt: RT,
     participant_condition: PT,
     partner_strategy: Strategy[CT],
-    game_setup: GameSetup[CT, PT],
+    game_setup: GameSetup[CT, PT, RT],
 ) -> List[Completion]:
     gpt_completions, messages = start_game(
         game_setup.generate_instruction_prompt,
@@ -207,11 +208,11 @@ def analyse(
 
 
 def generate_samples(
-    participant: str,
+    participant: RT,
     condition: PT,
     partner_strategy: Strategy[CT],
     measurement_setup: MeasurementSetup[CT],
-    game_setup: GameSetup[CT, PT],
+    game_setup: GameSetup[CT, PT, RT],
 ) -> Iterable[Tuple[float, float, Optional[List[Choices[CT]]], List[str]]]:
     # pylint: disable=R0801
     for _i in range(measurement_setup.num_samples):
@@ -231,11 +232,11 @@ def generate_samples(
 
 
 def run_experiment(
-    ai_participants: Dict[Group, List[str]],
+    ai_participants: Dict[Group, List[RT]],
     partner_conditions: Dict[str, Strategy[CT]],
     participant_conditions: Dict[str, PT],
     measurement_setup: MeasurementSetup[CT],
-    game_setup: GameSetup[CT, PT],
+    game_setup: GameSetup[CT, PT, RT],
 ) -> RepeatedGameResults:
     return RepeatedGameResults(
         (

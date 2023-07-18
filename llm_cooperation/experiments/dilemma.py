@@ -103,21 +103,21 @@ Here is your investment partner. What is your choice in the first round?
 
 # pylint: disable=unused-argument
 def strategy_defect(
-    state: GameState[DilemmaChoice, ChainOfThoughtCondition], **_kwargs: bool
+    state: GameState[DilemmaChoice, ChainOfThoughtCondition, str], **_kwargs: bool
 ) -> DilemmaChoice:
     return Defect
 
 
 # pylint: disable=unused-argument
 def strategy_cooperate(
-    state: GameState[DilemmaChoice, ChainOfThoughtCondition], **_kwargs: bool
+    state: GameState[DilemmaChoice, ChainOfThoughtCondition, str], **_kwargs: bool
 ) -> DilemmaChoice:
     return Cooperate
 
 
 def strategy_t4t(
     initial_choice: DilemmaChoice,
-    state: GameState[DilemmaChoice, ChainOfThoughtCondition],
+    state: GameState[DilemmaChoice, ChainOfThoughtCondition, str],
     **_kwargs: bool,
 ) -> DilemmaChoice:
     if len(state.messages) == 2:
@@ -184,7 +184,7 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
 
 
 def run(model_setup: ModelSetup, sample_size: int = SAMPLE_SIZE) -> RepeatedGameResults:
-    game_setup: GameSetup[DilemmaChoice, ChainOfThoughtCondition] = GameSetup(
+    game_setup: GameSetup[DilemmaChoice, ChainOfThoughtCondition, str] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_pd,
         payoffs=payoffs_pd,

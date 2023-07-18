@@ -62,6 +62,9 @@ CT_contra = TypeVar("CT_contra", bound=Choice, contravariant=True)
 PT = TypeVar("PT")
 PT_contra = TypeVar("PT_contra", contravariant=True)
 
+RT = TypeVar("RT")
+RT_contra = TypeVar("RT_contra", contravariant=True)
+
 Payoffs = Tuple[float, float]
 ChainOfThoughtCondition = bool
 

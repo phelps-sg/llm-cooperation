@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from openai_pygenerator import Completion, transcript
 
-from llm_cooperation import CT, PT, Group, ModelSetup, Results, logger
+from llm_cooperation import CT, PT, RT, Group, ModelSetup, Results, logger
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
 ResultSingleShotGame = Tuple[
@@ -50,7 +50,7 @@ class OneShotResults(Results, Generic[CT]):
 
 
 def play_game(
-    role_prompt: str,
+    role_prompt: RT,
     participant_condition: PT,
     generate_instruction_prompt: PromptGenerator,
     model_setup: ModelSetup,
@@ -94,7 +94,7 @@ def analyse(
 def generate_samples(
     prompt: str,
     num_samples: int,
-    generate_instruction_prompt: PromptGenerator,
+    generate_instruction_prompt: PromptGenerator[PT, RT],
     payoffs: Callable[[CT], float],
     extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[CT], float],
@@ -116,7 +116,7 @@ def run_experiment(
     ai_participants: Dict[Group, List[str]],
     participant_conditions: Dict[str, PT],
     num_samples: int,
-    generate_instruction_prompt: PromptGenerator[PT],
+    generate_instruction_prompt: PromptGenerator[PT, RT],
     payoffs: Callable[[CT], float],
     extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[CT], float],
