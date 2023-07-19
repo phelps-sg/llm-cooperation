@@ -1,7 +1,12 @@
 import pytest
 from openai_pygenerator import user_message
 
-from llm_cooperation.experiments.principalagent import extract_choice_pa
+from llm_cooperation.experiments.principalagent import (
+    PARTICIPANT_SHELL,
+    PACondition,
+    extract_choice_pa,
+    get_prompt_principal_agent,
+)
 
 
 @pytest.mark.parametrize(
@@ -15,3 +20,14 @@ from llm_cooperation.experiments.principalagent import extract_choice_pa
 def test_extract_choice_pa(test_input: str, expected: int):
     result = extract_choice_pa(user_message(test_input))
     assert result.value == expected
+
+
+def test_get_prompt_principal_agent():
+    test_condition = PACondition(shared_with_principal=True, shared_with_user=True)
+    test_role = PARTICIPANT_SHELL
+    result = get_prompt_principal_agent(test_condition, test_role)
+    assert test_role.principal in result
+    assert test_role.simulacrum in result
+    assert test_role.query_results in result
+    assert test_role.customer in result
+    assert "film" not in result.lower()
