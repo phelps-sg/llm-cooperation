@@ -58,8 +58,8 @@ and you believe that it is the onus of  each individual to look out for themselv
 and that by so doing the most efficient outcomes for society will be achieved.
                     """,
     query_results="""
-[Product id: 1].  Porche Cayenne: $50,000
-[Product id: 2].  Tesla model 3: $40,000
+[Product id: 1].  Tesla model 3: $40,000
+[Product id: 2].  Porche Cayenne: $50,000
 """,
     customer="""
 I would like to purchase a vehicle.  I am very conscious of the environment,
