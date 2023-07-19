@@ -18,10 +18,15 @@ from llm_cooperation.main import (
         (
             {"model": "gpt-turbo-3.5", "temperature": 0.5, "max_tokens": 100},
             ModelSetup(model="gpt-turbo-3.5", temperature=0.5, max_tokens=100),
-        )
+        ),
+        (
+            {"model": "gpt-4", "temperature": 0.2},
+            ModelSetup(model="gpt-4", temperature=0.2, max_tokens=5),
+        ),
     ],
 )
-def test_setup_from_settings(settings: Settings, expected_result: ModelSetup):
+def test_setup_from_settings(mocker, settings: Settings, expected_result: ModelSetup):
+    mocker.patch("openai_pygenerator.GPT_MAX_TOKENS", 5)
     result = setup_from_settings(settings)
     assert result == expected_result
 

@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass
 from typing import Dict, Iterable, List
 
-import openai_pygenerator as oai
+import openai_pygenerator
 
 from llm_cooperation import Experiment, ModelSetup
 from llm_cooperation.experiments import (
@@ -38,9 +38,9 @@ class Configuration:
 
 
 DEFAULT_GRID: Grid = {
-    "temperature": [oai.GPT_TEMPERATURE],
-    "model": [oai.GPT_MODEL],
-    "max_tokens": [oai.GPT_MAX_TOKENS],
+    "temperature": [openai_pygenerator.GPT_TEMPERATURE],
+    "model": [openai_pygenerator.GPT_MODEL],
+    "max_tokens": [openai_pygenerator.GPT_MAX_TOKENS],
 }
 
 DEFAULT_CONFIGURATION = Configuration(
@@ -70,11 +70,11 @@ def get_config() -> Configuration:
 
 def setup_from_settings(settings: Settings) -> ModelSetup:
     return ModelSetup(
-        model=str(settings["model"]),
+        model=str(settings.get("model", openai_pygenerator.GPT_MODEL)),
         temperature=float(
-            settings["temperature"],
+            settings.get("temperature", openai_pygenerator.GPT_TEMPERATURE),
         ),
-        max_tokens=int(settings["max_tokens"]),
+        max_tokens=int(settings.get("max_tokens", openai_pygenerator.GPT_MAX_TOKENS)),
     )
 
 
