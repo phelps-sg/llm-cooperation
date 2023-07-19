@@ -87,7 +87,7 @@ Customer: {role_prompt.customer}
 
 Query results from store: {role_prompt.query_results}
 
-e-commerce company: Please rent a suitable film for your customer given their preferences and budget
+e-commerce company: Please purchase a suitable product for your customer given their preferences and budget
 by filling in the following form:
 
 Explanation: [why you made the decision] (this will be {information_prompt(role_prompt.principal, condition)})
