@@ -3,10 +3,12 @@
 [![GitHub Workflow Status](https://github.com/phelps-sg/llm-cooperation/actions/workflows/tests.yaml/badge.svg)](https://github.com/phelps-sg/llm-cooperation/actions/workflows/tests.yaml)
 
 This repo contains code, explanations and results of experiments to ascertain the propensity of large-language models
-to cooperate in social dilemmas.  The experiments are described in:
+to cooperate in social dilemmas.  The experiments are described in the following papers.
 
 S. Phelps and Y. I. Russell, *Investigating Emergent Goal-Like Behaviour in Large Language Models Using Experimental
-Economics*, working paper, May 2023, [arXiv:2305.07970](https://arxiv.org/abs/2305.07970).
+Economics*, working paper, May 2023, [arXiv:2305.07970](https://arxiv.org/abs/2305.07970)
+
+S. Phelps and R. Rannson, *Of Models and Tin Men - a behavioural economics study of principal-agent problems in AI alignment using large-language models*, working paper, July 2023, [arXiv:2307.11137](https://arxiv.org/abs/2307.11137)
 
 ## Getting started
 
