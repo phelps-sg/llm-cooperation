@@ -4,7 +4,7 @@ SHELL=/bin/bash
 CONDA_ENV_NAME=llm-cooperation
 CONDA_ENV_FILE_DEV=./environment.yml
 CONDA_ENV_FILE_PRODUCTION=./environment-frozen.yml
-CONDA_DIR=$(HOME)/mambaforge
+CONDA_DIR=$(HOME)/miniforge3
 CONDA_BIN=mamba
 CONDA_ACTIVATE=source $(CONDA_DIR)/etc/profile.d/conda.sh; source $(CONDA_DIR)/etc/profile.d/mamba.sh; $(CONDA_BIN) activate $(CONDA_ENV_NAME)
 
