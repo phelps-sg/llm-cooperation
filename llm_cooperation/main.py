@@ -30,7 +30,7 @@ Grid = Dict[str, List[ConfigValue]]
 Settings = Dict[str, ConfigValue]
 
 
-@dataclass
+@dataclass(frozen=True)
 class Configuration:
     grid: Grid
     sample_size: int

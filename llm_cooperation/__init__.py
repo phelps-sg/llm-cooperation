@@ -40,7 +40,7 @@ class Results(ABC):
         pass
 
 
-@dataclass
+@dataclass(frozen=True)
 class ModelSetup:
     model: str
     temperature: float

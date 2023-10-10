@@ -24,25 +24,25 @@ from llm_cooperation.gametypes import PromptGenerator, start_game
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Choices(Generic[CT]):
     user: CT
     ai: CT
 
 
-@dataclass
+@dataclass(frozen=True)
 class Scores:
     user: float
     ai: float
 
 
-@dataclass
+@dataclass(frozen=True)
 class RoundsSetup:
     analyse_round: RoundAnalyser
     analyse_rounds: RoundsAnalyser
 
 
-@dataclass
+@dataclass(frozen=True)
 class GameSetup(Generic[CT, PT, RT]):
     num_rounds: int
     generate_instruction_prompt: PromptGenerator[PT, RT]
@@ -53,13 +53,13 @@ class GameSetup(Generic[CT, PT, RT]):
     model_setup: ModelSetup
 
 
-@dataclass
+@dataclass(frozen=True)
 class MeasurementSetup(Generic[CT]):
     num_samples: int
     compute_freq: CooperationFrequencyFunction[CT]
 
 
-@dataclass
+@dataclass(frozen=True)
 class GameState(Generic[CT, PT, RT]):
     messages: List[Completion]
     round: int

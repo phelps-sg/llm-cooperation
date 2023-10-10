@@ -34,7 +34,7 @@ class ResponderEnum(Enum):
     Reject = auto()
 
 
-@dataclass
+@dataclass(frozen=True)
 class ProposerChoice:
     value: float
 
@@ -47,7 +47,7 @@ class ProposerChoice:
         return amount_as_str(self.value)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ResponderChoice:
     value: ResponderEnum
 
