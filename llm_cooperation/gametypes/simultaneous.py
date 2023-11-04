@@ -57,10 +57,10 @@ def next_round(
     ai_payoff, user_payoff = state.game_setup.payoffs(ai_choice, user_choice)
     return [
         user_message(
-            f"Your partner chose {user_choice.description} in that round."
-            f"You earned {ai_payoff} and your partner earned {user_payoff}."
-            """Now we will move on the next round.
-What is your choice for the next round?"""
+            f"Your partner chose {user_choice.description} in that round, and therefore "
+            f"you earned {ai_payoff} and your partner earned {user_payoff}. "
+            "Now we will move on the next round. "
+            "What is your choice for the next round?"
         )
     ]
 
