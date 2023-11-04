@@ -6,7 +6,7 @@ CONDA_ENV_FILE_DEV=./environment.yml
 CONDA_ENV_FILE_PRODUCTION=./environment-frozen.yml
 CONDA_DIR=$(HOME)/miniforge3
 CONDA_BIN=mamba
-CONDA_ACTIVATE=source $(CONDA_DIR)/etc/profile.d/conda.sh; source $(CONDA_DIR)/etc/profile.d/mamba.sh; $(CONDA_BIN) activate $(CONDA_ENV_NAME)
+CONDA_ACTIVATE=source $(CONDA_DIR)/etc/profile.d/mamba.sh; $(CONDA_BIN) activate $(CONDA_ENV_NAME)
 
 book:
 	$(CONDA_ACTIVATE); jupyter-book build jupyter-book/
@@ -38,7 +38,7 @@ env-dev-install: conda-env-install local-module-install
 env-production-install: conda-env-production-install local-module-install
 
 conda-update-dev:
-	$(CONDA_BIN) env update -f $(CONDA_ENV_FILE_DEV) --prune
+	$(CONDA_BIN) env update -f $(CONDA_ENV_FILE_DEV)
 
 conda-update-production:
 	$(CONDA_BIN) env export -n $(CONDA_ENV_NAME)| head -n -1 > $(CONDA_ENV_FILE_PRODUCTION)
