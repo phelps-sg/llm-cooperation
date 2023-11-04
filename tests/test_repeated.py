@@ -114,8 +114,8 @@ def test_compute_scores(conversation):
 
 
 def test_next_round():
-    my_payoff = 1
-    other_payoff = 2
+    my_payoff = 99
+    other_payoff = 66
     choice = Mock(Choice)
     choice.description = "my choice"
     state = Mock(GameState)
