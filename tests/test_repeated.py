@@ -114,11 +114,21 @@ def test_compute_scores(conversation):
 
 
 def test_next_round():
+    my_payoff = 1
+    other_payoff = 2
     choice = Mock(Choice)
     choice.description = "my choice"
-    result = next_round(lambda _: choice, [])
+    state = Mock(GameState)
+    state.messages = "mock"
+    state.game_setup = Mock(GameSetup)
+    state.game_setup.extract_choice = lambda _: "other choice"
+    state.game_setup.payoffs = lambda _i, _j: (my_payoff, other_payoff)
+    result = next_round(lambda _: choice, state)
     assert len(result) == 1
-    assert choice.description in content(result[0])
+    result_content = content(result[0])
+    assert choice.description in result_content
+    assert str(my_payoff) in result_content
+    assert str(other_payoff) in result_content
 
 
 def test_run_experiment(mocker):
