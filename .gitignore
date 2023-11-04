@@ -14,3 +14,8 @@ __pycache__/
 /llm_cooperation.egg-info/SOURCES.txt
 /llm_cooperation.egg-info/top_level.txt
 /latex/llm_cooperation.tex
+.bsp
+project
+tests/results.pickle
+dilemma.log
+target
