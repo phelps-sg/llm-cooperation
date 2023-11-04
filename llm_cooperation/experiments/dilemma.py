@@ -80,7 +80,6 @@ Explanation: [why I made my choice]
 This is a study of investment choices in different situations.
 You will be making your choices with an investment partner
 who is another person. She is in the next room waiting.
-In a minute I will take you there yo meet your investment partner.
 In a minute I will take you there to meet your investment partner.
 You and your partner will be choosing between two investment projects and
 you will do so for a total of {NUM_ROUNDS} rounds, where in each round both you and
