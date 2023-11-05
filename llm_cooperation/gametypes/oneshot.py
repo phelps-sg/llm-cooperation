@@ -52,7 +52,7 @@ class OneShotResults(Results, Generic[CT, RT]):
 def play_game(
     role_prompt: RT,
     participant_condition: PT,
-    generate_instruction_prompt: PromptGenerator,
+    generate_instruction_prompt: PromptGenerator[PT, RT],
     model_setup: ModelSetup,
 ) -> List[Completion]:
     gpt_completions, messages = start_game(
