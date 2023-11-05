@@ -10,6 +10,7 @@ from llm_cooperation.experiments.dilemma import (
     Cooperate,
     Defect,
     P,
+    R,
     S,
     T,
     compute_freq_pd,
@@ -104,13 +105,14 @@ def test_compute_scores(conversation):
         extract_choice=extract_choice_pd,
         rounds=simultaneous.rounds_setup,
     )
-    assert scores == Scores(ai=T + S + P + T, user=S + T + P + S)
     assert moves == [
         Choices(Defect, Cooperate),
         Choices(Cooperate, Defect),
         Choices(Defect, Defect),
-        Choices(Cooperate, Defect),
+        Choices(Defect, Defect),
+        Choices(Cooperate, Cooperate),
     ]
+    assert scores == Scores(ai=S + T + P + P + R, user=T + S + P + P + R)
 
 
 def test_next_round():

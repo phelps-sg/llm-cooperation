@@ -29,6 +29,7 @@ def analyse_round(
     assert is_assistant_role(conversation[i * 2])
     ai_choice = extract_choice(conversation[i * 2])
     user_choice = extract_choice(conversation[i * 2 + 1])
+    logger.debug("round = %d", i)
     logger.debug("user_choice = %s", user_choice)
     logger.debug("ai_choice = %s", ai_choice)
     user, ai = payoffs(user_choice, ai_choice)
