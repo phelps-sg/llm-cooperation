@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Protocol, Tuple
 
-from openai_pygenerator import Completer, Completion, History, user_message
+from openai_pygenerator import Completer, Completion, user_message
 
 from llm_cooperation import PT, RT, ModelSetup, PT_contra, RT_contra, completer_for
 

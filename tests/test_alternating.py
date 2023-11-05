@@ -30,7 +30,7 @@ def test_analyse_round(
     expected_choices: Choices,
     alternating_history,
 ):
-    _scores, choices = alternating.analyse_round(
+    __scores__, choices = alternating.analyse_round(
         i, alternating_history, payoffs_ultimatum, extract_choice_ultimatum
     )
     assert choices == expected_choices

@@ -623,7 +623,7 @@ callbacks=cb_,
 
 # A regular expression matching the name of dummy variables (i.e. expected/var to
 # not be used).
-dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
+dummy-variables-rgx=_+$|(__[a-zA-Z0-9_]*[a-zA-Z0-9]+__$)|dummy|^ignored_|^unused_
 
 # Argument names that match this expression will be ignored.
 ignored-argument-names=_.*|^ignored_|^unused_
@@ -636,4 +636,4 @@ init-import=no
 redefining-builtins-modules=six.moves,past.builtins,future.builtins,builtins,io
 
 [MASTER]
-disable=C0114,C0116,C0115,R0902,R0913,R1735,R0903,C0103,R1705,W0621
+disable=C0114,C0116,C0115,R0902,R0913,R1735,R0903,C0103,R1705,W0621,R0801

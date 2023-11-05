@@ -102,7 +102,7 @@ def generate_samples(
     participant_condition: PT,
 ) -> Iterable[Tuple[float, float, Optional[CT], List[str]]]:
     # pylint: disable=R0801
-    for _i in range(num_samples):
+    for __i__ in range(num_samples):
         conversation = play_game(
             role_prompt=prompt,
             participant_condition=participant_condition,

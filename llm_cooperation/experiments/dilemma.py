@@ -102,14 +102,14 @@ Here is your investment partner. What is your choice in the first round?
 
 # pylint: disable=unused-argument
 def strategy_defect(
-    state: GameState[DilemmaChoice, ChainOfThoughtCondition, str], **_kwargs: bool
+    state: GameState[DilemmaChoice, ChainOfThoughtCondition, str], **__kwargs__: bool
 ) -> DilemmaChoice:
     return Defect
 
 
 # pylint: disable=unused-argument
 def strategy_cooperate(
-    state: GameState[DilemmaChoice, ChainOfThoughtCondition, str], **_kwargs: bool
+    state: GameState[DilemmaChoice, ChainOfThoughtCondition, str], **__kwargs__: bool
 ) -> DilemmaChoice:
     return Cooperate
 
@@ -117,7 +117,7 @@ def strategy_cooperate(
 def strategy_t4t(
     initial_choice: DilemmaChoice,
     state: GameState[DilemmaChoice, ChainOfThoughtCondition, str],
-    **_kwargs: bool,
+    **__kwargs__: bool,
 ) -> DilemmaChoice:
     if len(state.messages) == 2:
         return initial_choice
@@ -152,7 +152,7 @@ def choice_from_str(choice: str) -> DilemmaChoice:
         raise ValueError(f"Cannot determine choice from {choice}")
 
 
-def extract_choice_pd(completion: Completion, **_kwargs: bool) -> DilemmaChoice:
+def extract_choice_pd(completion: Completion, **__kwargs__: bool) -> DilemmaChoice:
     regex: str = r".*project (blue|green)"
     choice_regex: str = f"choice:{regex}"
     logger.debug("completion = %s", completion)

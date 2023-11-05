@@ -215,7 +215,7 @@ def generate_samples(
     game_setup: GameSetup[CT, PT, RT],
 ) -> Iterable[Tuple[float, float, Optional[List[Choices[CT]]], List[str]]]:
     # pylint: disable=R0801
-    for _i in range(measurement_setup.num_samples):
+    for __i__ in range(measurement_setup.num_samples):
         conversation = play_game(
             partner_strategy=partner_strategy,
             participant_condition=condition,
