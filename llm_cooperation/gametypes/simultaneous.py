@@ -52,8 +52,12 @@ def analyse_rounds(
 def next_round(
     partner_strategy: Strategy[CT], state: GameState[CT, PT, RT]
 ) -> List[Completion]:
-    ai_choice = state.game_setup.extract_choice(state.messages[-2])
+    previous_message = state.messages[-1]
+    logger.debug("previous_message = %s", previous_message)
+    ai_choice = state.game_setup.extract_choice(previous_message)
     user_choice = partner_strategy(state)
+    logger.debug("ai_choice = %s", ai_choice)
+    logger.debug("user_choice = %s", user_choice)
     ai_payoff, user_payoff = state.game_setup.payoffs(ai_choice, user_choice)
     return [
         user_message(
