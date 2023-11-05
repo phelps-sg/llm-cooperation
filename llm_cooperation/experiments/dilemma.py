@@ -121,7 +121,10 @@ def strategy_t4t(
 ) -> DilemmaChoice:
     if len(state.messages) == 2:
         return initial_choice
-    ai_choice = extract_choice_pd(state.messages[-2])
+    previous_message = state.messages[-1]
+    logger.debug("previous_message = %s", previous_message)
+    ai_choice = extract_choice_pd(previous_message)
+    logger.debug("ai_choice = %s", ai_choice)
     if ai_choice == Cooperate:
         return Cooperate
     else:
