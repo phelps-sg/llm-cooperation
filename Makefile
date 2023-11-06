@@ -59,7 +59,7 @@ test-pre-commit:
 test-pytest:
 	$(CONDA_ACTIVATE); pytest
 
-test: test-pytest test-pre-commit
+test: test-pre-commit test-pytest 
 
 start-blackd:
 	$(CONDA_ACTIVATE); blackd
