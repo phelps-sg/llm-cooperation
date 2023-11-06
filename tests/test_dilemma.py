@@ -45,15 +45,15 @@ def test_get_instruction_prompt(condition: bool):
 @pytest.mark.parametrize(
     "text, expected_move",
     [
-        ("project green", Cooperate),
-        ("project blue", Defect),
-        ("Project GREEN", Cooperate),
-        ("Project BLUE", Defect),
-        ("'project green'", Cooperate),
-        ("Choice: 'project green'", Cooperate),
+        (f"project {COLOR_COOPERATE}", Cooperate),
+        (f"project {COLOR_DEFECT}", Defect),
+        (f"Project {COLOR_COOPERATE.lower()}", Cooperate),
+        (f"Project {COLOR_DEFECT.lower()}", Defect),
+        (f"'project {COLOR_COOPERATE.upper()}'", Cooperate),
+        (f"Choice: 'project {COLOR_COOPERATE.upper()}'", Cooperate),
         (
-            """Explanation: Because project green is bad for me.
-Choice: Project BLUE""",
+            f"""Explanation: Because project {COLOR_DEFECT} is bad for me.
+Choice: Project {COLOR_DEFECT}""",
             Defect,
         ),
     ],

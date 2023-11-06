@@ -3,19 +3,21 @@ from typing import List
 import pytest
 from openai_pygenerator import Completion
 
+from llm_cooperation.experiments.dilemma import COLOR_COOPERATE, COLOR_DEFECT
+
 
 @pytest.fixture
 def conversation() -> List[Completion]:
     return [
         {"user": "scenario prompt.  What is your choice in the first round?"},
-        {"role": "assistant", "content": "project green"},
-        {"role": "user", "content": "Your partner chose project blue"},
-        {"role": "assistant", "content": "project blue"},
-        {"role": "user", "content": "Your partner chose project green"},
-        {"role": "assistant", "content": "project blue"},
-        {"role": "user", "content": "Your partner chose project blue"},
-        {"role": "assistant", "content": "project blue"},
-        {"role": "user", "content": "Your partner chose project blue"},
-        {"role": "assistant", "content": "project green"},
-        {"role": "user", "content": "project green"},
+        {"role": "assistant", "content": f"project {COLOR_COOPERATE}"},
+        {"role": "user", "content": f"Your partner chose project {COLOR_DEFECT}"},
+        {"role": "assistant", "content": f"project {COLOR_DEFECT}"},
+        {"role": "user", "content": f"Your partner chose project {COLOR_COOPERATE}"},
+        {"role": "assistant", "content": f"project {COLOR_DEFECT}"},
+        {"role": "user", "content": f"Your partner chose project {COLOR_DEFECT}"},
+        {"role": "assistant", "content": f"project {COLOR_DEFECT}"},
+        {"role": "user", "content": f"Your partner chose project {COLOR_DEFECT}"},
+        {"role": "assistant", "content": f"project {COLOR_COOPERATE}"},
+        {"role": "user", "content": f"project {COLOR_COOPERATE}"},
     ]
