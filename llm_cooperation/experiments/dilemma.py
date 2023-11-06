@@ -32,6 +32,9 @@ assert 2 * R > T + S
 
 PAYOFFS_PD = np.array([[R, S], [T, P]])
 
+COLOR_COOPERATE = "Green"
+COLOR_DEFECT = "Blue"
+
 logger = logging.getLogger(__name__)
 
 
@@ -58,8 +61,8 @@ Defect = DilemmaChoice(DilemmaEnum.D)
 
 
 def get_prompt_pd(condition: ChainOfThoughtCondition, role_prompt: str) -> str:
-    cooperate = """'project green'"""
-    defect = """'project blue'"""
+    cooperate = f"""'Project {COLOR_COOPERATE}'"""
+    defect = f"""'Project {COLOR_DEFECT}'"""
     choice_template = f"""Choice: [{defect} | {cooperate}]"""
 
     def payout(amount: int) -> str:
@@ -137,23 +140,23 @@ strategy_t4t_cooperate = partial(strategy_t4t, Cooperate)
 
 def move_as_str(move: DilemmaEnum) -> str:
     if move == DilemmaEnum.D:
-        return "Project Blue"
+        return "Project {COLOR_DEFECT}"
     elif move == DilemmaEnum.C:
-        return "Project Green"
+        return "Project {COLOR_COOPERATE}"
     raise ValueError(f"Invalid choice {move}")
 
 
 def choice_from_str(choice: str) -> DilemmaChoice:
-    if choice == "green":
+    if choice == COLOR_COOPERATE.lower():
         return Cooperate
-    elif choice == "blue":
+    elif choice == COLOR_DEFECT.lower():
         return Defect
     else:
         raise ValueError(f"Cannot determine choice from {choice}")
 
 
 def extract_choice_pd(completion: Completion, **__kwargs__: bool) -> DilemmaChoice:
-    regex: str = r".*project (blue|green)"
+    regex: str = rf".*project ({COLOR_COOPERATE}|{COLOR_DEFECT})".lower()
     choice_regex: str = f"choice:{regex}"
     logger.debug("completion = %s", completion)
     lower = completion["content"].lower().strip()

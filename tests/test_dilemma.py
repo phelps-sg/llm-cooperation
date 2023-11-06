@@ -6,6 +6,8 @@ from openai_pygenerator import Completion
 
 from llm_cooperation import DEFAULT_MODEL_SETUP, Payoffs
 from llm_cooperation.experiments.dilemma import (
+    COLOR_COOPERATE,
+    COLOR_DEFECT,
     Cooperate,
     Defect,
     DilemmaChoice,
@@ -31,6 +33,8 @@ from tests.common import make_completion
 def test_get_instruction_prompt(condition: bool):
     role_prompt = "You are a helpful assistant."
     prompt = get_prompt_pd(condition, role_prompt)
+    assert COLOR_COOPERATE in prompt
+    assert COLOR_DEFECT in prompt
     assert ("Explanation:" in prompt) == condition
     assert "Choice:" in prompt
     for payoff in [R, S, T, P]:
