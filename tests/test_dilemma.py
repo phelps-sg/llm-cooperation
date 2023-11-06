@@ -2,7 +2,7 @@ from typing import List
 from unittest.mock import Mock
 
 import pytest
-from openai_pygenerator import Completion
+from openai_pygenerator import Completion, logger
 
 from llm_cooperation import DEFAULT_MODEL_SETUP, Payoffs
 from llm_cooperation.experiments.dilemma import (
@@ -18,6 +18,7 @@ from llm_cooperation.experiments.dilemma import (
     T,
     extract_choice_pd,
     get_prompt_pd,
+    move_as_str,
     payoffs_pd,
     strategy_cooperate,
     strategy_defect,
@@ -33,8 +34,9 @@ from tests.common import make_completion
 def test_get_instruction_prompt(condition: bool):
     role_prompt = "You are a helpful assistant."
     prompt = get_prompt_pd(condition, role_prompt)
-    assert COLOR_COOPERATE in prompt
-    assert COLOR_DEFECT in prompt
+    logger.debug("prompt = %s", prompt)
+    assert "COLOR_COOPERATE" not in prompt
+    assert "COLOR_DEFECT" not in prompt
     assert ("Explanation:" in prompt) == condition
     assert "Choice:" in prompt
     for payoff in [R, S, T, P]:
@@ -108,6 +110,11 @@ def test_dilemma_choice():
     assert c1 == c2
     assert c1 != d
     assert Cooperate != Defect
+
+
+def test_move_as_str():
+    assert COLOR_COOPERATE in move_as_str(DilemmaEnum.C)
+    assert COLOR_DEFECT in move_as_str(DilemmaEnum.D)
 
 
 def test_run_repeated_game(mocker):

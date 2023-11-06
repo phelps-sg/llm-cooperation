@@ -140,9 +140,9 @@ strategy_t4t_cooperate = partial(strategy_t4t, Cooperate)
 
 def move_as_str(move: DilemmaEnum) -> str:
     if move == DilemmaEnum.D:
-        return "Project {COLOR_DEFECT}"
+        return f"Project {COLOR_DEFECT}"
     elif move == DilemmaEnum.C:
-        return "Project {COLOR_COOPERATE}"
+        return f"Project {COLOR_COOPERATE}"
     raise ValueError(f"Invalid choice {move}")
 
 
