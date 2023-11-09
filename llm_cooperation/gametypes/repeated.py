@@ -228,7 +228,7 @@ def generate_samples(
                 game_setup.payoffs,
                 game_setup.extract_choice,
                 measurement_setup.compute_freq,
-                game_setup.rounds,
+                game_setup.analyse_rounds,
             )
         except ValueError as ex:
             logger.exception(ex)
