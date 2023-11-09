@@ -196,7 +196,7 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
         extract_choice=extract_choice_ultimatum,
         payoffs=payoffs_ultimatum,
         next_round=next_round_ultimatum,
-        rounds=alternating.rounds_setup,
+        analyse_rounds=alternating.analyse_rounds,
         model_setup=model_setup,
     )
     measurement_setup: MeasurementSetup[UltimatumChoice] = MeasurementSetup(

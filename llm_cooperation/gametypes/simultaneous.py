@@ -12,7 +12,6 @@ from llm_cooperation.gametypes.repeated import (
     GameState,
     PayoffFunction,
     ResultForRound,
-    RoundsSetup,
     Scores,
     Strategy,
 )
@@ -68,6 +67,3 @@ def next_round(
             "What is your choice for the next round?"
         )
     ]
-
-
-rounds_setup = RoundsSetup(analyse_round=analyse_round, analyse_rounds=analyse_rounds)

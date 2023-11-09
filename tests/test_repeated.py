@@ -26,7 +26,6 @@ from llm_cooperation.gametypes.repeated import (
     MeasurementSetup,
     RepeatedGameResults,
     ResultRepeatedGame,
-    RoundsSetup,
     Scores,
     compute_scores,
     play_game,
@@ -46,7 +45,6 @@ def test_play_game(mocker):
     )
     choice_mock = Mock(spec=Choice)
     strategy_mock = Mock(return_value=choice_mock)
-    rounds_mock = Mock(spec=RoundsSetup)
     prompt_generator_mock = Mock(return_value=instruction_prompt)
     next_round_mock = create_autospec(next_round, side_effect=[[test_response]])
     payoffs_mock = Mock()
@@ -60,7 +58,7 @@ def test_play_game(mocker):
         game_setup=GameSetup(
             num_rounds=n,
             next_round=next_round_mock,
-            rounds=rounds_mock,
+            analyse_rounds=simultaneous.analyse_rounds,
             payoffs=payoffs_mock,
             extract_choice=extract_choice_mock,
             generate_instruction_prompt=prompt_generator_mock,
@@ -82,7 +80,7 @@ def test_play_game(mocker):
                     messages=expected_messages,
                     round=0,
                     game_setup=GameSetup(
-                        rounds=rounds_mock,
+                        analyse_rounds=simultaneous.analyse_rounds,
                         payoffs=payoffs_mock,
                         extract_choice=extract_choice_mock,
                         next_round=next_round_mock,
@@ -103,7 +101,7 @@ def test_compute_scores(conversation):
         conversation,
         payoffs=payoffs_pd,
         extract_choice=extract_choice_pd,
-        rounds=simultaneous.rounds_setup,
+        analyse_rounds=simultaneous.analyse_rounds,
     )
     assert moves == [
         Choices(Defect, Cooperate),
@@ -124,8 +122,8 @@ def test_next_round():
     state.messages = "mock"
     state.game_setup = Mock(GameSetup)
     state.game_setup.extract_choice = lambda _: "other choice"
-    state.game_setup.payoffs = lambda _i, _j: (my_payoff, other_payoff)
-    result = next_round(lambda _: choice, state)
+    state.game_setup.payoffs = lambda __i__, __j__: (my_payoff, other_payoff)
+    result = next_round(lambda _: choice, state)  # type: ignore
     assert len(result) == 1
     result_content = content(result[0])
     assert choice.description in result_content
@@ -156,7 +154,7 @@ def test_run_experiment(mocker):
 
     result: pd.DataFrame = run_experiment(
         ai_participants=ai_participants,
-        partner_conditions=user_conditions,
+        partner_conditions=user_conditions,  # type: ignore
         participant_conditions=participant_conditions,
         measurement_setup=MeasurementSetup(
             num_samples=len(samples), compute_freq=compute_freq_pd
@@ -167,7 +165,7 @@ def test_run_experiment(mocker):
             payoffs=payoffs_pd,
             extract_choice=extract_choice_pd,
             next_round=simultaneous.next_round,
-            rounds=simultaneous.rounds_setup,
+            analyse_rounds=simultaneous.analyse_rounds,
             model_setup=DEFAULT_MODEL_SETUP,
         ),
     ).to_df()

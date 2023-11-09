@@ -88,7 +88,7 @@ def test_compute_freq_dictator(test_choice: DictatorChoice):
 
 def test_get_prompt_dictator():
     role_prompt = "test-role"
-    result = get_prompt_dictator(None, role_prompt)
+    result = get_prompt_dictator(None, role_prompt)  # type: ignore
     assert role_prompt in result
     for choice in all_dictator_choices:
         assert describe_payoffs(choice) in result

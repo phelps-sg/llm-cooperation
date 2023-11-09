@@ -195,7 +195,7 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
         payoffs=payoffs_pd,
         extract_choice=extract_choice_pd,
         next_round=simultaneous.next_round,
-        rounds=simultaneous.rounds_setup,
+        analyse_rounds=simultaneous.analyse_rounds,
         model_setup=model_setup,
     )
     measurement_setup: MeasurementSetup[DilemmaChoice] = MeasurementSetup(

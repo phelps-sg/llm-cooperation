@@ -47,7 +47,7 @@ class GameSetup(Generic[CT, PT, RT]):
     num_rounds: int
     generate_instruction_prompt: PromptGenerator[PT, RT]
     next_round: RoundGenerator
-    rounds: RoundsSetup
+    analyse_rounds: RoundsAnalyser
     payoffs: PayoffFunction[CT]
     extract_choice: ChoiceExtractor[CT]
     model_setup: ModelSetup
@@ -175,13 +175,13 @@ def compute_scores(
     conversation: List[Completion],
     payoffs: PayoffFunction[CT_contra],
     extract_choice: ChoiceExtractor[CT],
-    rounds: RoundsSetup,
+    analyse_rounds: RoundsAnalyser,
 ) -> Tuple[Scores, List[Choices[CT]]]:
     conversation = conversation[1:]
     num_messages = len(conversation)
     if num_messages % 2 != 0:
         raise ValueError("Invalid conversation: The number of messages should be even.")
-    results = rounds.analyse_rounds(conversation, payoffs, extract_choice)
+    results = analyse_rounds(conversation, payoffs, extract_choice)
     user_score = sum((scores.user for scores, _ in results))
     ai_score = sum((scores.ai for scores, _ in results))
     return Scores(user_score, ai_score), [choices for _, choices in results]
@@ -192,12 +192,12 @@ def analyse(
     payoffs: PayoffFunction[CT_contra],
     extract_choice: ChoiceExtractor[CT],
     compute_freq: CooperationFrequencyFunction[CT],
-    rounds: RoundsSetup,
+    analyse_rounds: RoundsAnalyser,
 ) -> Tuple[float, float, Optional[List[Choices[CT]]], List[str]]:
     try:
         history = transcript(conversation)
         result: Tuple[Scores, List[Choices[CT]]] = compute_scores(
-            list(conversation), payoffs, extract_choice, rounds
+            list(conversation), payoffs, extract_choice, analyse_rounds
         )
         scores, choices = result
         freq = compute_freq(choices)
@@ -227,7 +227,7 @@ def generate_samples(
             game_setup.payoffs,
             game_setup.extract_choice,
             measurement_setup.compute_freq,
-            game_setup.rounds,
+            game_setup.analyse_rounds,
         )
 
 

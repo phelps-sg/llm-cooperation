@@ -127,7 +127,7 @@ def test_run_repeated_game(mocker):
                 num_rounds=3,
                 generate_instruction_prompt=get_prompt_pd,
                 next_round=simultaneous.next_round,
-                rounds=simultaneous.rounds_setup,
+                analyse_rounds=simultaneous.analyse_rounds,
                 payoffs=payoffs_pd,
                 extract_choice=extract_choice_pd,
                 model_setup=DEFAULT_MODEL_SETUP,
