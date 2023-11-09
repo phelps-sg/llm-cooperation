@@ -216,19 +216,23 @@ def generate_samples(
 ) -> Iterable[Tuple[float, float, Optional[List[Choices[CT]]], List[str]]]:
     # pylint: disable=R0801
     for __i__ in range(measurement_setup.num_samples):
-        conversation = play_game(
-            partner_strategy=partner_strategy,
-            participant_condition=condition,
-            game_setup=game_setup,
-            role_prompt=participant,
-        )
-        yield analyse(
-            conversation,
-            game_setup.payoffs,
-            game_setup.extract_choice,
-            measurement_setup.compute_freq,
-            game_setup.rounds,
-        )
+        try:
+            conversation = play_game(
+                partner_strategy=partner_strategy,
+                participant_condition=condition,
+                game_setup=game_setup,
+                role_prompt=participant,
+            )
+            yield analyse(
+                conversation,
+                game_setup.payoffs,
+                game_setup.extract_choice,
+                measurement_setup.compute_freq,
+                game_setup.rounds,
+            )
+        except ValueError as ex:
+            logger.exception(ex)
+            yield (np.nan, np.nan, None, [str(ex)])
 
 
 def run_experiment(
