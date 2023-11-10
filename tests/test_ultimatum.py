@@ -137,10 +137,6 @@ def test_ultimatum_choice():
     assert Reject == ResponderChoice(ResponderEnum.Reject)
 
 
-def assistant_message(description):
-    return {"role": "assistant", "content": description}
-
-
 @pytest.mark.parametrize(
     "user_response, user_proposal",
     [(Accept, ProposerChoice(5.0)), (Reject, ProposerChoice(10.0))],

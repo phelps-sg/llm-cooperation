@@ -5,7 +5,14 @@ import pandas as pd
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Grid, Group, exhaustive
+from llm_cooperation import (
+    DEFAULT_MODEL_SETUP,
+    Choice,
+    Grid,
+    Group,
+    assistant_message,
+    exhaustive,
+)
 from llm_cooperation.experiments.dilemma import (
     Cooperate,
     Defect,
@@ -32,7 +39,6 @@ from llm_cooperation.gametypes.repeated import (
     run_experiment,
 )
 from llm_cooperation.gametypes.simultaneous import next_round
-from tests.test_ultimatum import assistant_message
 
 
 def test_play_game(mocker):

@@ -4,12 +4,22 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Dict, Hashable, Iterable, List, Protocol, Tuple, TypeVar
+from typing import (
+    Callable,
+    Dict,
+    Hashable,
+    Iterable,
+    List,
+    Optional,
+    Protocol,
+    Tuple,
+    TypeVar,
+)
 
 import numpy as np
 import openai_pygenerator
 import pandas as pd
-from openai_pygenerator import Completer
+from openai_pygenerator import Completer, Completion, Completions, History
 from plotly.basedatatypes import itertools
 
 logger = logging.getLogger(__name__)
@@ -51,6 +61,7 @@ class ModelSetup:
     model: str
     temperature: float
     max_tokens: int
+    dry_run: Optional[str] = None
 
 
 Experiment = Callable[[ModelSetup, int], Results]
@@ -71,6 +82,10 @@ RT_contra = TypeVar("RT_contra", contravariant=True)
 Payoffs = Tuple[float, float]
 
 
+def assistant_message(description: str) -> Completion:
+    return {"role": "assistant", "content": description}
+
+
 def all_combinations(grid: Grid) -> itertools.product:
     return itertools.product(*grid.values())
 
@@ -85,12 +100,12 @@ def settings_from_combinations(
 
 
 def randomized(n: int, grid: Grid) -> Iterable[Settings]:
-    variables = list(grid.keys())
+    keys = list(grid.keys())
     combinations = list(all_combinations(grid))
     num_combinations = len(combinations)
     for __i__ in range(n):
         random_index: int = int(np.random.randint(num_combinations))
-        yield settings_from_combinations(variables, combinations[random_index])
+        yield settings_from_combinations(keys, combinations[random_index])
 
 
 def exhaustive(grid: Grid) -> Iterable[Settings]:
@@ -104,6 +119,13 @@ def amount_as_str(amount: float) -> str:
 
 
 def completer_for(model_setup: ModelSetup) -> Completer:
+    if model_setup.dry_run is not None:
+        dummy_completions: Tuple[Completion] = (assistant_message(model_setup.dry_run),)
+
+        def dummy_completer(__history__: History, __n__: int) -> Completions:
+            return iter(dummy_completions)
+
+        return dummy_completer
     return openai_pygenerator.completer(
         model=model_setup.model,
         temperature=model_setup.temperature,

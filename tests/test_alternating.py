@@ -3,6 +3,7 @@ from typing import List
 import pytest
 from openai_pygenerator import Completion, user_message
 
+from llm_cooperation import assistant_message
 from llm_cooperation.experiments.ultimatum import (
     Accept,
     ProposerChoice,
@@ -12,7 +13,6 @@ from llm_cooperation.experiments.ultimatum import (
 )
 from llm_cooperation.gametypes import alternating
 from llm_cooperation.gametypes.repeated import Choices
-from tests.test_ultimatum import assistant_message
 
 
 @pytest.mark.parametrize(

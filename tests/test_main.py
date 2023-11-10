@@ -1,9 +1,9 @@
 from functools import partial
 
 import pytest
-from openai_pygenerator import Callable
+from openai_pygenerator import Callable, content, user_message
 
-from llm_cooperation import ModelSetup, Settings, exhaustive, randomized
+from llm_cooperation import ModelSetup, Settings, completer_for, exhaustive, randomized
 from llm_cooperation.main import (
     Configuration,
     Grid,
@@ -57,6 +57,18 @@ def test_run_all(mocker, grid):
     )
     run_all()
     assert run_and_record.call_count == 6 * len(list(experiments.items()))
+
+
+def test_dry_run():
+    model_setup = ModelSetup(
+        model="test-model",
+        temperature=0.2,
+        max_tokens=100,
+        dry_run="That is the question.",
+    )
+    completer = completer_for(model_setup)
+    response = list(completer([user_message("To be or not to be")], 1))[0]
+    assert content(response) == "That is the question."
 
 
 @pytest.fixture

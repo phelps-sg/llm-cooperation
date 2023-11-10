@@ -19,6 +19,7 @@ from llm_cooperation import (
     Payoffs,
     Results,
     Settings,
+    exhaustive,
 )
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
@@ -52,7 +53,7 @@ class GameSetup(Generic[CT, RT]):
     payoffs: PayoffFunction[CT]
     extract_choice: ChoiceExtractor[CT]
     model_setup: ModelSetup
-    participant_condition_sampling: Callable[[Grid], Iterable[Settings]]
+    participant_condition_sampling: Callable[[Grid], Iterable[Settings]] = exhaustive
 
 
 @dataclass(frozen=True)
