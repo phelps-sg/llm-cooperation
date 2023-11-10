@@ -220,7 +220,7 @@ def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame[st
                 0.1,
             ),
         ]
-    )
+    )  # type: ignore
 
 
 @pytest.fixture
