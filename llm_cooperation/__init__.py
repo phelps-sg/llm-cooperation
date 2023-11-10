@@ -61,7 +61,7 @@ class ModelSetup:
     model: str
     temperature: float
     max_tokens: int
-    dry_run: Optional[str] = None
+    dry_run: Optional[str]
 
 
 Experiment = Callable[[ModelSetup, int], Results]
@@ -70,6 +70,7 @@ DEFAULT_MODEL_SETUP = ModelSetup(
     model=openai_pygenerator.GPT_MODEL,
     temperature=openai_pygenerator.GPT_TEMPERATURE,
     max_tokens=openai_pygenerator.GPT_MAX_TOKENS,
+    dry_run=None,
 )
 
 CT = TypeVar("CT", bound=Choice)

@@ -18,11 +18,19 @@ from llm_cooperation.main import (
     [
         (
             {"model": "gpt-turbo-3.5", "temperature": 0.5, "max_tokens": 100},
-            ModelSetup(model="gpt-turbo-3.5", temperature=0.5, max_tokens=100),
+            ModelSetup(
+                model="gpt-turbo-3.5", temperature=0.5, max_tokens=100, dry_run=None
+            ),
         ),
         (
             {"model": "gpt-4", "temperature": 0.2},
-            ModelSetup(model="gpt-4", temperature=0.2, max_tokens=5),
+            ModelSetup(model="gpt-4", temperature=0.2, max_tokens=5, dry_run=None),
+        ),
+        (
+            {"model": "gpt-4", "temperature": 0.1, "dry_run": "project green"},
+            ModelSetup(
+                model="gpt-4", temperature=0.1, max_tokens=5, dry_run="project green"
+            ),
         ),
     ],
 )

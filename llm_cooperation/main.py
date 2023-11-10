@@ -70,6 +70,7 @@ def setup_from_settings(settings: Settings) -> ModelSetup:
             settings.get("temperature", openai_pygenerator.GPT_TEMPERATURE),
         ),
         max_tokens=int(settings.get("max_tokens", openai_pygenerator.GPT_MAX_TOKENS)),
+        dry_run=str(settings.get("dry_run")) if ("dry_run" in settings) else None,
     )
 
 
