@@ -3,12 +3,7 @@ from functools import partial
 import pytest
 from openai_pygenerator import Callable
 
-from llm_cooperation import (
-    ModelSetup,
-    Settings,
-    randomized_settings_generator,
-    settings_generator,
-)
+from llm_cooperation import ModelSetup, Settings, exhaustive, randomized
 from llm_cooperation.main import (
     Configuration,
     Grid,
@@ -40,8 +35,8 @@ def test_setup_from_settings(mocker, settings: Settings, expected_result: ModelS
 @pytest.mark.parametrize(
     ["generator", "n"],
     [
-        (settings_generator, 6),
-        (partial(randomized_settings_generator, 10), 10),
+        (exhaustive, 6),
+        (partial(randomized, 10), 10),
     ],
 )
 def test_settings_generator(grid, generator: Callable, n: int):

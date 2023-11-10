@@ -19,7 +19,7 @@ from llm_cooperation import (
     Payoffs,
     Results,
     Settings,
-    settings_generator,
+    exhaustive,
 )
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
@@ -259,7 +259,7 @@ def run_experiment(
         )
         for group, participants in ai_participants.items()
         for participant in participants
-        for participant_condition in settings_generator(participant_conditions)
+        for participant_condition in exhaustive(participant_conditions)
         for strategy_name, strategy_fn in partner_conditions.items()
         for score, freq, choices, history in generate_samples(
             participant=participant,

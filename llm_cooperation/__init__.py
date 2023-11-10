@@ -84,7 +84,7 @@ def settings_from_combinations(
     return settings
 
 
-def randomized_settings_generator(n: int, grid: Grid) -> Iterable[Settings]:
+def randomized(n: int, grid: Grid) -> Iterable[Settings]:
     keys = list(grid.keys())
     combinations = list(all_combinations(grid))
     num_combinations = len(combinations)
@@ -93,7 +93,7 @@ def randomized_settings_generator(n: int, grid: Grid) -> Iterable[Settings]:
         yield settings_from_combinations(keys, combinations[random_index])
 
 
-def settings_generator(grid: Grid) -> Iterable[Settings]:
+def exhaustive(grid: Grid) -> Iterable[Settings]:
     keys = list(grid.keys())
     for values in all_combinations(grid):
         yield settings_from_combinations(keys, values)

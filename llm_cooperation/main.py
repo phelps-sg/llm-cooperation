@@ -5,7 +5,7 @@ from typing import Dict, Iterable
 
 import openai_pygenerator
 
-from llm_cooperation import Experiment, Grid, ModelSetup, Settings, settings_generator
+from llm_cooperation import Experiment, Grid, ModelSetup, Settings, exhaustive
 from llm_cooperation.experiments import (
     DEFAULT_SAMPLE_SIZE,
     dictator,
@@ -75,7 +75,7 @@ def setup_from_settings(settings: Settings) -> ModelSetup:
 
 def run_all() -> None:
     configuration = get_config()
-    for settings in settings_generator(configuration.grid):
+    for settings in exhaustive(configuration.grid):
         setup = setup_from_settings(settings)
         for name in configuration.experiment_names:
             experiment = experiments[name]

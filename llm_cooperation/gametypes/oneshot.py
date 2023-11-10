@@ -14,8 +14,8 @@ from llm_cooperation import (
     ModelSetup,
     Results,
     Settings,
+    exhaustive,
     logger,
-    settings_generator,
 )
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
@@ -154,7 +154,7 @@ def run_experiment(
         )
         for group, participants in ai_participants.items()
         for participant in participants
-        for condition in settings_generator(participant_conditions)
+        for condition in exhaustive(participant_conditions)
         for score, freq, choices, history in generate_samples(
             prompt=participant,
             num_samples=num_samples,
