@@ -36,7 +36,7 @@ def test_amount_as_str(amount: float, expected: str):
 def test_get_instruction_prompt():
     rounds = 6
     role_prompt = "You are a helpful assistant."
-    prompt = get_prompt_ultimatum(rounds, role_prompt)
+    prompt = get_prompt_ultimatum(rounds, role_prompt)  # type: ignore
     assert f"{rounds} rounds" in prompt
     assert role_prompt in prompt
 

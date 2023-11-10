@@ -222,9 +222,9 @@ def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame]:
 
 @pytest.fixture
 def cooperate_choices() -> List[Choices]:
-    return [Choices(Cooperate, Cooperate) for _i in range(3)]
+    return [Choices(Cooperate, Cooperate) for __i__ in range(3)]
 
 
 @pytest.fixture
 def defect_choices() -> List[Choices]:
-    return [Choices(Defect, Defect) for _i in range(3)]
+    return [Choices(Defect, Defect) for __i__ in range(3)]
