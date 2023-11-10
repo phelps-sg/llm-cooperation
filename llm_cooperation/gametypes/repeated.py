@@ -19,7 +19,6 @@ from llm_cooperation import (
     Payoffs,
     Results,
     Settings,
-    exhaustive,
 )
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
@@ -53,6 +52,7 @@ class GameSetup(Generic[CT, RT]):
     payoffs: PayoffFunction[CT]
     extract_choice: ChoiceExtractor[CT]
     model_setup: ModelSetup
+    participant_condition_sampling: Callable[[Grid], Iterable[Settings]]
 
 
 @dataclass(frozen=True)
@@ -259,7 +259,9 @@ def run_experiment(
         )
         for group, participants in ai_participants.items()
         for participant in participants
-        for participant_condition in exhaustive(participant_conditions)
+        for participant_condition in game_setup.participant_condition_sampling(
+            participant_conditions
+        )
         for strategy_name, strategy_fn in partner_conditions.items()
         for score, freq, choices, history in generate_samples(
             participant=participant,

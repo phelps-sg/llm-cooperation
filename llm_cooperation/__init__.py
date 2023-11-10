@@ -85,18 +85,18 @@ def settings_from_combinations(
 
 
 def randomized(n: int, grid: Grid) -> Iterable[Settings]:
-    keys = list(grid.keys())
+    variables = list(grid.keys())
     combinations = list(all_combinations(grid))
     num_combinations = len(combinations)
     for __i__ in range(n):
         random_index: int = int(np.random.randint(num_combinations))
-        yield settings_from_combinations(keys, combinations[random_index])
+        yield settings_from_combinations(variables, combinations[random_index])
 
 
 def exhaustive(grid: Grid) -> Iterable[Settings]:
-    keys = list(grid.keys())
+    variables = list(grid.keys())
     for values in all_combinations(grid):
-        yield settings_from_combinations(keys, values)
+        yield settings_from_combinations(variables, values)
 
 
 def amount_as_str(amount: float) -> str:

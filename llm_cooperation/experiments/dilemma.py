@@ -8,7 +8,7 @@ from typing import List
 import numpy as np
 from openai_pygenerator import Completion
 
-from llm_cooperation import ModelSetup, Payoffs, Settings
+from llm_cooperation import ModelSetup, Payoffs, Settings, exhaustive
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import (
@@ -196,6 +196,7 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
         extract_choice=extract_choice_pd,
         next_round=simultaneous.next_round,
         analyse_rounds=simultaneous.analyse_rounds,
+        participant_condition_sampling=exhaustive,
         model_setup=model_setup,
     )
     measurement_setup: MeasurementSetup[DilemmaChoice] = MeasurementSetup(

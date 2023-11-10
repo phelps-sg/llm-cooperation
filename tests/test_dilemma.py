@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 from openai_pygenerator import Completion, logger
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Payoffs
+from llm_cooperation import DEFAULT_MODEL_SETUP, Payoffs, exhaustive
 from llm_cooperation.experiments.dilemma import (
     COLOR_COOPERATE,
     COLOR_DEFECT,
@@ -141,6 +141,7 @@ def test_run_repeated_game(mocker):
                 payoffs=payoffs_pd,
                 extract_choice=extract_choice_pd,
                 model_setup=DEFAULT_MODEL_SETUP,
+                participant_condition_sampling=exhaustive,
             ),
         )
     )

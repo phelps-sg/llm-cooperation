@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Grid, Group
+from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Grid, Group, exhaustive
 from llm_cooperation.experiments.dilemma import (
     Cooperate,
     Defect,
@@ -63,6 +63,7 @@ def test_play_game(mocker):
             extract_choice=extract_choice_mock,
             generate_instruction_prompt=prompt_generator_mock,
             model_setup=DEFAULT_MODEL_SETUP,
+            participant_condition_sampling=exhaustive,
         ),
     )
 
@@ -87,6 +88,7 @@ def test_play_game(mocker):
                         generate_instruction_prompt=prompt_generator_mock,
                         num_rounds=n,
                         model_setup=DEFAULT_MODEL_SETUP,
+                        participant_condition_sampling=exhaustive,
                     ),
                 ),
                 "test-prompt",
@@ -168,6 +170,7 @@ def test_run_experiment(mocker):
             next_round=simultaneous.next_round,
             analyse_rounds=simultaneous.analyse_rounds,
             model_setup=DEFAULT_MODEL_SETUP,
+            participant_condition_sampling=exhaustive,
         ),
     ).to_df()
     num_participant_conditions = len(participant_conditions["chain_of_thought"])
