@@ -50,7 +50,7 @@ def analyse_rounds(
 
 
 def next_round(
-    partner_strategy: Strategy[CT], state: GameState[CT, RT]
+    partner_strategy: Strategy[CT], state: GameState[CT, RT], __tag__: RT
 ) -> List[Completion]:
     previous_message = state.messages[-1]
     logger.debug("previous_message = %s", previous_message)

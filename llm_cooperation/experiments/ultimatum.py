@@ -72,6 +72,7 @@ dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
 def next_round_ultimatum(
     partner_strategy: Strategy[UltimatumChoice],
     state: GameState[UltimatumChoice, str],
+    __tag__: str,
 ) -> List[Completion]:
     user_response = partner_strategy(state, propose=False)
     user_proposal = partner_strategy(state, propose=True)

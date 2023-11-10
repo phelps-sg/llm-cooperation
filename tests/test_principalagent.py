@@ -1,6 +1,7 @@
 import pytest
 from openai_pygenerator import user_message
 
+from llm_cooperation import Settings
 from llm_cooperation.experiments.principalagent import (
     PARTICIPANT_SHELL,
     extract_choice_pa,
@@ -22,7 +23,7 @@ def test_extract_choice_pa(test_input: str, expected: int):
 
 
 def test_get_prompt_principal_agent():
-    test_condition = {"shared_with_principal": True, "shared_with_user": True}
+    test_condition: Settings = {"shared_with_principal": True, "shared_with_user": True}
     test_role = PARTICIPANT_SHELL
     result = get_prompt_principal_agent(test_condition, test_role)
     assert test_role.principal in result

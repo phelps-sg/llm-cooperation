@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Group
+from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Grid, Group
 from llm_cooperation.experiments.dilemma import (
     Cooperate,
     Defect,
@@ -53,7 +53,7 @@ def test_play_game(mocker):
 
     result = play_game(
         role_prompt="test-prompt",
-        participant_condition=False,
+        participant_condition=dict(),
         partner_strategy=strategy_mock,
         game_setup=GameSetup(
             num_rounds=n,
@@ -89,6 +89,7 @@ def test_play_game(mocker):
                         model_setup=DEFAULT_MODEL_SETUP,
                     ),
                 ),
+                "test-prompt",
             )
         ]
     )
@@ -123,7 +124,7 @@ def test_next_round():
     state.game_setup = Mock(GameSetup)
     state.game_setup.extract_choice = lambda _: "other choice"
     state.game_setup.payoffs = lambda __i__, __j__: (my_payoff, other_payoff)
-    result = next_round(lambda _: choice, state)  # type: ignore
+    result = next_round(lambda _: choice, state, "")  # type: ignore
     assert len(result) == 1
     result_content = content(result[0])
     assert choice.description in result_content
@@ -150,7 +151,7 @@ def test_run_experiment(mocker):
         "strategy_A": Mock(),
         "strategy_B": Mock(),
     }
-    participant_conditions = {"chain_of_thought": [True, False]}
+    participant_conditions: Grid = {"chain_of_thought": [True, False]}
 
     result: pd.DataFrame = run_experiment(
         ai_participants=ai_participants,

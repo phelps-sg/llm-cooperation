@@ -78,7 +78,7 @@ class Strategy(Protocol[CT_co]):
         ...
 
 
-RoundGenerator = Callable[[Strategy, GameState], List[Completion]]
+RoundGenerator = Callable[[Strategy[CT], GameState[CT, RT], RT], List[Completion]]
 
 
 class CooperationFrequencyFunction(Protocol[CT]):
@@ -167,7 +167,7 @@ def play_game(
         completion = gpt_completions(messages, 1)
         messages += completion
         partner_response = game_setup.next_round(
-            partner_strategy, GameState(messages, i, game_setup)
+            partner_strategy, GameState(messages, i, game_setup), role_prompt
         )
         messages += partner_response
     return messages

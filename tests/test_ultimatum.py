@@ -156,6 +156,6 @@ def test_next_round_ultimatum(
             return user_response
 
     state = Mock()
-    result = content(next_round_ultimatum(test_strategy, state)[0]).lower()
+    result = content(next_round_ultimatum(test_strategy, state, "")[0]).lower()
     assert f"your partner proposes {user_proposal.description.lower()}" in result
     assert f"your partner responded with {user_response.description.lower()}" in result
