@@ -6,11 +6,29 @@ import numpy as np
 import pandas as pd
 from openai_pygenerator import Completion, transcript
 
-from llm_cooperation import CT, PT, RT, Group, ModelSetup, Results, logger
+from llm_cooperation import (
+    CT,
+    RT,
+    Grid,
+    Group,
+    ModelSetup,
+    Results,
+    Settings,
+    logger,
+    settings_generator,
+)
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
 ResultSingleShotGame = Tuple[
-    Group, RT, str, float, float, Optional[CT], List[str], str, float
+    Group,
+    RT,
+    Settings,
+    float,
+    float,
+    Optional[CT],
+    List[str],
+    str,
+    float,
 ]
 
 
@@ -27,13 +45,13 @@ class OneShotResults(Results, Generic[CT, RT]):
                     condition,
                     score,
                     freq,
-                    choices,
+                    choice,
                     history,
                     model,
                     temp,
                 )
                 # pylint: disable=line-too-long
-                for group, prompt, condition, score, freq, choices, history, model, temp in self._rows
+                for group, prompt, condition, score, freq, choice, history, model, temp in self._rows
             ],
             columns=[
                 "Group",
@@ -51,8 +69,8 @@ class OneShotResults(Results, Generic[CT, RT]):
 
 def play_game(
     role_prompt: RT,
-    participant_condition: PT,
-    generate_instruction_prompt: PromptGenerator[PT, RT],
+    participant_condition: Settings,
+    generate_instruction_prompt: PromptGenerator[RT],
     model_setup: ModelSetup,
 ) -> List[Completion]:
     gpt_completions, messages = start_game(
@@ -94,12 +112,12 @@ def analyse(
 def generate_samples(
     prompt: RT,
     num_samples: int,
-    generate_instruction_prompt: PromptGenerator[PT, RT],
+    generate_instruction_prompt: PromptGenerator[RT],
     payoffs: Callable[[CT], float],
     extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[CT], float],
     model_setup: ModelSetup,
-    participant_condition: PT,
+    participant_condition: Settings,
 ) -> Iterable[Tuple[float, float, Optional[CT], List[str]]]:
     # pylint: disable=R0801
     for __i__ in range(num_samples):
@@ -114,9 +132,9 @@ def generate_samples(
 
 def run_experiment(
     ai_participants: Dict[Group, List[RT]],
-    participant_conditions: Dict[str, PT],
+    participant_conditions: Grid,
     num_samples: int,
-    generate_instruction_prompt: PromptGenerator[PT, RT],
+    generate_instruction_prompt: PromptGenerator[RT],
     payoffs: Callable[[CT], float],
     extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[CT], float],
@@ -126,7 +144,7 @@ def run_experiment(
         (
             group,
             participant,
-            condition_name,
+            condition,
             score,
             freq,
             choices,
@@ -136,7 +154,7 @@ def run_experiment(
         )
         for group, participants in ai_participants.items()
         for participant in participants
-        for condition_name, condition in participant_conditions.items()
+        for condition in settings_generator(participant_conditions)
         for score, freq, choices, history in generate_samples(
             prompt=participant,
             num_samples=num_samples,

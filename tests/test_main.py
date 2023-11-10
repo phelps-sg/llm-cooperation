@@ -1,13 +1,11 @@
 import pytest
 
-from llm_cooperation import ModelSetup
+from llm_cooperation import ModelSetup, Settings, settings_generator
 from llm_cooperation.main import (
     Configuration,
     Grid,
-    Settings,
     experiments,
     run_all,
-    settings_generator,
     setup_from_settings,
 )
 

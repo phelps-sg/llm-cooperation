@@ -150,7 +150,7 @@ def test_run_experiment(mocker):
         "strategy_A": Mock(),
         "strategy_B": Mock(),
     }
-    participant_conditions = {"chain-of-thought": Mock(), "no-chain-of-thought": Mock()}
+    participant_conditions = {"chain_of_thought": [True, False]}
 
     result: pd.DataFrame = run_experiment(
         ai_participants=ai_participants,
@@ -169,12 +169,14 @@ def test_run_experiment(mocker):
             model_setup=DEFAULT_MODEL_SETUP,
         ),
     ).to_df()
+    num_participant_conditions = len(participant_conditions["chain_of_thought"])
     assert (
         len(result)
-        == len(samples) * len(user_conditions) * len(participant_conditions) * 3
+        == len(samples) * len(user_conditions) * num_participant_conditions * 3
     )
-    assert mock_run_sample.call_count == len(samples) * len(user_conditions) * len(
-        participant_conditions
+    assert (
+        mock_run_sample.call_count
+        == len(samples) * len(user_conditions) * num_participant_conditions
     )
 
 
@@ -185,17 +187,17 @@ def test_results_to_df(results: Iterable[ResultRepeatedGame]):
     assert len(df) == 2
     assert df["Group"][0] == str(Group.Altruistic)
     assert df["Group"][1] == str(Group.Selfish)
-    assert df["Participant Condition"][0] == "chain-of-thought"
+    assert df["Participant Condition"][0] == {"chain_of_thought": True}
 
 
 @pytest.fixture
-def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame]:
+def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame[str]]:
     return iter(
         [
             (
                 Group.Altruistic,
                 "You are altruistic",
-                "chain-of-thought",
+                {"chain_of_thought": True},
                 "unconditional cooperate",
                 30,
                 0.2,
@@ -207,7 +209,7 @@ def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame]:
             (
                 Group.Selfish,
                 "You are selfish",
-                "no-chain-of-thought",
+                {"chain_of_thought": False},
                 "unconditional cooperate",
                 60,
                 0.5,

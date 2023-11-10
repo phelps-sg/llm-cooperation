@@ -27,17 +27,20 @@ from llm_cooperation.experiments.dilemma import (
 )
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import GameSetup, play_game
+from llm_cooperation.main import Settings
 from tests.common import make_completion
 
 
-@pytest.mark.parametrize("condition", [True, False])
-def test_get_instruction_prompt(condition: bool):
+@pytest.mark.parametrize(
+    "condition", [{"chain_of_thought": True}, {"chain_of_thought": False}]
+)
+def test_get_instruction_prompt(condition: Settings):
     role_prompt = "You are a helpful assistant."
     prompt = get_prompt_pd(condition, role_prompt)
     logger.debug("prompt = %s", prompt)
     assert "COLOR_COOPERATE" not in prompt
     assert "COLOR_DEFECT" not in prompt
-    assert ("Explanation:" in prompt) == condition
+    assert ("Explanation:" in prompt) == condition["chain_of_thought"]
     assert "Choice:" in prompt
     for payoff in [R, S, T, P]:
         assert f"${payoff}.00" in prompt
@@ -129,7 +132,7 @@ def test_run_repeated_game(mocker):
         play_game(
             partner_strategy=strategy_defect,
             role_prompt="You are a participant in a psychology experiment",
-            participant_condition=False,
+            participant_condition={"chain_of_thought": False},
             game_setup=GameSetup(
                 num_rounds=3,
                 generate_instruction_prompt=get_prompt_pd,

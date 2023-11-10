@@ -1,12 +1,11 @@
-import itertools
 import logging
 import os
 from dataclasses import dataclass
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable
 
 import openai_pygenerator
 
-from llm_cooperation import Experiment, ModelSetup
+from llm_cooperation import Experiment, Grid, ModelSetup, Settings, settings_generator
 from llm_cooperation.experiments import (
     DEFAULT_SAMPLE_SIZE,
     dictator,
@@ -24,10 +23,6 @@ experiments: Dict[str, Experiment] = {
     "dictator": dictator.run,
     "principal-agent": principalagent.run,
 }
-
-ConfigValue = float | str
-Grid = Dict[str, List[ConfigValue]]
-Settings = Dict[str, ConfigValue]
 
 
 @dataclass(frozen=True)
@@ -76,16 +71,6 @@ def setup_from_settings(settings: Settings) -> ModelSetup:
         ),
         max_tokens=int(settings.get("max_tokens", openai_pygenerator.GPT_MAX_TOKENS)),
     )
-
-
-def settings_generator(grid: Grid) -> Iterable[Settings]:
-    keys = list(grid.keys())
-    value_combinations = itertools.product(*grid.values())
-    for values in value_combinations:
-        settings: Settings = dict()
-        for i, value in enumerate(values):
-            settings[keys[i]] = value
-        yield settings
 
 
 def run_all() -> None:

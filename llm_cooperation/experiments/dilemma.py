@@ -8,7 +8,7 @@ from typing import List
 import numpy as np
 from openai_pygenerator import Completion
 
-from llm_cooperation import ChainOfThoughtCondition, ModelSetup, Payoffs
+from llm_cooperation import ModelSetup, Payoffs, Settings
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import (
@@ -43,7 +43,7 @@ class DilemmaEnum(Enum):
     D = auto()
 
 
-@dataclass
+@dataclass(frozen=True)
 class DilemmaChoice:
     value: DilemmaEnum
 
@@ -60,7 +60,7 @@ Cooperate = DilemmaChoice(DilemmaEnum.C)
 Defect = DilemmaChoice(DilemmaEnum.D)
 
 
-def get_prompt_pd(condition: ChainOfThoughtCondition, role_prompt: str) -> str:
+def get_prompt_pd(condition: Settings, role_prompt: str) -> str:
     cooperate = f"""'Project {COLOR_COOPERATE}'"""
     defect = f"""'Project {COLOR_DEFECT}'"""
     choice_template = f"""Choice: [{defect} | {cooperate}]"""
@@ -69,7 +69,7 @@ def get_prompt_pd(condition: ChainOfThoughtCondition, role_prompt: str) -> str:
         return f"${amount}.00"
 
     def round_instructions() -> str:
-        if condition:
+        if condition["chain_of_thought"]:
             return f"""
 For each round, give your answer in the format below on two separate lines:
 Explanation: [why I made my choice]
@@ -105,21 +105,21 @@ Here is your investment partner. What is your choice in the first round?
 
 # pylint: disable=unused-argument
 def strategy_defect(
-    state: GameState[DilemmaChoice, ChainOfThoughtCondition, str], **__kwargs__: bool
+    state: GameState[DilemmaChoice, str], **__kwargs__: bool
 ) -> DilemmaChoice:
     return Defect
 
 
 # pylint: disable=unused-argument
 def strategy_cooperate(
-    state: GameState[DilemmaChoice, ChainOfThoughtCondition, str], **__kwargs__: bool
+    state: GameState[DilemmaChoice, str], **__kwargs__: bool
 ) -> DilemmaChoice:
     return Cooperate
 
 
 def strategy_t4t(
     initial_choice: DilemmaChoice,
-    state: GameState[DilemmaChoice, ChainOfThoughtCondition, str],
+    state: GameState[DilemmaChoice, str],
     **__kwargs__: bool,
 ) -> DilemmaChoice:
     if len(state.messages) == 2:
@@ -189,7 +189,7 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
 
 
 def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
-    game_setup: GameSetup[DilemmaChoice, ChainOfThoughtCondition, str] = GameSetup(
+    game_setup: GameSetup[DilemmaChoice, str] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_pd,
         payoffs=payoffs_pd,
@@ -210,7 +210,9 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
             "tit for tat C": strategy_t4t_cooperate,
             "tit for tat D": strategy_t4t_defect,
         },
-        participant_conditions={"chain-of-thought": True, "no-chain-of-thought": False},
+        participant_conditions={
+            "chain_of_thought": [True, False],
+        },
         measurement_setup=measurement_setup,
         game_setup=game_setup,
     )

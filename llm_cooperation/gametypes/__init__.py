@@ -4,18 +4,18 @@ from typing import List, Protocol, Tuple
 
 from openai_pygenerator import Completer, Completion, user_message
 
-from llm_cooperation import PT, RT, ModelSetup, PT_contra, RT_contra, completer_for
+from llm_cooperation import RT, ModelSetup, RT_contra, Settings, completer_for
 
 
-class PromptGenerator(Protocol[PT_contra, RT_contra]):
-    def __call__(self, condition: PT_contra, role_prompt: RT_contra) -> str:
+class PromptGenerator(Protocol[RT_contra]):
+    def __call__(self, condition: Settings, role_prompt: RT_contra) -> str:
         ...
 
 
 def start_game(
-    prompt_generator: PromptGenerator[PT, RT],
+    prompt_generator: PromptGenerator[RT],
     model_setup: ModelSetup,
-    participant_condition: PT,
+    participant_condition: Settings,
     role_prompt: RT,
 ) -> Tuple[Completer, List[Completion]]:
     gpt_completions = completer_for(model_setup)

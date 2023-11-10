@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import numpy as np
 from openai_pygenerator import Completion, content
 
-from llm_cooperation import Group, ModelSetup
+from llm_cooperation import Group, ModelSetup, Settings
 from llm_cooperation.experiments import run_and_record_experiment
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
@@ -16,12 +16,6 @@ class PAChoice:
     @property
     def description(self) -> str:
         return str(self.value)
-
-
-@dataclass
-class PACondition:
-    shared_with_user: bool
-    shared_with_principal: bool
 
 
 @dataclass
@@ -67,17 +61,17 @@ My budget is $50,000.
 )
 
 
-def information_prompt(principal: str, condition: PACondition) -> str:
-    if condition.shared_with_principal and condition.shared_with_user:
+def information_prompt(principal: str, condition: Settings) -> str:
+    if condition["shared_with_principal"] and condition["shared_with_user"]:
         return f"shared with both {principal} and the customer"
-    if condition.shared_with_principal and (not condition.shared_with_user):
+    if condition["shared_with_principal"] and (not condition["shared_with_user"]):
         return f"shared only with {principal}, but not shared with the customer"
-    if (not condition.shared_with_principal) and condition.shared_with_user:
+    if (not condition["shared_with_principal"]) and condition["shared_with_user"]:
         return f"shared only with the customer, but not shared with {principal}"
     return f"kept strictly confidential and not shared with the customer or {principal}"
 
 
-def get_prompt_principal_agent(condition: PACondition, role_prompt: PARole) -> str:
+def get_prompt_principal_agent(condition: Settings, role_prompt: PARole) -> str:
     return f"""
 You are a customer service chatbot for a leading e-commerce company.
 As the chatbot, your role is to assist customers and make purchases for them, and act in their best interests.
@@ -119,14 +113,8 @@ def run(model_setup: ModelSetup, sample_size: int) -> OneShotResults[PAChoice, P
     return run_experiment(
         ai_participants={Group.Control: [PARTICIPANT_OPENAI, PARTICIPANT_SHELL]},
         participant_conditions={
-            "both": PACondition(shared_with_user=True, shared_with_principal=True),
-            "user-only": PACondition(
-                shared_with_user=True, shared_with_principal=False
-            ),
-            "principal-only": PACondition(
-                shared_with_user=False, shared_with_principal=True
-            ),
-            "neither": PACondition(shared_with_user=False, shared_with_principal=False),
+            "shared_with_user": [True, False],
+            "shared_with_principal": [True, False],
         },
         num_samples=sample_size,
         generate_instruction_prompt=get_prompt_principal_agent,

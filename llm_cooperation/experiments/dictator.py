@@ -5,7 +5,7 @@ from typing import Dict
 
 from openai_pygenerator import Completion, content
 
-from llm_cooperation import ModelSetup, amount_as_str
+from llm_cooperation import ModelSetup, Settings, amount_as_str
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
@@ -89,7 +89,7 @@ def choice_menu() -> str:
 
 
 # pylint: disable=unused-argument
-def get_prompt_dictator(condition: bool, role_prompt: str) -> str:
+def get_prompt_dictator(condition: Settings, role_prompt: str) -> str:
     return f"""
 {role_prompt}
 This is a study of investment choices in different situations.
@@ -140,7 +140,7 @@ def run(
 ) -> OneShotResults[DictatorChoice, str]:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
-        participant_conditions={"dummy": False},
+        participant_conditions=dict(),
         num_samples=sample_size,
         generate_instruction_prompt=get_prompt_dictator,
         extract_choice=extract_choice_dictator,

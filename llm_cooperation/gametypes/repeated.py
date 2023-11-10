@@ -10,14 +10,16 @@ from openai_pygenerator import Completion, transcript
 
 from llm_cooperation import (
     CT,
-    PT,
     RT,
     CT_co,
     CT_contra,
+    Grid,
     Group,
     ModelSetup,
     Payoffs,
     Results,
+    Settings,
+    settings_generator,
 )
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
@@ -43,9 +45,9 @@ class RoundsSetup:
 
 
 @dataclass(frozen=True)
-class GameSetup(Generic[CT, PT, RT]):
+class GameSetup(Generic[CT, RT]):
     num_rounds: int
-    generate_instruction_prompt: PromptGenerator[PT, RT]
+    generate_instruction_prompt: PromptGenerator[RT]
     next_round: RoundGenerator
     analyse_rounds: RoundsAnalyser
     payoffs: PayoffFunction[CT]
@@ -60,10 +62,10 @@ class MeasurementSetup(Generic[CT]):
 
 
 @dataclass(frozen=True)
-class GameState(Generic[CT, PT, RT]):
+class GameState(Generic[CT, RT]):
     messages: List[Completion]
     round: int
-    game_setup: GameSetup[CT, PT, RT]
+    game_setup: GameSetup[CT, RT]
 
 
 class ChoiceExtractor(Protocol[CT_co]):
@@ -101,7 +103,7 @@ RoundsAnalyser = Callable[
 ResultRepeatedGame = Tuple[
     Group,
     RT,
-    str,
+    Settings,
     str,
     float,
     float,
@@ -122,7 +124,7 @@ class RepeatedGameResults(Results):
                 (
                     str(group),
                     participant,
-                    condition_name,
+                    condition,
                     strategy,
                     score,
                     freq,
@@ -132,7 +134,7 @@ class RepeatedGameResults(Results):
                     temp,
                 )
                 # pylint: disable=line-too-long
-                for group, participant, condition_name, strategy, score, freq, choices, history, model, temp in self._rows
+                for group, participant, condition, strategy, score, freq, choices, history, model, temp in self._rows
             ],
             columns=[
                 "Group",
@@ -151,9 +153,9 @@ class RepeatedGameResults(Results):
 
 def play_game(
     role_prompt: RT,
-    participant_condition: PT,
+    participant_condition: Settings,
     partner_strategy: Strategy[CT],
-    game_setup: GameSetup[CT, PT, RT],
+    game_setup: GameSetup[CT, RT],
 ) -> List[Completion]:
     gpt_completions, messages = start_game(
         game_setup.generate_instruction_prompt,
@@ -209,10 +211,10 @@ def analyse(
 
 def generate_samples(
     participant: RT,
-    condition: PT,
+    condition: Settings,
     partner_strategy: Strategy[CT],
     measurement_setup: MeasurementSetup[CT],
-    game_setup: GameSetup[CT, PT, RT],
+    game_setup: GameSetup[CT, RT],
 ) -> Iterable[Tuple[float, float, Optional[List[Choices[CT]]], List[str]]]:
     # pylint: disable=R0801
     for __i__ in range(measurement_setup.num_samples):
@@ -238,15 +240,15 @@ def generate_samples(
 def run_experiment(
     ai_participants: Dict[Group, List[RT]],
     partner_conditions: Dict[str, Strategy[CT]],
-    participant_conditions: Dict[str, PT],
+    participant_conditions: Grid,
     measurement_setup: MeasurementSetup[CT],
-    game_setup: GameSetup[CT, PT, RT],
+    game_setup: GameSetup[CT, RT],
 ) -> RepeatedGameResults:
     return RepeatedGameResults(
         (
             group,
             participant,
-            condition_name,
+            participant_condition,
             strategy_name,
             score,
             freq,
@@ -257,12 +259,12 @@ def run_experiment(
         )
         for group, participants in ai_participants.items()
         for participant in participants
-        for condition_name, condition in participant_conditions.items()
+        for participant_condition in settings_generator(participant_conditions)
         for strategy_name, strategy_fn in partner_conditions.items()
         for score, freq, choices, history in generate_samples(
             participant=participant,
             partner_strategy=strategy_fn,
-            condition=condition,
+            condition=participant_condition,
             measurement_setup=measurement_setup,
             game_setup=game_setup,
         )

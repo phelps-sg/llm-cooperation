@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 from openai_pygenerator import Completion, is_assistant_role, user_message
 
-from llm_cooperation import CT, PT, RT
+from llm_cooperation import CT, RT
 from llm_cooperation.gametypes.repeated import (
     ChoiceExtractor,
     Choices,
@@ -50,7 +50,7 @@ def analyse_rounds(
 
 
 def next_round(
-    partner_strategy: Strategy[CT], state: GameState[CT, PT, RT]
+    partner_strategy: Strategy[CT], state: GameState[CT, RT]
 ) -> List[Completion]:
     previous_message = state.messages[-1]
     logger.debug("previous_message = %s", previous_message)

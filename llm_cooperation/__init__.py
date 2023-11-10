@@ -4,11 +4,12 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Hashable, Protocol, Tuple, TypeVar
+from typing import Callable, Dict, Hashable, Iterable, List, Protocol, Tuple, TypeVar
 
 import openai_pygenerator
 import pandas as pd
 from openai_pygenerator import Completer
+from plotly.basedatatypes import itertools
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,10 @@ logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
+
+ConfigValue = float | str | bool
+Grid = Dict[str, List[ConfigValue]]
+Settings = Dict[str, ConfigValue]
 
 
 class Choice(Protocol):
@@ -59,14 +64,20 @@ CT = TypeVar("CT", bound=Choice)
 CT_co = TypeVar("CT_co", bound=Choice, covariant=True)
 CT_contra = TypeVar("CT_contra", bound=Choice, contravariant=True)
 
-PT = TypeVar("PT")
-PT_contra = TypeVar("PT_contra", contravariant=True)
-
 RT = TypeVar("RT")
 RT_contra = TypeVar("RT_contra", contravariant=True)
 
 Payoffs = Tuple[float, float]
-ChainOfThoughtCondition = bool
+
+
+def settings_generator(grid: Grid) -> Iterable[Settings]:
+    keys = list(grid.keys())
+    value_combinations = itertools.product(*grid.values())
+    for values in value_combinations:
+        settings: Settings = dict()
+        for i, value in enumerate(values):
+            settings[keys[i]] = value
+        yield settings
 
 
 def amount_as_str(amount: float) -> str:

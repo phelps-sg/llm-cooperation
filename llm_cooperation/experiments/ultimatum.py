@@ -7,7 +7,7 @@ from typing import List
 import numpy as np
 from openai_pygenerator import Completion, content, user_message
 
-from llm_cooperation import ChainOfThoughtCondition, ModelSetup, Payoffs, amount_as_str
+from llm_cooperation import ModelSetup, Payoffs, Settings, amount_as_str
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes import alternating
 from llm_cooperation.gametypes.repeated import (
@@ -71,7 +71,7 @@ dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
 
 def next_round_ultimatum(
     partner_strategy: Strategy[UltimatumChoice],
-    state: GameState[UltimatumChoice, ChainOfThoughtCondition, str],
+    state: GameState[UltimatumChoice, str],
 ) -> List[Completion]:
     user_response = partner_strategy(state, propose=False)
     user_proposal = partner_strategy(state, propose=True)
@@ -87,7 +87,7 @@ def next_round_ultimatum(
 
 # pylint: disable=unused-argument
 def strategy_cooperate(
-    state: GameState[UltimatumChoice, ChainOfThoughtCondition, str], **kwargs: bool
+    state: GameState[UltimatumChoice, str], **kwargs: bool
 ) -> UltimatumChoice:
     if kwargs["propose"]:
         return ProposerChoice(MAX_AMOUNT)
@@ -95,7 +95,7 @@ def strategy_cooperate(
         return Accept
 
 
-def get_prompt_ultimatum(condition: bool, role_prompt: str) -> str:
+def get_prompt_ultimatum(condition: Settings, role_prompt: str) -> str:
     logger.debug("condition = %s", condition)
     logger.debug("role_prompt = %s", role_prompt)
     return f"""
@@ -190,7 +190,7 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
 
 
 def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
-    game_setup: GameSetup[UltimatumChoice, ChainOfThoughtCondition, str] = GameSetup(
+    game_setup: GameSetup[UltimatumChoice, str] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_ultimatum,
         extract_choice=extract_choice_ultimatum,
@@ -205,7 +205,7 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
     )
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
-        participant_conditions={"chain-of-thought": True, "no-chain-of-thought": False},
+        participant_conditions={"chain-of-thought": [True, False]},
         partner_conditions={"cooperate": strategy_cooperate},
         measurement_setup=measurement_setup,
         game_setup=game_setup,
