@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Callable, Dict, Hashable, Iterable, List, Protocol, Tuple, TypeVar
 
+import numpy as np
 import openai_pygenerator
 import pandas as pd
 from openai_pygenerator import Completer
@@ -70,14 +71,32 @@ RT_contra = TypeVar("RT_contra", contravariant=True)
 Payoffs = Tuple[float, float]
 
 
+def all_combinations(grid: Grid) -> itertools.product:
+    return itertools.product(*grid.values())
+
+
+def settings_from_combinations(
+    keys: List[str], combinations: Iterable[ConfigValue]
+) -> Settings:
+    settings: Settings = dict()
+    for i, value in enumerate(combinations):
+        settings[keys[i]] = value
+    return settings
+
+
+def randomized_settings_generator(n: int, grid: Grid) -> Iterable[Settings]:
+    keys = list(grid.keys())
+    combinations = list(all_combinations(grid))
+    num_combinations = len(combinations)
+    for __i__ in range(n):
+        random_index: int = int(np.random.randint(num_combinations))
+        yield settings_from_combinations(keys, combinations[random_index])
+
+
 def settings_generator(grid: Grid) -> Iterable[Settings]:
     keys = list(grid.keys())
-    value_combinations = itertools.product(*grid.values())
-    for values in value_combinations:
-        settings: Settings = dict()
-        for i, value in enumerate(values):
-            settings[keys[i]] = value
-        yield settings
+    for values in all_combinations(grid):
+        yield settings_from_combinations(keys, values)
 
 
 def amount_as_str(amount: float) -> str:

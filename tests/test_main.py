@@ -1,6 +1,14 @@
-import pytest
+from functools import partial
 
-from llm_cooperation import ModelSetup, Settings, settings_generator
+import pytest
+from openai_pygenerator import Callable
+
+from llm_cooperation import (
+    ModelSetup,
+    Settings,
+    randomized_settings_generator,
+    settings_generator,
+)
 from llm_cooperation.main import (
     Configuration,
     Grid,
@@ -29,8 +37,16 @@ def test_setup_from_settings(mocker, settings: Settings, expected_result: ModelS
     assert result == expected_result
 
 
-def test_settings_generator(grid):
-    result = list(settings_generator(grid))
+@pytest.mark.parametrize(
+    ["generator", "n"],
+    [
+        (settings_generator, 6),
+        (partial(randomized_settings_generator, 10), 10),
+    ],
+)
+def test_settings_generator(grid, generator: Callable, n: int):
+    result = list(generator(grid))
+    assert len(result) == n
     for setting in result:
         for key, value in setting.items():
             assert value in grid[key]
