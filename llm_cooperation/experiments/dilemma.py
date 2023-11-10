@@ -196,7 +196,7 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
         extract_choice=extract_choice_pd,
         next_round=simultaneous.next_round,
         analyse_rounds=simultaneous.analyse_rounds,
-        participant_condition_sampling=partial(randomized, n=10),
+        participant_condition_sampling=partial(randomized, 10),
         model_setup=model_setup,
     )
     measurement_setup: MeasurementSetup[DilemmaChoice] = MeasurementSetup(
