@@ -44,7 +44,7 @@ grid = {
 }
 
 
-sample_size = 3
+num_replications = 3
 
 
 experiments = ["dictator", "dilemma"]
