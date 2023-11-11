@@ -139,6 +139,7 @@ def run_experiment(
     extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[CT], float],
     model_setup: ModelSetup,
+    participant_sampling: Callable[[Grid], Iterable[Settings]] = exhaustive,
 ) -> OneShotResults[CT, RT]:
     return OneShotResults(
         (
@@ -154,7 +155,7 @@ def run_experiment(
         )
         for group, participants in ai_participants.items()
         for participant in participants
-        for participant_condition in exhaustive(participant_conditions)
+        for participant_condition in participant_sampling(participant_conditions)
         for score, freq, choices, history in generate_replications(
             prompt=participant,
             num_samples=num_samples,
