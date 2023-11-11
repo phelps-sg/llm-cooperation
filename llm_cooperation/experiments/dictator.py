@@ -11,7 +11,7 @@ from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
 TOTAL_SHARE = 4
 
-SAMPLE_SIZE = 30
+NUM_REPLICATIONS = 30
 
 
 class DictatorEnum(Enum):
@@ -137,13 +137,13 @@ def compute_freq_dictator(history: DictatorChoice) -> float:
 
 def run(
     model_setup: ModelSetup,
-    sample_size: int = SAMPLE_SIZE,
+    num_replications: int = NUM_REPLICATIONS,
     participant_samples: Optional[int] = None,
 ) -> OneShotResults[DictatorChoice, str]:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         participant_conditions=dict(),
-        num_replications=sample_size,
+        num_replications=num_replications,
         generate_instruction_prompt=get_prompt_dictator,
         extract_choice=extract_choice_dictator,
         payoffs=payoffs_dictator,
