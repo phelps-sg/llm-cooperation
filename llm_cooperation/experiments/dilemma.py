@@ -3,12 +3,12 @@ import re
 from dataclasses import dataclass
 from enum import Enum, auto
 from functools import partial
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 from openai_pygenerator import Completion
 
-from llm_cooperation import ModelSetup, Payoffs, Settings, randomized
+from llm_cooperation import ModelSetup, Payoffs, Settings, get_sampling
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import (
@@ -188,7 +188,9 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
-def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
+def run(
+    model_setup: ModelSetup, sample_size: int, participant_samples: Optional[int] = None
+) -> RepeatedGameResults:
     game_setup: GameSetup[DilemmaChoice, str] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_pd,
@@ -196,11 +198,11 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
         extract_choice=extract_choice_pd,
         next_round=simultaneous.next_round,
         analyse_rounds=simultaneous.analyse_rounds,
-        participant_condition_sampling=partial(randomized, 10),
+        participant_condition_sampling=get_sampling(participant_samples),
         model_setup=model_setup,
     )
     measurement_setup: MeasurementSetup[DilemmaChoice] = MeasurementSetup(
-        num_samples=sample_size,
+        num_replications=sample_size,
         compute_freq=compute_freq_pd,
     )
     return run_experiment(

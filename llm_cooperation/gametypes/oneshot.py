@@ -111,7 +111,7 @@ def analyse(
 
 def generate_replications(
     prompt: RT,
-    num_samples: int,
+    num_replications: int,
     generate_instruction_prompt: PromptGenerator[RT],
     payoffs: Callable[[CT], float],
     extract_choice: Callable[[Completion], CT],
@@ -120,7 +120,7 @@ def generate_replications(
     participant_condition: Settings,
 ) -> Iterable[Tuple[float, float, Optional[CT], List[str]]]:
     # pylint: disable=R0801
-    for __i__ in range(num_samples):
+    for __i__ in range(num_replications):
         conversation = play_game(
             role_prompt=prompt,
             participant_condition=participant_condition,
@@ -133,7 +133,7 @@ def generate_replications(
 def run_experiment(
     ai_participants: Dict[Group, List[RT]],
     participant_conditions: Grid,
-    num_samples: int,
+    num_replications: int,
     generate_instruction_prompt: PromptGenerator[RT],
     payoffs: Callable[[CT], float],
     extract_choice: Callable[[Completion], CT],
@@ -158,7 +158,7 @@ def run_experiment(
         for participant_condition in participant_sampling(participant_conditions)
         for score, freq, choices, history in generate_replications(
             prompt=participant,
-            num_samples=num_samples,
+            num_replications=num_replications,
             generate_instruction_prompt=generate_instruction_prompt,
             payoffs=payoffs,
             extract_choice=extract_choice,

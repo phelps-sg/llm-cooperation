@@ -166,7 +166,7 @@ def test_run_experiment(mocker):
         partner_conditions=user_conditions,  # type: ignore
         participant_conditions=participant_conditions,
         measurement_setup=MeasurementSetup(
-            num_samples=len(samples), compute_freq=compute_freq_pd
+            num_replications=len(samples), compute_freq=compute_freq_pd
         ),
         game_setup=GameSetup(
             num_rounds=6,

@@ -1,11 +1,11 @@
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict
+from typing import Dict, Optional
 
 from openai_pygenerator import Completion, content
 
-from llm_cooperation import ModelSetup, Settings, amount_as_str
+from llm_cooperation import ModelSetup, Settings, amount_as_str, get_sampling
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
@@ -136,17 +136,20 @@ def compute_freq_dictator(history: DictatorChoice) -> float:
 
 
 def run(
-    model_setup: ModelSetup, sample_size: int = SAMPLE_SIZE
+    model_setup: ModelSetup,
+    sample_size: int = SAMPLE_SIZE,
+    participant_samples: Optional[int] = None,
 ) -> OneShotResults[DictatorChoice, str]:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         participant_conditions=dict(),
-        num_samples=sample_size,
+        num_replications=sample_size,
         generate_instruction_prompt=get_prompt_dictator,
         extract_choice=extract_choice_dictator,
         payoffs=payoffs_dictator,
         compute_freq=compute_freq_dictator,
         model_setup=model_setup,
+        participant_sampling=get_sampling(participant_samples),
     )
 
 

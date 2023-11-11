@@ -39,7 +39,7 @@ def test_run_experiment(mocker, participant_conditions: Grid):
     result: pd.DataFrame = run_experiment(
         ai_participants=ai_participants,
         participant_conditions=participant_conditions,
-        num_samples=len(samples),
+        num_replications=len(samples),
         generate_instruction_prompt=Mock(),
         payoffs=Mock(),
         extract_choice=Mock(),
@@ -61,7 +61,7 @@ def test_generate_samples(mocker):
         generate_replications(
             prompt="test-prompt",
             participant_condition=dict(),
-            num_samples=test_n,
+            num_replications=test_n,
             generate_instruction_prompt=Mock(),
             payoffs=Mock(),
             extract_choice=Mock(),

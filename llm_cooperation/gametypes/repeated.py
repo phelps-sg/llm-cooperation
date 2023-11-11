@@ -58,7 +58,7 @@ class GameSetup(Generic[CT, RT]):
 
 @dataclass(frozen=True)
 class MeasurementSetup(Generic[CT]):
-    num_samples: int
+    num_replications: int
     compute_freq: CooperationFrequencyFunction[CT]
 
 
@@ -218,7 +218,7 @@ def generate_replications(
     game_setup: GameSetup[CT, RT],
 ) -> Iterable[Tuple[float, float, Optional[List[Choices[CT]]], List[str]]]:
     # pylint: disable=R0801
-    for __i__ in range(measurement_setup.num_samples):
+    for __i__ in range(measurement_setup.num_replications):
         try:
             conversation = play_game(
                 partner_strategy=partner_strategy,

@@ -1,9 +1,17 @@
 from functools import partial
+from typing import Optional
 
 import pytest
 from openai_pygenerator import Callable, content, user_message
 
-from llm_cooperation import ModelSetup, Settings, completer_for, exhaustive, randomized
+from llm_cooperation import (
+    ModelSetup,
+    Settings,
+    completer_for,
+    exhaustive,
+    get_sampling,
+    randomized,
+)
 from llm_cooperation.main import (
     Configuration,
     Grid,
@@ -55,13 +63,24 @@ def test_settings_generator(grid, generator: Callable, n: int):
             assert value in grid[key]
 
 
+@pytest.mark.parametrize(
+    ["n", "is_exhaustive"],
+    [
+        (None, True),
+        (5, False),
+    ],
+)
+def test_get_sampling(n: Optional[int], is_exhaustive: bool):
+    assert (get_sampling(n) is exhaustive) == is_exhaustive
+
+
 def test_run_all(mocker, grid):
     run_and_record = mocker.patch(
         "llm_cooperation.main.run_and_record_experiment", return_value=None
     )
     mocker.patch(
         "llm_cooperation.main.get_config",
-        return_value=Configuration(grid, 30, experiments.keys()),
+        return_value=Configuration(grid, 30, None, experiments.keys()),
     )
     run_all()
     assert run_and_record.call_count == 6 * len(list(experiments.items()))

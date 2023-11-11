@@ -3,13 +3,13 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Optional
 
 from llm_cooperation import DEFAULT_MODEL_SETUP, Experiment, Group, ModelSetup, Results
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_SAMPLE_SIZE = 30
+DEFAULT_NUM_REPLICATIONS = 30
 
 AI_PARTICIPANTS = {
     #
@@ -96,9 +96,10 @@ def run_and_record_experiment(
     name: str,
     run: Experiment,
     model_setup: ModelSetup = DEFAULT_MODEL_SETUP,
-    sample_size: int = DEFAULT_SAMPLE_SIZE,
+    sample_size: int = DEFAULT_NUM_REPLICATIONS,
+    participant_samples: Optional[int] = None,
 ) -> Results:
-    results = run(model_setup, sample_size)
+    results = run(model_setup, sample_size, participant_samples)
     logger.info("Experiment complete.")
     df = results.to_df()
     results_dir = create_results_dir(model_setup)

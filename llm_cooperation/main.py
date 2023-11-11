@@ -1,13 +1,13 @@
 import logging
 import os
 from dataclasses import dataclass
-from typing import Dict, Iterable
+from typing import Any, Dict, Iterable, List, Optional
 
 import openai_pygenerator
 
 from llm_cooperation import Experiment, Grid, ModelSetup, Settings, exhaustive
 from llm_cooperation.experiments import (
-    DEFAULT_SAMPLE_SIZE,
+    DEFAULT_NUM_REPLICATIONS,
     dictator,
     dilemma,
     principalagent,
@@ -25,10 +25,14 @@ experiments: Dict[str, Experiment] = {
 }
 
 
+ConfigSetting = Grid | int | Optional[int] | List[str]
+
+
 @dataclass(frozen=True)
 class Configuration:
     grid: Grid
-    sample_size: int
+    num_replications: int
+    participant_samples: Optional[int]
     experiment_names: Iterable[str]
 
 
@@ -38,9 +42,12 @@ DEFAULT_GRID: Grid = {
     "max_tokens": [openai_pygenerator.GPT_MAX_TOKENS],
 }
 
+DEFAULT_PARTICIPANT_SAMPLES = None
+
 DEFAULT_CONFIGURATION = Configuration(
     grid=DEFAULT_GRID,
-    sample_size=DEFAULT_SAMPLE_SIZE,
+    num_replications=DEFAULT_NUM_REPLICATIONS,
+    participant_samples=DEFAULT_PARTICIPANT_SAMPLES,
     experiment_names=experiments.keys(),
 )
 
@@ -48,11 +55,20 @@ DEFAULT_CONFIGURATION = Configuration(
 def get_config() -> Configuration:
     try:
         config = __import__("llm_config")
+
+        def get_var(var: str, default: ConfigSetting) -> Any:  # type: ignore
+            if hasattr(config, var):
+                return getattr(config, var)
+            return default
+
         return Configuration(
-            grid=config.grid,
-            sample_size=config.sample_size,
+            grid=get_var("grid", DEFAULT_GRID),
+            num_replications=get_var("num_replications", DEFAULT_NUM_REPLICATIONS),
+            participant_samples=get_var(
+                "participant_samples", DEFAULT_PARTICIPANT_SAMPLES
+            ),
             experiment_names=config.experiments,
-        )
+        )  # type: ignore
     except ModuleNotFoundError:
         logger.debug("PYTHONPATH = %s", os.getenv("PYTHONPATH"))
         logger.exception("Could not find llm_config.py in PYTHONPATH")
@@ -87,7 +103,11 @@ def run_all() -> None:
                 setup.temperature,
             )
             run_and_record_experiment(
-                name, experiment, setup, configuration.sample_size
+                name,
+                experiment,
+                setup,
+                configuration.num_replications,
+                configuration.participant_samples,
             )
             logger.info("Experiment %s completed.", name)
 
