@@ -13,13 +13,11 @@ from llm_cooperation import (
     RT,
     CT_co,
     CT_contra,
-    Grid,
     Group,
     ModelSetup,
     Payoffs,
     Results,
     Settings,
-    exhaustive,
 )
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
@@ -53,13 +51,13 @@ class GameSetup(Generic[CT, RT]):
     payoffs: PayoffFunction[CT]
     extract_choice: ChoiceExtractor[CT]
     model_setup: ModelSetup
-    participant_condition_sampling: Callable[[Grid], Iterable[Settings]] = exhaustive
 
 
 @dataclass(frozen=True)
 class MeasurementSetup(Generic[CT]):
     num_replications: int
     compute_freq: CooperationFrequencyFunction[CT]
+    choose_participant_condition: Callable[[], Settings]
 
 
 @dataclass(frozen=True)
@@ -196,7 +194,8 @@ def analyse(
     extract_choice: ChoiceExtractor[CT],
     compute_freq: CooperationFrequencyFunction[CT],
     analyse_rounds: RoundsAnalyser,
-) -> Tuple[float, float, Optional[List[Choices[CT]]], List[str]]:
+    participant_condition: Settings,
+) -> Tuple[float, float, Optional[List[Choices[CT]]], List[str], Settings]:
     try:
         history = transcript(conversation)
         result: Tuple[Scores, List[Choices[CT]]] = compute_scores(
@@ -204,25 +203,25 @@ def analyse(
         )
         scores, choices = result
         freq = compute_freq(choices)
-        return scores.ai, freq, choices, history
+        return scores.ai, freq, choices, history, participant_condition
     except ValueError as e:
         logger.error("ValueError while running sample: %s", e)
-        return 0, np.nan, None, [str(e)]
+        return 0, np.nan, None, [str(e)], dict()
 
 
 def generate_replications(
     participant: RT,
-    condition: Settings,
     partner_strategy: Strategy[CT],
     measurement_setup: MeasurementSetup[CT],
     game_setup: GameSetup[CT, RT],
-) -> Iterable[Tuple[float, float, Optional[List[Choices[CT]]], List[str]]]:
+) -> Iterable[Tuple[float, float, Optional[List[Choices[CT]]], List[str], Settings]]:
     # pylint: disable=R0801
     for __i__ in range(measurement_setup.num_replications):
         try:
+            participant_condition = measurement_setup.choose_participant_condition()
             conversation = play_game(
                 partner_strategy=partner_strategy,
-                participant_condition=condition,
+                participant_condition=participant_condition,
                 game_setup=game_setup,
                 role_prompt=participant,
             )
@@ -232,16 +231,16 @@ def generate_replications(
                 game_setup.extract_choice,
                 measurement_setup.compute_freq,
                 game_setup.analyse_rounds,
+                participant_condition,
             )
         except ValueError as ex:
             logger.exception(ex)
-            yield (np.nan, np.nan, None, [str(ex)])
+            yield (np.nan, np.nan, None, [str(ex)], dict())
 
 
 def run_experiment(
     ai_participants: Dict[Group, List[RT]],
     partner_conditions: Dict[str, Strategy[CT]],
-    participant_conditions: Grid,
     measurement_setup: MeasurementSetup[CT],
     game_setup: GameSetup[CT, RT],
 ) -> RepeatedGameResults:
@@ -260,14 +259,10 @@ def run_experiment(
         )
         for group, participants in ai_participants.items()
         for participant in participants
-        for participant_condition in game_setup.participant_condition_sampling(
-            participant_conditions
-        )
         for strategy_name, strategy_fn in partner_conditions.items()
-        for score, freq, choices, history in generate_replications(
+        for score, freq, choices, history, participant_condition in generate_replications(
             participant=participant,
             partner_strategy=strategy_fn,
-            condition=participant_condition,
             measurement_setup=measurement_setup,
             game_setup=game_setup,
         )

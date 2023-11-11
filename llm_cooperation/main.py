@@ -32,7 +32,6 @@ ConfigSetting = Grid | int | Optional[int] | List[str]
 class Configuration:
     grid: Grid
     num_replications: int
-    participant_samples: Optional[int]
     experiment_names: Iterable[str]
 
 
@@ -42,12 +41,9 @@ DEFAULT_GRID: Grid = {
     "max_tokens": [openai_pygenerator.GPT_MAX_TOKENS],
 }
 
-DEFAULT_PARTICIPANT_SAMPLES = None
-
 DEFAULT_CONFIGURATION = Configuration(
     grid=DEFAULT_GRID,
     num_replications=DEFAULT_NUM_REPLICATIONS,
-    participant_samples=DEFAULT_PARTICIPANT_SAMPLES,
     experiment_names=experiments.keys(),
 )
 
@@ -64,9 +60,6 @@ def get_config() -> Configuration:
         return Configuration(
             grid=get_var("grid", DEFAULT_GRID),
             num_replications=get_var("num_replications", DEFAULT_NUM_REPLICATIONS),
-            participant_samples=get_var(
-                "participant_samples", DEFAULT_PARTICIPANT_SAMPLES
-            ),
             experiment_names=config.experiments,
         )  # type: ignore
     except ModuleNotFoundError:
@@ -107,7 +100,6 @@ def run_all() -> None:
                 experiment,
                 setup,
                 configuration.num_replications,
-                configuration.participant_samples,
             )
             logger.info("Experiment %s completed.", name)
 

@@ -1,17 +1,7 @@
-from functools import partial
-from typing import Optional
-
 import pytest
-from openai_pygenerator import Callable, content, user_message
+from openai_pygenerator import content, user_message
 
-from llm_cooperation import (
-    ModelSetup,
-    Settings,
-    completer_for,
-    exhaustive,
-    get_sampling,
-    randomized,
-)
+from llm_cooperation import ModelSetup, Settings, completer_for, exhaustive
 from llm_cooperation.main import (
     Configuration,
     Grid,
@@ -48,30 +38,12 @@ def test_setup_from_settings(mocker, settings: Settings, expected_result: ModelS
     assert result == expected_result
 
 
-@pytest.mark.parametrize(
-    ["generator", "n"],
-    [
-        (exhaustive, 6),
-        (partial(randomized, 10), 10),
-    ],
-)
-def test_settings_generator(grid, generator: Callable, n: int):
-    result = list(generator(grid))
-    assert len(result) == n
+def test_settings_generator(grid):
+    result = list(exhaustive(grid))
+    assert len(result) == 6
     for setting in result:
         for key, value in setting.items():
             assert value in grid[key]
-
-
-@pytest.mark.parametrize(
-    ["n", "is_exhaustive"],
-    [
-        (None, True),
-        (5, False),
-    ],
-)
-def test_get_sampling(n: Optional[int], is_exhaustive: bool):
-    assert (get_sampling(n) is exhaustive) == is_exhaustive
 
 
 def test_run_all(mocker, grid):
@@ -80,7 +52,7 @@ def test_run_all(mocker, grid):
     )
     mocker.patch(
         "llm_cooperation.main.get_config",
-        return_value=Configuration(grid, 30, None, experiments.keys()),
+        return_value=Configuration(grid, 30, experiments.keys()),
     )
     run_all()
     assert run_and_record.call_count == 6 * len(list(experiments.items()))

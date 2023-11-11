@@ -3,12 +3,12 @@ import re
 from dataclasses import dataclass
 from enum import Enum, auto
 from functools import partial
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 from openai_pygenerator import Completion
 
-from llm_cooperation import ModelSetup, Payoffs, Settings, get_sampling
+from llm_cooperation import ModelSetup, Payoffs, Settings, randomized
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import (
@@ -188,9 +188,7 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
-def run(
-    model_setup: ModelSetup, sample_size: int, participant_samples: Optional[int] = None
-) -> RepeatedGameResults:
+def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
     game_setup: GameSetup[DilemmaChoice, str] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_pd,
@@ -198,12 +196,14 @@ def run(
         extract_choice=extract_choice_pd,
         next_round=simultaneous.next_round,
         analyse_rounds=simultaneous.analyse_rounds,
-        participant_condition_sampling=get_sampling(participant_samples),
         model_setup=model_setup,
     )
     measurement_setup: MeasurementSetup[DilemmaChoice] = MeasurementSetup(
         num_replications=sample_size,
         compute_freq=compute_freq_pd,
+        choose_participant_condition=lambda: randomized(
+            {"chain_of_thought": [True, False]}
+        ),
     )
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
@@ -212,9 +212,6 @@ def run(
             "unconditional defect": strategy_defect,
             "tit for tat C": strategy_t4t_cooperate,
             "tit for tat D": strategy_t4t_defect,
-        },
-        participant_conditions={
-            "chain_of_thought": [True, False],
         },
         measurement_setup=measurement_setup,
         game_setup=game_setup,

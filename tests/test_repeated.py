@@ -8,10 +8,9 @@ from openai_pygenerator import content, user_message
 from llm_cooperation import (
     DEFAULT_MODEL_SETUP,
     Choice,
-    Grid,
     Group,
+    Settings,
     assistant_message,
-    exhaustive,
 )
 from llm_cooperation.experiments.dilemma import (
     Cooperate,
@@ -69,7 +68,6 @@ def test_play_game(mocker):
             extract_choice=extract_choice_mock,
             generate_instruction_prompt=prompt_generator_mock,
             model_setup=DEFAULT_MODEL_SETUP,
-            participant_condition_sampling=exhaustive,
         ),
     )
 
@@ -94,7 +92,6 @@ def test_play_game(mocker):
                         generate_instruction_prompt=prompt_generator_mock,
                         num_rounds=n,
                         model_setup=DEFAULT_MODEL_SETUP,
-                        participant_condition_sampling=exhaustive,
                     ),
                 ),
                 "test-prompt",
@@ -145,9 +142,9 @@ def test_run_experiment(mocker):
         "llm_cooperation.gametypes.repeated.generate_replications"
     )
     samples = [
-        (5, 0.5, [Cooperate], ["project green"]),
-        (3, 0.7, [Defect], ["project blue"]),
-        (6, 0.6, [Defect], ["project blue"]),
+        (5, 0.5, [Cooperate], ["project green"], {"chain_of_thought": True}),
+        (3, 0.7, [Defect], ["project blue"], {"chain_of_thought": False}),
+        (6, 0.6, [Defect], ["project blue"], {"chain_of_thought": True}),
     ]
     mock_run_sample.return_value = samples
 
@@ -159,14 +156,15 @@ def test_run_experiment(mocker):
         "strategy_A": Mock(),
         "strategy_B": Mock(),
     }
-    participant_conditions: Grid = {"chain_of_thought": [True, False]}
+    participant_condition: Settings = {"chain_of_thought": True}
 
     result: pd.DataFrame = run_experiment(
         ai_participants=ai_participants,
         partner_conditions=user_conditions,  # type: ignore
-        participant_conditions=participant_conditions,
         measurement_setup=MeasurementSetup(
-            num_replications=len(samples), compute_freq=compute_freq_pd
+            num_replications=len(samples),
+            compute_freq=compute_freq_pd,
+            choose_participant_condition=lambda: participant_condition,
         ),
         game_setup=GameSetup(
             num_rounds=6,
@@ -176,18 +174,10 @@ def test_run_experiment(mocker):
             next_round=simultaneous.next_round,
             analyse_rounds=simultaneous.analyse_rounds,
             model_setup=DEFAULT_MODEL_SETUP,
-            participant_condition_sampling=exhaustive,
         ),
     ).to_df()
-    num_participant_conditions = len(participant_conditions["chain_of_thought"])
-    assert (
-        len(result)
-        == len(samples) * len(user_conditions) * num_participant_conditions * 3
-    )
-    assert (
-        mock_run_sample.call_count
-        == len(samples) * len(user_conditions) * num_participant_conditions
-    )
+    assert len(result) == len(samples) * len(user_conditions) * 3
+    assert mock_run_sample.call_count == len(samples) * len(user_conditions)
 
 
 def test_results_to_df(results: Iterable[ResultRepeatedGame]):

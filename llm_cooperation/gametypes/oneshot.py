@@ -6,17 +6,7 @@ import numpy as np
 import pandas as pd
 from openai_pygenerator import Completion, transcript
 
-from llm_cooperation import (
-    CT,
-    RT,
-    Grid,
-    Group,
-    ModelSetup,
-    Results,
-    Settings,
-    exhaustive,
-    logger,
-)
+from llm_cooperation import CT, RT, Group, ModelSetup, Results, Settings, logger
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
 ResultSingleShotGame = Tuple[
@@ -98,15 +88,16 @@ def analyse(
     payoffs: Callable[[CT], float],
     extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[CT], float],
-) -> Tuple[float, float, Optional[CT], List[str]]:
+    participant_condition: Settings,
+) -> Tuple[float, float, Optional[CT], List[str], Settings]:
     try:
         history = transcript(conversation)
         score, ai_choice = compute_scores(list(conversation), payoffs, extract_choice)
         freq = compute_freq(ai_choice)
-        return score, freq, ai_choice, history
+        return score, freq, ai_choice, history, participant_condition
     except ValueError as e:
         logger.error("ValueError while running sample: %s", e)
-        return 0, np.nan, None, [str(e)]
+        return 0, np.nan, None, [str(e)], dict()
 
 
 def generate_replications(
@@ -117,29 +108,29 @@ def generate_replications(
     extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[CT], float],
     model_setup: ModelSetup,
-    participant_condition: Settings,
-) -> Iterable[Tuple[float, float, Optional[CT], List[str]]]:
+    choose_participant_condition: Callable[[], Settings],
+) -> Iterable[Tuple[float, float, Optional[CT], List[str], Settings]]:
     # pylint: disable=R0801
     for __i__ in range(num_replications):
+        condition = choose_participant_condition()
         conversation = play_game(
             role_prompt=prompt,
-            participant_condition=participant_condition,
+            participant_condition=condition,
             generate_instruction_prompt=generate_instruction_prompt,
             model_setup=model_setup,
         )
-        yield analyse(conversation, payoffs, extract_choice, compute_freq)
+        yield analyse(conversation, payoffs, extract_choice, compute_freq, condition)
 
 
 def run_experiment(
     ai_participants: Dict[Group, List[RT]],
-    participant_conditions: Grid,
     num_replications: int,
     generate_instruction_prompt: PromptGenerator[RT],
     payoffs: Callable[[CT], float],
     extract_choice: Callable[[Completion], CT],
     compute_freq: Callable[[CT], float],
     model_setup: ModelSetup,
-    participant_sampling: Callable[[Grid], Iterable[Settings]] = exhaustive,
+    choose_participant_condition: Callable[[], Settings],
 ) -> OneShotResults[CT, RT]:
     return OneShotResults(
         (
@@ -155,8 +146,7 @@ def run_experiment(
         )
         for group, participants in ai_participants.items()
         for participant in participants
-        for participant_condition in participant_sampling(participant_conditions)
-        for score, freq, choices, history in generate_replications(
+        for score, freq, choices, history, participant_condition in generate_replications(
             prompt=participant,
             num_replications=num_replications,
             generate_instruction_prompt=generate_instruction_prompt,
@@ -164,6 +154,6 @@ def run_experiment(
             extract_choice=extract_choice,
             compute_freq=compute_freq,
             model_setup=model_setup,
-            participant_condition=participant_condition,
+            choose_participant_condition=choose_participant_condition,
         )
     )

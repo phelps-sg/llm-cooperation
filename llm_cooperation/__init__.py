@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -65,7 +64,7 @@ class ModelSetup:
     dry_run: Optional[str]
 
 
-Experiment = Callable[[ModelSetup, int, Optional[int]], Results]
+Experiment = Callable[[ModelSetup, int], Results]
 
 DEFAULT_MODEL_SETUP = ModelSetup(
     model=openai_pygenerator.GPT_MODEL,
@@ -101,25 +100,18 @@ def settings_from_combinations(
     return settings
 
 
-def randomized(n: int, grid: Grid) -> Iterable[Settings]:
+def randomized(grid: Grid) -> Settings:
     keys = list(grid.keys())
     combinations = list(all_combinations(grid))
     num_combinations = len(combinations)
-    for __i__ in range(n):
-        random_index: int = int(np.random.randint(num_combinations))
-        yield settings_from_combinations(keys, combinations[random_index])
+    random_index: int = int(np.random.randint(num_combinations))
+    return settings_from_combinations(keys, combinations[random_index])
 
 
 def exhaustive(grid: Grid) -> Iterable[Settings]:
     variables = list(grid.keys())
     for values in all_combinations(grid):
         yield settings_from_combinations(variables, values)
-
-
-def get_sampling(n: Optional[int]) -> Callable[[Grid], Iterable[Settings]]:
-    if n is None:
-        return exhaustive
-    return functools.partial(randomized, n)
 
 
 def amount_as_str(amount: float) -> str:

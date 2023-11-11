@@ -2,12 +2,12 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 from openai_pygenerator import Completion, content, user_message
 
-from llm_cooperation import ModelSetup, Payoffs, Settings, amount_as_str, get_sampling
+from llm_cooperation import ModelSetup, Payoffs, Settings, amount_as_str
 from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
 from llm_cooperation.gametypes import alternating
 from llm_cooperation.gametypes.repeated import (
@@ -190,9 +190,7 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
         raise ValueError(f"Invalid choice combination: {player1}, {player2}")
 
 
-def run(
-    model_setup: ModelSetup, num_replications: int, participant_samples: Optional[int]
-) -> RepeatedGameResults:
+def run(model_setup: ModelSetup, num_replications: int) -> RepeatedGameResults:
     game_setup: GameSetup[UltimatumChoice, str] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_ultimatum,
@@ -201,15 +199,14 @@ def run(
         next_round=next_round_ultimatum,
         analyse_rounds=alternating.analyse_rounds,
         model_setup=model_setup,
-        participant_condition_sampling=get_sampling(participant_samples),
     )
     measurement_setup: MeasurementSetup[UltimatumChoice] = MeasurementSetup(
         num_replications=num_replications,
         compute_freq=compute_freq_ultimatum,
+        choose_participant_condition=lambda: dict(),  # pylint: disable=unnecessary-lambda
     )
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
-        participant_conditions={"chain-of-thought": [True, False]},
         partner_conditions={"cooperate": strategy_cooperate},
         measurement_setup=measurement_setup,
         game_setup=game_setup,

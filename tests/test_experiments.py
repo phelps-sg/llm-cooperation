@@ -9,7 +9,6 @@ from llm_cooperation.experiments import (
     create_results_dir,
     run_and_record_experiment,
 )
-from llm_cooperation.main import DEFAULT_PARTICIPANT_SAMPLES
 
 
 def test_create_results_dir(mocker):
@@ -36,10 +35,9 @@ def test_run_and_record_experiment(mocker):
     name = "test_experiment"
     run_and_record_experiment(
         name,
-        run=lambda __setup__, __ns__, __np__: results_mock,
+        run=lambda __setup__, __n__: results_mock,
         model_setup=DEFAULT_MODEL_SETUP,
         sample_size=DEFAULT_NUM_REPLICATIONS,
-        participant_samples=DEFAULT_PARTICIPANT_SAMPLES,
     )
 
     pickle_filename = os.path.join(results_dir, f"{name}.pickle")

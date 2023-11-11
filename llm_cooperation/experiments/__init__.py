@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable
 
 from llm_cooperation import DEFAULT_MODEL_SETUP, Experiment, Group, ModelSetup, Results
 
@@ -97,9 +97,8 @@ def run_and_record_experiment(
     run: Experiment,
     model_setup: ModelSetup = DEFAULT_MODEL_SETUP,
     sample_size: int = DEFAULT_NUM_REPLICATIONS,
-    participant_samples: Optional[int] = None,
 ) -> Results:
-    results = run(model_setup, sample_size, participant_samples)
+    results = run(model_setup, sample_size)
     logger.info("Experiment complete.")
     df = results.to_df()
     results_dir = create_results_dir(model_setup)

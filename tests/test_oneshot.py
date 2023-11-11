@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Grid, Group
+from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Grid, Group, Settings
 from llm_cooperation.gametypes.oneshot import (
     OneShotResults,
     ResultSingleShotGame,
@@ -18,16 +18,16 @@ from llm_cooperation.gametypes.oneshot import (
 )
 
 
-def test_run_experiment(mocker, participant_conditions: Grid):
+def test_run_experiment(mocker):
     mock_choice = Mock(spec=Choice)
 
     mock_run_sample = mocker.patch(
         "llm_cooperation.gametypes.oneshot.generate_replications"
     )
     samples = [
-        (5, 0.5, mock_choice, ["project green"]),
-        (3, 0.7, mock_choice, ["project blue"]),
-        (6, 0.6, mock_choice, ["project blue"]),
+        (5, 0.5, mock_choice, ["project green"], {"chain_of_thought": True}),
+        (3, 0.7, mock_choice, ["project blue"], {"chain_of_thought": False}),
+        (6, 0.6, mock_choice, ["project blue"], {"chain_of_thought": True}),
     ]
     mock_run_sample.return_value = samples
 
@@ -38,16 +38,16 @@ def test_run_experiment(mocker, participant_conditions: Grid):
 
     result: pd.DataFrame = run_experiment(
         ai_participants=ai_participants,
-        participant_conditions=participant_conditions,
         num_replications=len(samples),
         generate_instruction_prompt=Mock(),
         payoffs=Mock(),
         extract_choice=Mock(),
         compute_freq=Mock(),
         model_setup=DEFAULT_MODEL_SETUP,
+        choose_participant_condition=lambda: {"chain_of_thought": True},
     ).to_df()
-    assert len(result) == 3 * len(samples) * 2
-    assert mock_run_sample.call_count == len(samples) * 2
+    assert len(result) == 3 * len(samples)
+    assert mock_run_sample.call_count == len(samples)
 
 
 def test_generate_samples(mocker):
@@ -60,13 +60,13 @@ def test_generate_samples(mocker):
     result = list(
         generate_replications(
             prompt="test-prompt",
-            participant_condition=dict(),
             num_replications=test_n,
             generate_instruction_prompt=Mock(),
             payoffs=Mock(),
             extract_choice=Mock(),
             compute_freq=Mock(),
             model_setup=DEFAULT_MODEL_SETUP,
+            choose_participant_condition=lambda: {"chain_of_thought": True},
         )
     )
     assert len(result) == test_n
@@ -118,14 +118,16 @@ def test_analyse(mocker):
     mock_compute_freq.return_value = test_freq
 
     test_messages = [f"test{i}" for i in range(3)]
+    test_condition: Settings = {"chain_of_thought": True}
 
     result = analyse(
         conversation=[user_message(c) for c in test_messages],
         payoffs=Mock(),
         extract_choice=Mock(),
         compute_freq=mock_compute_freq,
+        participant_condition=test_condition,
     )
-    assert result == (test_score, test_freq, mock_choice, test_messages)
+    assert result == (test_score, test_freq, mock_choice, test_messages, test_condition)
 
     mock_compute_freq_with_ex = Mock()
     test_err_message = "test exception"
@@ -135,8 +137,9 @@ def test_analyse(mocker):
         payoffs=Mock(),
         extract_choice=Mock(),
         compute_freq=mock_compute_freq_with_ex,
+        participant_condition=test_condition,
     )
-    assert len(err_result) == 4
+    assert len(err_result) == 5
     assert np.isnan(err_result[1])
     assert err_result[2] is None
     assert test_err_message in err_result[3]

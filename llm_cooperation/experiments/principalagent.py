@@ -1,11 +1,10 @@
 import re
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 from openai_pygenerator import Completion, content
 
-from llm_cooperation import Group, ModelSetup, Settings, get_sampling
+from llm_cooperation import Group, ModelSetup, Settings, randomized
 from llm_cooperation.experiments import run_and_record_experiment
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
@@ -113,21 +112,21 @@ def compute_freq_pa(__choice__: PAChoice) -> float:
 def run(
     model_setup: ModelSetup,
     num_replications: int,
-    participant_samples: Optional[int] = None,
 ) -> OneShotResults[PAChoice, PARole]:
     return run_experiment(
         ai_participants={Group.Control: [PARTICIPANT_OPENAI, PARTICIPANT_SHELL]},
-        participant_conditions={
-            "shared_with_user": [True, False],
-            "shared_with_principal": [True, False],
-        },
+        choose_participant_condition=lambda: randomized(
+            {
+                "shared_with_user": [True, False],
+                "shared_with_principal": [True, False],
+            }
+        ),
         num_replications=num_replications,
         generate_instruction_prompt=get_prompt_principal_agent,
         extract_choice=extract_choice_pa,
         payoffs=payoffs_pa,
         compute_freq=compute_freq_pa,
         model_setup=model_setup,
-        participant_sampling=get_sampling(participant_samples),
     )
 
 
