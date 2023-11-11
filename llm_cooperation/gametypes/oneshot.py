@@ -144,7 +144,7 @@ def run_experiment(
         (
             group,
             participant,
-            condition,
+            participant_condition,
             score,
             freq,
             choices,
@@ -154,7 +154,7 @@ def run_experiment(
         )
         for group, participants in ai_participants.items()
         for participant in participants
-        for condition in exhaustive(participant_conditions)
+        for participant_condition in exhaustive(participant_conditions)
         for score, freq, choices, history in generate_replications(
             prompt=participant,
             num_samples=num_samples,
@@ -163,6 +163,6 @@ def run_experiment(
             extract_choice=extract_choice,
             compute_freq=compute_freq,
             model_setup=model_setup,
-            participant_condition=condition,
+            participant_condition=participant_condition,
         )
     )
