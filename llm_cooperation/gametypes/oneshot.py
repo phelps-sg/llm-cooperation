@@ -109,7 +109,7 @@ def analyse(
         return 0, np.nan, None, [str(e)]
 
 
-def generate_samples(
+def generate_replications(
     prompt: RT,
     num_samples: int,
     generate_instruction_prompt: PromptGenerator[RT],
@@ -155,7 +155,7 @@ def run_experiment(
         for group, participants in ai_participants.items()
         for participant in participants
         for condition in exhaustive(participant_conditions)
-        for score, freq, choices, history in generate_samples(
+        for score, freq, choices, history in generate_replications(
             prompt=participant,
             num_samples=num_samples,
             generate_instruction_prompt=generate_instruction_prompt,

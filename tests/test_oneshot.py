@@ -12,7 +12,7 @@ from llm_cooperation.gametypes.oneshot import (
     ResultSingleShotGame,
     analyse,
     compute_scores,
-    generate_samples,
+    generate_replications,
     play_game,
     run_experiment,
 )
@@ -21,7 +21,9 @@ from llm_cooperation.gametypes.oneshot import (
 def test_run_experiment(mocker, participant_conditions: Grid):
     mock_choice = Mock(spec=Choice)
 
-    mock_run_sample = mocker.patch("llm_cooperation.gametypes.oneshot.generate_samples")
+    mock_run_sample = mocker.patch(
+        "llm_cooperation.gametypes.oneshot.generate_replications"
+    )
     samples = [
         (5, 0.5, mock_choice, ["project green"]),
         (3, 0.7, mock_choice, ["project blue"]),
@@ -56,7 +58,7 @@ def test_generate_samples(mocker):
     mocker.patch("llm_cooperation.gametypes.oneshot.play_game", return_value=[])
     test_n = 3
     result = list(
-        generate_samples(
+        generate_replications(
             prompt="test-prompt",
             participant_condition=dict(),
             num_samples=test_n,

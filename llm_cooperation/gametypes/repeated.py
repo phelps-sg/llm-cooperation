@@ -210,7 +210,7 @@ def analyse(
         return 0, np.nan, None, [str(e)]
 
 
-def generate_samples(
+def generate_replications(
     participant: RT,
     condition: Settings,
     partner_strategy: Strategy[CT],
@@ -264,7 +264,7 @@ def run_experiment(
             participant_conditions
         )
         for strategy_name, strategy_fn in partner_conditions.items()
-        for score, freq, choices, history in generate_samples(
+        for score, freq, choices, history in generate_replications(
             participant=participant,
             partner_strategy=strategy_fn,
             condition=participant_condition,

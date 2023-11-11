@@ -142,7 +142,7 @@ def test_next_round():
 
 def test_run_experiment(mocker):
     mock_run_sample = mocker.patch(
-        "llm_cooperation.gametypes.repeated.generate_samples"
+        "llm_cooperation.gametypes.repeated.generate_replications"
     )
     samples = [
         (5, 0.5, [Cooperate], ["project green"]),
