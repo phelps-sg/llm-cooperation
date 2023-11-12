@@ -5,11 +5,22 @@ import os
 from pathlib import Path
 from typing import Callable
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Experiment, Group, ModelSetup, Results
+from openai_pygenerator import Enum
+
+from llm_cooperation import (
+    DEFAULT_MODEL_SETUP,
+    Experiment,
+    Group,
+    ModelSetup,
+    Results,
+    Settings,
+)
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_NUM_REPLICATIONS = 30
+
+CONDITION_CASE = "case"
 
 AI_PARTICIPANTS = {
     #
@@ -80,6 +91,12 @@ AI_PARTICIPANTS = {
 }
 
 
+class Case(Enum):
+    UPPER = "upper"
+    LOWER = "lower"
+    STANDARD = "standard"
+
+
 def create_dir(directory: str) -> str:
     Path(directory).mkdir(parents=True, exist_ok=True)
     return directory
@@ -116,3 +133,15 @@ def run_and_record_experiment(
     save_to(df.to_csv, "csv")
 
     return results
+
+
+def apply_case_condition(condition: Settings, prompt: str) -> str:
+    if condition[CONDITION_CASE] == Case.UPPER.value:
+        return prompt.upper()
+    elif condition[CONDITION_CASE] == Case.LOWER.value:
+        return prompt.lower()
+    elif condition[CONDITION_CASE] == Case.STANDARD.value:
+        return prompt
+    raise ValueError(
+        f"Unrecognized condition {CONDITION_CASE} for {condition[CONDITION_CASE]}"
+    )

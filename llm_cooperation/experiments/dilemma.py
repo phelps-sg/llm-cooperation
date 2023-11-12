@@ -9,7 +9,13 @@ import numpy as np
 from openai_pygenerator import Completion
 
 from llm_cooperation import ModelSetup, Payoffs, Settings, randomized
-from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
+from llm_cooperation.experiments import (
+    AI_PARTICIPANTS,
+    CONDITION_CASE,
+    Case,
+    apply_case_condition,
+    run_and_record_experiment,
+)
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import (
     Choices,
@@ -34,7 +40,6 @@ PAYOFFS_PD = np.array([[R, S], [T, P]])
 
 CONDITION_LABEL = "label"
 CONDITION_LABELS_REVERSED = "labels_reversed"
-CONDITION_CASE = "case"
 CONDITION_CHAIN_OF_THOUGHT = "chain_of_thought"
 CONDITION_DEFECT_FIRST = "defect_first"
 
@@ -68,12 +73,6 @@ class Label(Enum):
     NUMERALS = "numerals"
 
 
-class Case(Enum):
-    UPPER = "upper"
-    LOWER = "lower"
-    STANDARD = "standard"
-
-
 def labels(condition: Settings) -> Tuple[str, str]:
     value = condition[CONDITION_LABEL]
     result: Optional[List[str]] = None
@@ -101,6 +100,10 @@ def defect_label(condition: Settings) -> str:
 
 
 def get_prompt_pd(condition: Settings, role_prompt: str) -> str:
+    return apply_case_condition(condition, get_prompt_base(condition, role_prompt))
+
+
+def get_prompt_base(condition: Settings, role_prompt: str) -> str:
     cooperate = f"""'Project {cooperate_label(condition)}'"""
     defect = f"""'Project {defect_label(condition)}'"""
 
@@ -125,7 +128,7 @@ Explanation: [why I made my choice]
     For each round, state your choice without explanation in the format below:
     {choice_template}"""
 
-    result = f"""{role_prompt}
+    return f"""{role_prompt}
 This is a study of investment choices in different situations.
 You will be making your choices with an investment partner
 who is another person. She is in the next room waiting.
@@ -147,15 +150,6 @@ of them of your choice.
 {round_instructions()}
 Here is your investment partner. What is your choice in the first round?
 """
-    if condition[CONDITION_CASE] == Case.UPPER.value:
-        result = result.upper()
-    elif condition[CONDITION_CASE] == Case.LOWER.value:
-        result = result.lower()
-    elif condition[CONDITION_CASE] != Case.STANDARD.value:
-        raise ValueError(
-            f"Unrecognized condition {CONDITION_CASE} for {condition[CONDITION_CASE]}"
-        )
-    return result
 
 
 # pylint: disable=unused-argument
