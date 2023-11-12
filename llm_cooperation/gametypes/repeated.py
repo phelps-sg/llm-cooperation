@@ -245,7 +245,7 @@ def generate_replications(
             )
         except ValueError as ex:
             logger.exception(ex)
-            yield (np.nan, np.nan, None, [str(ex)], dict())
+            yield np.nan, np.nan, None, [str(ex)], dict()
 
 
 def run_experiment(
