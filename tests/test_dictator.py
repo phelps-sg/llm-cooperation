@@ -1,6 +1,7 @@
 import pytest
 from openai_pygenerator import user_message
 
+from llm_cooperation import Settings
 from llm_cooperation.experiments.dictator import (
     BLACK,
     BLUE,
@@ -39,7 +40,8 @@ def test_dictator_choice(
     expected_payoff_allo,
 ):
     choice = DictatorChoice(enum)
-    assert expected_description in choice.description.lower()
+    condition: Settings = dict()
+    assert expected_description in choice.description(condition).lower()
     assert choice.payoff_ego == expected_payoff_ego
     assert choice.payoff_allo == expected_payoff_allo
 
@@ -57,9 +59,13 @@ def test_dictator_choice(
     ],
 )
 def test_extract_choice_dictator(text: str, expected_result: DictatorChoice):
-    assert extract_choice_dictator(user_message(text)) == expected_result
-    assert extract_choice_dictator(user_message(text.upper())) == expected_result
-    assert extract_choice_dictator(user_message(text.lower())) == expected_result
+    assert extract_choice_dictator(dict(), user_message(text)) == expected_result
+    assert (
+        extract_choice_dictator(dict(), user_message(text.upper())) == expected_result
+    )
+    assert (
+        extract_choice_dictator(dict(), user_message(text.lower())) == expected_result
+    )
 
 
 @pytest.mark.parametrize(

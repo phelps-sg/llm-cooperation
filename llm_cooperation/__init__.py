@@ -39,8 +39,7 @@ class Choice(Protocol):
     def value(self) -> Hashable:
         ...
 
-    @property
-    def description(self) -> str:
+    def description(self, participant_condition: Settings) -> str:
         ...
 
 

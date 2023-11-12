@@ -75,9 +75,10 @@ def play_game(
 def compute_scores(
     conversation: List[Completion],
     payoffs: Callable[[CT], float],
-    extract_choice: Callable[[Completion], CT],
+    extract_choice: Callable[[Settings, Completion], CT],
+    participant_condition: Settings,
 ) -> Tuple[float, CT]:
-    ai_choice = extract_choice(conversation[1])
+    ai_choice = extract_choice(participant_condition, conversation[1])
     logger.debug("ai_choice = %s", ai_choice)
     score = payoffs(ai_choice)
     return score, ai_choice
@@ -86,13 +87,15 @@ def compute_scores(
 def analyse(
     conversation: List[Completion],
     payoffs: Callable[[CT], float],
-    extract_choice: Callable[[Completion], CT],
+    extract_choice: Callable[[Settings, Completion], CT],
     compute_freq: Callable[[CT], float],
     participant_condition: Settings,
 ) -> Tuple[float, float, Optional[CT], List[str], Settings]:
     try:
         history = transcript(conversation)
-        score, ai_choice = compute_scores(list(conversation), payoffs, extract_choice)
+        score, ai_choice = compute_scores(
+            list(conversation), payoffs, extract_choice, participant_condition
+        )
         freq = compute_freq(ai_choice)
         return score, freq, ai_choice, history, participant_condition
     except ValueError as e:
@@ -105,7 +108,7 @@ def generate_replications(
     num_replications: int,
     generate_instruction_prompt: PromptGenerator[RT],
     payoffs: Callable[[CT], float],
-    extract_choice: Callable[[Completion], CT],
+    extract_choice: Callable[[Settings, Completion], CT],
     compute_freq: Callable[[CT], float],
     model_setup: ModelSetup,
     choose_participant_condition: Callable[[], Settings],
@@ -127,7 +130,7 @@ def run_experiment(
     num_replications: int,
     generate_instruction_prompt: PromptGenerator[RT],
     payoffs: Callable[[CT], float],
-    extract_choice: Callable[[Completion], CT],
+    extract_choice: Callable[[Settings, Completion], CT],
     compute_freq: Callable[[CT], float],
     model_setup: ModelSetup,
     choose_participant_condition: Callable[[], Settings],

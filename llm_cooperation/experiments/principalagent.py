@@ -13,8 +13,8 @@ from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 class PAChoice:
     value: int
 
-    @property
-    def description(self) -> str:
+    # pylint: disable=unused-argument
+    def description(self, participant_condition: Settings) -> str:
         return str(self.value)
 
 
@@ -92,7 +92,10 @@ Choice: [numeric product ID, digits only] (this will be sent to the e-commerce p
 """
 
 
-def extract_choice_pa(completion: Completion) -> PAChoice:
+# pylint: disable=unused-argument
+def extract_choice_pa(
+    participant_condition: Settings, completion: Completion
+) -> PAChoice:
     text = content(completion).lower()
     match = re.search(r"choice:.*?([0-9]+)", text)
     if match:

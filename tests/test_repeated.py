@@ -40,7 +40,7 @@ from llm_cooperation.gametypes.repeated import (
 from llm_cooperation.gametypes.simultaneous import next_round
 
 
-def test_play_game(mocker):
+def test_play_game(mocker, base_condition: Settings):
     instruction_prompt = "You are a helpful assistant etc."
     assistant_prompt = assistant_message("My choice is cooperate")
     test_response = assistant_message("test-response")
@@ -58,7 +58,7 @@ def test_play_game(mocker):
 
     result = play_game(
         role_prompt="test-prompt",
-        participant_condition=dict(),
+        participant_condition=base_condition,
         partner_strategy=strategy_mock,
         game_setup=GameSetup(
             num_rounds=n,
@@ -93,6 +93,7 @@ def test_play_game(mocker):
                         num_rounds=n,
                         model_setup=DEFAULT_MODEL_SETUP,
                     ),
+                    participant_condition=base_condition,
                 ),
                 "test-prompt",
             )
@@ -102,12 +103,13 @@ def test_play_game(mocker):
     assert result == expected_messages
 
 
-def test_compute_scores(conversation):
+def test_compute_scores(conversation, base_condition):
     scores, moves = compute_scores(
         conversation,
         payoffs=payoffs_pd,
         extract_choice=extract_choice_pd,
         analyse_rounds=simultaneous.analyse_rounds,
+        participant_condition=base_condition,
     )
     assert moves == [
         Choices(Defect, Cooperate),
@@ -119,20 +121,24 @@ def test_compute_scores(conversation):
     assert scores == Scores(ai=S + T + P + P + R, user=T + S + P + P + R)
 
 
-def test_next_round():
+def test_next_round(base_condition: Settings):
+    test_choice = "my choice"
     my_payoff = 99
     other_payoff = 66
     choice = Mock(Choice)
-    choice.description = "my choice"
+    choice.description = lambda __condition__: test_choice
     state = Mock(GameState)
     state.messages = "mock"
     state.game_setup = Mock(GameSetup)
-    state.game_setup.extract_choice = lambda _: "other choice"
+    state.game_setup.extract_choice = (
+        lambda __condition__, __completion__: "other choice"
+    )
     state.game_setup.payoffs = lambda __i__, __j__: (my_payoff, other_payoff)
+    state.participant_condition = base_condition
     result = next_round(lambda _: choice, state, "")  # type: ignore
     assert len(result) == 1
     result_content = content(result[0])
-    assert choice.description in result_content
+    assert test_choice in result_content
     assert str(my_payoff) in result_content
     assert str(other_payoff) in result_content
 
@@ -180,24 +186,31 @@ def test_run_experiment(mocker):
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)
 
 
-def test_results_to_df(results: Iterable[ResultRepeatedGame]):
+def test_results_to_df(
+    results: Iterable[ResultRepeatedGame], with_chain_of_thought: Settings
+):
     df = RepeatedGameResults(results).to_df()
     assert len(df.columns) == 10
     # pylint: disable=R0801
     assert len(df) == 2
     assert df["Group"][0] == str(Group.Altruistic)
     assert df["Group"][1] == str(Group.Selfish)
-    assert df["Participant Condition"][0] == {"chain_of_thought": True}
+    assert df["Participant Condition"][0] == with_chain_of_thought
 
 
 @pytest.fixture
-def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame[str]]:
+def results(
+    cooperate_choices,
+    defect_choices,
+    base_condition: Settings,
+    with_chain_of_thought: Settings,
+) -> Iterable[ResultRepeatedGame[str]]:
     return iter(
         [
             (
                 Group.Altruistic,
                 "You are altruistic",
-                {"chain_of_thought": True},
+                with_chain_of_thought,
                 "unconditional cooperate",
                 30,
                 0.2,
@@ -209,7 +222,7 @@ def results(cooperate_choices, defect_choices) -> Iterable[ResultRepeatedGame[st
             (
                 Group.Selfish,
                 "You are selfish",
-                {"chain_of_thought": False},
+                base_condition,
                 "unconditional cooperate",
                 60,
                 0.5,

@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from openai_pygenerator import content
 
-from llm_cooperation import Payoffs, amount_as_str
+from llm_cooperation import Payoffs, Settings, amount_as_str
 from llm_cooperation.experiments.ultimatum import (
     MAX_AMOUNT,
     Accept,
@@ -77,9 +77,14 @@ def test_amount_from_str(amount_str: str, expected: float):
         ("$0", True, ProposerChoice(0)),
     ],
 )
-def test_extract_choice(text: str, proposer: bool, expected: UltimatumChoice):
+def test_extract_choice(
+    text: str, proposer: bool, expected: UltimatumChoice, base_condition: Settings
+):
     assert (
-        extract_choice_ultimatum(make_completion(text), proposer=proposer) == expected
+        extract_choice_ultimatum(
+            base_condition, make_completion(text), proposer=proposer
+        )
+        == expected
     )
 
 
@@ -142,7 +147,9 @@ def test_ultimatum_choice():
     [(Accept, ProposerChoice(5.0)), (Reject, ProposerChoice(10.0))],
 )
 def test_next_round_ultimatum(
-    user_response: UltimatumChoice, user_proposal: UltimatumChoice
+    user_response: UltimatumChoice,
+    user_proposal: UltimatumChoice,
+    base_condition: Settings,
 ):
     # pylint: disable=unused-argument
     def test_strategy(state: GameState, **kwargs: bool) -> UltimatumChoice:
@@ -153,5 +160,11 @@ def test_next_round_ultimatum(
 
     state = Mock()
     result = content(next_round_ultimatum(test_strategy, state, "")[0]).lower()
-    assert f"your partner proposes {user_proposal.description.lower()}" in result
-    assert f"your partner responded with {user_response.description.lower()}" in result
+    assert (
+        f"your partner proposes {user_proposal.description(base_condition).lower()}"
+        in result
+    )
+    assert (
+        f"your partner responded with {user_response.description(base_condition).lower()}"
+        in result
+    )

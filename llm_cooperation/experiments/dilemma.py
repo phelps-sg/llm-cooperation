@@ -3,7 +3,7 @@ import re
 from dataclasses import dataclass
 from enum import Enum, auto
 from functools import partial
-from typing import List
+from typing import List, Optional, Tuple
 
 import numpy as np
 from openai_pygenerator import Completion
@@ -32,8 +32,11 @@ assert 2 * R > T + S
 
 PAYOFFS_PD = np.array([[R, S], [T, P]])
 
-COLOR_COOPERATE = "Green"
-COLOR_DEFECT = "Blue"
+CONDITION_LABEL = "label"
+CONDITION_LABELS_REVERSED = "labels_reversed"
+CONDITION_CASE = "case"
+CONDITION_CHAIN_OF_THOUGHT = "chain_of_thought"
+CONDITION_DEFECT_FIRST = "defect_first"
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +50,8 @@ class DilemmaEnum(Enum):
 class DilemmaChoice:
     value: DilemmaEnum
 
-    @property
-    def description(self) -> str:
-        return move_as_str(self.value)
+    def description(self, participant_condition: Settings) -> str:
+        return move_as_str(self.value, participant_condition)
 
     @property
     def as_int(self) -> int:
@@ -60,10 +62,54 @@ Cooperate = DilemmaChoice(DilemmaEnum.C)
 Defect = DilemmaChoice(DilemmaEnum.D)
 
 
+class Label(Enum):
+    COLORS = "colors"
+    NUMBERS = "numbers"
+    NUMERALS = "numerals"
+
+
+class Case(Enum):
+    UPPER = "upper"
+    LOWER = "lower"
+    STANDARD = "standard"
+
+
+def labels(condition: Settings) -> Tuple[str, str]:
+    value = condition[CONDITION_LABEL]
+    result: Optional[List[str]] = None
+    if value == Label.COLORS.value:
+        result = ["Green", "Blue"]
+    elif value == Label.NUMBERS.value:
+        result = ["One", "Two"]
+    elif value == Label.NUMERALS.value:
+        result = ["1", "2"]
+    if result is not None:
+        if condition[CONDITION_LABELS_REVERSED]:
+            return result[0], result[1]
+        return result[0], result[1]
+    raise ValueError(
+        f"Unknown value {condition[CONDITION_LABEL]} for {CONDITION_LABEL}"
+    )
+
+
+def cooperate_label(condition: Settings) -> str:
+    return labels(condition)[0]
+
+
+def defect_label(condition: Settings) -> str:
+    return labels(condition)[1]
+
+
 def get_prompt_pd(condition: Settings, role_prompt: str) -> str:
-    cooperate = f"""'Project {COLOR_COOPERATE}'"""
-    defect = f"""'Project {COLOR_DEFECT}'"""
-    choice_template = f"""Choice: [{defect} | {cooperate}]"""
+    cooperate = f"""'Project {cooperate_label(condition)}'"""
+    defect = f"""'Project {defect_label(condition)}'"""
+
+    choices = (
+        f"""{defect} | {cooperate}]"""
+        if condition[CONDITION_DEFECT_FIRST]
+        else f"""{cooperate} | {defect}"""
+    )
+    choice_template = f"""Choice: [{choices}]"""
 
     def payout(amount: int) -> str:
         return f"${amount}.00"
@@ -79,7 +125,7 @@ Explanation: [why I made my choice]
     For each round, state your choice without explanation in the format below:
     {choice_template}"""
 
-    return f"""{role_prompt}
+    result = f"""{role_prompt}
 This is a study of investment choices in different situations.
 You will be making your choices with an investment partner
 who is another person. She is in the next room waiting.
@@ -101,6 +147,15 @@ of them of your choice.
 {round_instructions()}
 Here is your investment partner. What is your choice in the first round?
 """
+    if condition[CONDITION_CASE] == Case.UPPER.value:
+        result = result.upper()
+    elif condition[CONDITION_CASE] == Case.LOWER.value:
+        result = result.lower()
+    elif condition[CONDITION_CASE] != Case.STANDARD.value:
+        raise ValueError(
+            f"Unrecognized condition {CONDITION_CASE} for {condition[CONDITION_CASE]}"
+        )
+    return result
 
 
 # pylint: disable=unused-argument
@@ -126,7 +181,7 @@ def strategy_t4t(
         return initial_choice
     previous_message = state.messages[-1]
     logger.debug("previous_message = %s", previous_message)
-    ai_choice = extract_choice_pd(previous_message)
+    ai_choice = extract_choice_pd(state.participant_condition, previous_message)
     logger.debug("ai_choice = %s", ai_choice)
     if ai_choice == Cooperate:
         return Cooperate
@@ -138,31 +193,35 @@ strategy_t4t_defect = partial(strategy_t4t, Defect)
 strategy_t4t_cooperate = partial(strategy_t4t, Cooperate)
 
 
-def move_as_str(move: DilemmaEnum) -> str:
+def move_as_str(move: DilemmaEnum, participant_condition: Settings) -> str:
     if move == DilemmaEnum.D:
-        return f"Project {COLOR_DEFECT}"
+        return f"Project {defect_label(participant_condition)}"
     elif move == DilemmaEnum.C:
-        return f"Project {COLOR_COOPERATE}"
+        return f"Project {cooperate_label(participant_condition)}"
     raise ValueError(f"Invalid choice {move}")
 
 
-def choice_from_str(choice: str) -> DilemmaChoice:
-    if choice == COLOR_COOPERATE.lower():
+def choice_from_str(choice: str, participant_condition: Settings) -> DilemmaChoice:
+    if choice == cooperate_label(participant_condition).lower():
         return Cooperate
-    elif choice == COLOR_DEFECT.lower():
+    elif choice == defect_label(participant_condition).lower():
         return Defect
     else:
         raise ValueError(f"Cannot determine choice from {choice}")
 
 
-def extract_choice_pd(completion: Completion, **__kwargs__: bool) -> DilemmaChoice:
-    regex: str = rf".*project ({COLOR_COOPERATE}|{COLOR_DEFECT})".lower()
+def extract_choice_pd(
+    participant_condition: Settings, completion: Completion, **__kwargs__: bool
+) -> DilemmaChoice:
+    cooperate = cooperate_label(participant_condition)
+    defect = defect_label(participant_condition)
+    regex: str = rf".*project ({cooperate}|{defect})".lower()
     choice_regex: str = f"choice:{regex}"
     logger.debug("completion = %s", completion)
     lower = completion["content"].lower().strip()
 
     def matched_choice(m: re.Match) -> DilemmaChoice:
-        return choice_from_str(m.group(1))
+        return choice_from_str(m.group(1), participant_condition)
 
     match = re.search(choice_regex, lower)
     if match is not None:
@@ -202,7 +261,13 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
         num_replications=sample_size,
         compute_freq=compute_freq_pd,
         choose_participant_condition=lambda: randomized(
-            {"chain_of_thought": [True, False]}
+            {
+                CONDITION_CHAIN_OF_THOUGHT: [True, False],
+                CONDITION_LABEL: [label.value for label in Label],
+                CONDITION_CASE: [case.value for case in Case],
+                CONDITION_DEFECT_FIRST: [True, False],
+                CONDITION_LABELS_REVERSED: [True, False],
+            }
         ),
     )
     return run_experiment(

@@ -3,11 +3,10 @@ from unittest.mock import Mock
 
 import pytest
 from openai_pygenerator import Completion, logger
+from pytest_lazyfixture import lazy_fixture
 
 from llm_cooperation import DEFAULT_MODEL_SETUP, Payoffs
 from llm_cooperation.experiments.dilemma import (
-    COLOR_COOPERATE,
-    COLOR_DEFECT,
     Cooperate,
     Defect,
     DilemmaChoice,
@@ -32,7 +31,11 @@ from tests.common import make_completion
 
 
 @pytest.mark.parametrize(
-    "condition", [{"chain_of_thought": True}, {"chain_of_thought": False}]
+    "condition",
+    [
+        lazy_fixture("base_condition"),
+        lazy_fixture("with_chain_of_thought"),
+    ],
 )
 def test_get_instruction_prompt(condition: Settings):
     role_prompt = "You are a helpful assistant."
@@ -48,23 +51,26 @@ def test_get_instruction_prompt(condition: Settings):
 
 
 @pytest.mark.parametrize(
-    "text, expected_move",
+    "condition, text, expected_move",
     [
-        (f"project {COLOR_COOPERATE}", Cooperate),
-        (f"project {COLOR_DEFECT}", Defect),
-        (f"Project {COLOR_COOPERATE.lower()}", Cooperate),
-        (f"Project {COLOR_DEFECT.lower()}", Defect),
-        (f"'project {COLOR_COOPERATE.upper()}'", Cooperate),
-        (f"Choice: 'project {COLOR_COOPERATE.upper()}'", Cooperate),
+        (lazy_fixture("base_condition"), "project Green", Cooperate),
+        (lazy_fixture("base_condition"), "project Blue", Defect),
+        (lazy_fixture("base_condition"), "Project green", Cooperate),
+        (lazy_fixture("base_condition"), "Project blue", Defect),
+        (lazy_fixture("base_condition"), "'project GREEN'", Cooperate),
+        (lazy_fixture("base_condition"), "Choice: PROJECT BLUE", Defect),
         (
-            f"""Explanation: Because project {COLOR_DEFECT} is bad for me.
-Choice: Project {COLOR_DEFECT}""",
+            lazy_fixture("base_condition"),
+            """Explanation: Because project Green is bad for me.
+Choice: Project Blue""",
             Defect,
         ),
     ],
 )
-def test_extract_choice_pd(text: str, expected_move: DilemmaChoice):
-    move = extract_choice_pd(make_completion(text))
+def test_extract_choice_pd(
+    condition: Settings, text: str, expected_move: DilemmaChoice
+):
+    move = extract_choice_pd(condition, make_completion(text))
     assert move == expected_move
 
 
@@ -100,9 +106,10 @@ def test_payoffs(
         (strategy_t4t_defect, 2, Defect),
     ],
 )
-def test_strategy(strategy, index, expected, conversation):
+def test_strategy(strategy, index, expected, conversation, base_condition):
     state = Mock(spec=["messages"])
     state.messages = conversation[:index]
+    state.participant_condition = base_condition
     assert strategy(state) == expected
 
 
@@ -115,12 +122,12 @@ def test_dilemma_choice():
     assert Cooperate != Defect
 
 
-def test_move_as_str():
-    assert COLOR_COOPERATE in move_as_str(DilemmaEnum.C)
-    assert COLOR_DEFECT in move_as_str(DilemmaEnum.D)
+def test_move_as_str(base_condition):
+    assert "Green" in move_as_str(DilemmaEnum.C, base_condition)
+    assert "Blue" in move_as_str(DilemmaEnum.D, base_condition)
 
 
-def test_run_repeated_game(mocker):
+def test_run_repeated_game(mocker, base_condition):
     completions = [
         {"role": "assistant", "content": "project green"},
     ]
@@ -128,11 +135,12 @@ def test_run_repeated_game(mocker):
         "openai_pygenerator.openai_pygenerator.generate_completions",
         return_value=completions,
     )
+    condition = base_condition
     conversation: List[Completion] = list(
         play_game(
             partner_strategy=strategy_defect,
             role_prompt="You are a participant in a psychology experiment",
-            participant_condition={"chain_of_thought": False},
+            participant_condition=condition,
             game_setup=GameSetup(
                 num_rounds=3,
                 generate_instruction_prompt=get_prompt_pd,
@@ -146,4 +154,4 @@ def test_run_repeated_game(mocker):
     )
     assert len(conversation) == 7
     # pylint: disable=unsubscriptable-object
-    assert Defect.description in conversation[-1]["content"]
+    assert Defect.description(condition) in conversation[-1]["content"]

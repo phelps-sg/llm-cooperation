@@ -3,7 +3,7 @@ from typing import List
 
 from openai_pygenerator import Completion
 
-from llm_cooperation import CT
+from llm_cooperation import CT, Settings
 from llm_cooperation.gametypes.repeated import (
     ChoiceExtractor,
     Choices,
@@ -19,10 +19,11 @@ def analyse_rounds(
     history: List[Completion],
     payoffs: PayoffFunction[CT],
     extract_choice: ChoiceExtractor[CT],
-) -> List[ResultForRound]:
+    participant_condition: Settings,
+) -> List[ResultForRound[CT]]:
     num_messages = len(history)
     return [
-        analyse_round(i, history, payoffs, extract_choice)
+        analyse_round(i, history, payoffs, extract_choice, participant_condition)
         for i in range(num_messages - 1)
     ]
 
@@ -32,7 +33,8 @@ def analyse_round(
     conversation: List[Completion],
     payoffs: PayoffFunction[CT],
     extract_choice: ChoiceExtractor[CT],
-) -> ResultForRound:
+    participant_condition: Settings,
+) -> ResultForRound[CT]:
     """
         Analyse round of this form:
 
@@ -48,8 +50,12 @@ def analyse_round(
     user_index = i if users_turn else i + 1
     ai_completion = conversation[ai_index]
     user_completion = conversation[user_index]
-    ai_choice = extract_choice(ai_completion, proposer=not users_turn)
-    user_choice = extract_choice(user_completion, proposer=users_turn)
+    ai_choice = extract_choice(
+        participant_condition, ai_completion, proposer=not users_turn
+    )
+    user_choice = extract_choice(
+        participant_condition, user_completion, proposer=users_turn
+    )
     logger.debug("user_choice = %s", user_choice)
     logger.debug("ai_choice = %s", ai_choice)
     user, ai = payoffs(user_choice, ai_choice)

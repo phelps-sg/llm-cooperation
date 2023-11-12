@@ -73,13 +73,14 @@ def test_generate_samples(mocker):
     assert result == [mock_result_row for __i__ in range(3)]
 
 
-def test_compute_scores():
+def test_compute_scores(base_condition: Settings):
     mock_choice = Mock(spec=Choice)
     mock_payoff = 0.5
     result = compute_scores(
         conversation=[user_message("prompt"), user_message("answer")],
         payoffs=lambda _: mock_payoff,
-        extract_choice=lambda _: mock_choice,
+        extract_choice=lambda __condition__, __completion__: mock_choice,
+        participant_condition=base_condition,
     )
     assert result == (mock_payoff, mock_choice)
 
@@ -187,3 +188,8 @@ def results() -> Iterable[ResultSingleShotGame]:
 @pytest.fixture
 def participant_conditions() -> Grid:
     return {"+": [True, False]}
+
+
+@pytest.fixture
+def base_condition() -> Settings:
+    return dict()

@@ -18,7 +18,7 @@ from llm_cooperation.experiments.principalagent import (
     ],
 )
 def test_extract_choice_pa(test_input: str, expected: int):
-    result = extract_choice_pa(user_message(test_input))
+    result = extract_choice_pa(dict(), user_message(test_input))
     assert result.value == expected
 
 

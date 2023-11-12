@@ -36,18 +36,18 @@ class Scores:
     ai: float
 
 
-@dataclass(frozen=True)
-class RoundsSetup:
-    analyse_round: RoundAnalyser
-    analyse_rounds: RoundsAnalyser
+# @dataclass(frozen=True)
+# class RoundsSetup:
+#     analyse_round: RoundAnalyser
+#     analyse_rounds: RoundsAnalyser
 
 
 @dataclass(frozen=True)
 class GameSetup(Generic[CT, RT]):
     num_rounds: int
     generate_instruction_prompt: PromptGenerator[RT]
-    next_round: RoundGenerator
-    analyse_rounds: RoundsAnalyser
+    next_round: RoundGenerator[CT, RT]
+    analyse_rounds: RoundsAnalyser[CT]
     payoffs: PayoffFunction[CT]
     extract_choice: ChoiceExtractor[CT]
     model_setup: ModelSetup
@@ -65,10 +65,13 @@ class GameState(Generic[CT, RT]):
     messages: List[Completion]
     round: int
     game_setup: GameSetup[CT, RT]
+    participant_condition: Settings
 
 
 class ChoiceExtractor(Protocol[CT_co]):
-    def __call__(self, completion: Completion, **kwargs: bool) -> CT_co:
+    def __call__(
+        self, participant_condition: Settings, completion: Completion, **kwargs: bool
+    ) -> CT_co:
         ...
 
 
@@ -91,12 +94,10 @@ class PayoffFunction(Protocol[CT_contra]):
 
 
 # PromptGenerator = Callable[[ParticipantCondition, str], str]
-ResultForRound = Tuple[Scores, Choices]
-RoundAnalyser = Callable[
-    [int, List[Completion], PayoffFunction, ChoiceExtractor], ResultForRound
-]
+ResultForRound = Tuple[Scores, Choices[CT]]
 RoundsAnalyser = Callable[
-    [List[Completion], PayoffFunction, ChoiceExtractor], List[ResultForRound]
+    [List[Completion], PayoffFunction, ChoiceExtractor[CT], Settings],
+    List[ResultForRound[CT]],
 ]
 
 ResultRepeatedGame = Tuple[
@@ -166,7 +167,9 @@ def play_game(
         completion = gpt_completions(messages, 1)
         messages += completion
         partner_response = game_setup.next_round(
-            partner_strategy, GameState(messages, i, game_setup), role_prompt
+            partner_strategy,
+            GameState(messages, i, game_setup, participant_condition),
+            role_prompt,
         )
         messages += partner_response
     return messages
@@ -176,13 +179,16 @@ def compute_scores(
     conversation: List[Completion],
     payoffs: PayoffFunction[CT_contra],
     extract_choice: ChoiceExtractor[CT],
-    analyse_rounds: RoundsAnalyser,
+    analyse_rounds: RoundsAnalyser[CT],
+    participant_condition: Settings,
 ) -> Tuple[Scores, List[Choices[CT]]]:
     conversation = conversation[1:]
     num_messages = len(conversation)
     if num_messages % 2 != 0:
         raise ValueError("Invalid conversation: The number of messages should be even.")
-    results = analyse_rounds(conversation, payoffs, extract_choice)
+    results = analyse_rounds(
+        conversation, payoffs, extract_choice, participant_condition
+    )
     user_score = sum((scores.user for scores, _ in results))
     ai_score = sum((scores.ai for scores, _ in results))
     return Scores(user_score, ai_score), [choices for _, choices in results]
@@ -199,7 +205,11 @@ def analyse(
     try:
         history = transcript(conversation)
         result: Tuple[Scores, List[Choices[CT]]] = compute_scores(
-            list(conversation), payoffs, extract_choice, analyse_rounds
+            list(conversation),
+            payoffs,
+            extract_choice,
+            analyse_rounds,
+            participant_condition,
         )
         scores, choices = result
         freq = compute_freq(choices)

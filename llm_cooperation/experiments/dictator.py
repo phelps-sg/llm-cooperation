@@ -43,8 +43,8 @@ reverse_color_mappings: Dict[str, DictatorEnum] = {
 class DictatorChoice:
     value: DictatorEnum
 
-    @property
-    def description(self) -> str:
+    # pylint: disable=unused-argument
+    def description(self, participant_condition: Settings) -> str:
         return project(color_mappings[self.value])
 
     @property
@@ -116,7 +116,9 @@ Choice: [{choice_menu()}]
 """
 
 
-def extract_choice_dictator(completion: Completion) -> DictatorChoice:
+def extract_choice_dictator(
+    participant_condition: Settings, completion: Completion
+) -> DictatorChoice:
     text = content(completion).lower()
     match = re.search(r"choice:\s*(.*)", text)
     if match:

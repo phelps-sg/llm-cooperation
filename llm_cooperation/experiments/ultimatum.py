@@ -42,8 +42,8 @@ class ProposerChoice:
     def amount(self) -> float:
         return self.value
 
-    @property
-    def description(self) -> str:
+    # pylint: disable=unused-argument
+    def description(self, participant_condition: Settings) -> str:
         return amount_as_str(self.value)
 
 
@@ -51,8 +51,8 @@ class ProposerChoice:
 class ResponderChoice:
     value: ResponderEnum
 
-    @property
-    def description(self) -> str:
+    # pylint: disable=unused-argument
+    def description(self, participant_condition: Settings) -> str:
         if self.value is ResponderEnum.Accept:
             return "Accept"
         elif self.value is ResponderEnum.Reject:
@@ -76,11 +76,13 @@ def next_round_ultimatum(
 ) -> List[Completion]:
     user_response = partner_strategy(state, propose=False)
     user_proposal = partner_strategy(state, propose=True)
+    response_description = user_response.description(state.participant_condition)
+    proposal_description = user_proposal.description(state.participant_condition)
     return [
         user_message(
-            f"Your partner responded with {user_response.description} in that round. "
+            f"Your partner responded with {response_description} in that round. "
             "Now we will move on to the next round. "
-            f"Your partner proposes {user_proposal.description}. "
+            f"Your partner proposes {proposal_description}. "
             "Respond with [Accept|Reject] and then make your next proposal."
         )
     ]
@@ -158,7 +160,9 @@ def extract_proposer_choice(completion: Completion) -> ProposerChoice:
     return ProposerChoice(amount_from_str(content(completion)))
 
 
-def extract_choice_ultimatum(completion: Completion, **kwargs: bool) -> UltimatumChoice:
+def extract_choice_ultimatum(
+    participant_condition: Settings, completion: Completion, **kwargs: bool
+) -> UltimatumChoice:
     if kwargs["proposer"]:
         return extract_proposer_choice(completion)
     else:

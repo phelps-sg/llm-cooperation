@@ -3,7 +3,7 @@ from typing import List
 import pytest
 from openai_pygenerator import Completion, user_message
 
-from llm_cooperation import assistant_message
+from llm_cooperation import Settings, assistant_message
 from llm_cooperation.experiments.ultimatum import (
     Accept,
     ProposerChoice,
@@ -26,14 +26,21 @@ from llm_cooperation.gametypes.repeated import Choices
     ],
 )
 def test_analyse_round(
-    i: int,
-    expected_choices: Choices,
-    alternating_history,
+    i: int, expected_choices: Choices, alternating_history, base_condition: Settings
 ):
     __scores__, choices = alternating.analyse_round(
-        i, alternating_history, payoffs_ultimatum, extract_choice_ultimatum
+        i,
+        alternating_history,
+        payoffs_ultimatum,
+        extract_choice_ultimatum,
+        base_condition,
     )
     assert choices == expected_choices
+
+
+@pytest.fixture
+def base_condition() -> Settings:
+    return dict()
 
 
 @pytest.fixture
