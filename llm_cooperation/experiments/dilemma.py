@@ -209,7 +209,7 @@ def extract_choice_pd(
 ) -> DilemmaChoice:
     cooperate = cooperate_label(participant_condition)
     defect = defect_label(participant_condition)
-    regex: str = rf".*project ({cooperate}|{defect})".lower()
+    regex: str = rf".*project\s+({cooperate}|{defect})".lower()
     choice_regex: str = f"choice:{regex}"
     logger.debug("completion = %s", completion)
     lower = completion["content"].lower().strip()

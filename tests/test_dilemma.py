@@ -59,7 +59,7 @@ def test_get_instruction_prompt(condition: Settings):
         (lazy_fixture("with_numerals"), "project 1", Cooperate),
         (lazy_fixture("with_numerals"), "project 2", Defect),
         (lazy_fixture("base_condition"), "project Blue", Defect),
-        (lazy_fixture("base_condition"), "Project green", Cooperate),
+        (lazy_fixture("base_condition"), "Project  green", Cooperate),
         (lazy_fixture("base_condition"), "Project blue", Defect),
         (lazy_fixture("base_condition"), "'project GREEN'", Cooperate),
         (lazy_fixture("base_condition"), "Choice: PROJECT BLUE", Defect),
