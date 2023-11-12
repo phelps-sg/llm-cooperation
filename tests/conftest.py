@@ -3,7 +3,7 @@ from typing import List
 import pytest
 from openai_pygenerator import Completion
 
-from llm_cooperation import Settings
+from llm_cooperation import ConfigValue, Settings
 from llm_cooperation.experiments import CONDITION_CASE, Case
 from llm_cooperation.experiments.dilemma import (
     CONDITION_CHAIN_OF_THOUGHT,
@@ -45,8 +45,24 @@ def base_condition() -> Settings:
     }
 
 
+def modify_condition(
+    base_condition: Settings, key: str, value: ConfigValue
+) -> Settings:
+    result = base_condition.copy()
+    result[key] = value
+    return result
+
+
 @pytest.fixture
 def with_chain_of_thought(base_condition: Settings) -> Settings:
-    result = base_condition.copy()
-    result[CONDITION_CHAIN_OF_THOUGHT] = True
-    return result
+    return modify_condition(base_condition, CONDITION_CHAIN_OF_THOUGHT, True)
+
+
+@pytest.fixture
+def with_numerals(base_condition: Settings) -> Settings:
+    return modify_condition(base_condition, CONDITION_LABEL, Label.NUMERALS.value)
+
+
+@pytest.fixture
+def with_numbers(base_condition: Settings) -> Settings:
+    return modify_condition(base_condition, CONDITION_LABEL, Label.NUMBERS.value)
