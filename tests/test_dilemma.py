@@ -126,9 +126,19 @@ def test_dilemma_choice():
     assert Cooperate != Defect
 
 
-def test_move_as_str(base_condition):
-    assert "Green" in move_as_str(DilemmaEnum.C, base_condition)
-    assert "Blue" in move_as_str(DilemmaEnum.D, base_condition)
+@pytest.mark.parametrize(
+    ["condition", "choice", "expected"],
+    [
+        (lazy_fixture("base_condition"), DilemmaEnum.C, "Green"),
+        (lazy_fixture("base_condition"), DilemmaEnum.D, "Blue"),
+        (lazy_fixture("with_numerals"), DilemmaEnum.C, "1"),
+        (lazy_fixture("with_numerals"), DilemmaEnum.D, "2"),
+        (lazy_fixture("with_numbers"), DilemmaEnum.C, "One"),
+        (lazy_fixture("with_numbers"), DilemmaEnum.D, "Two"),
+    ],
+)
+def test_move_as_str(condition: Settings, choice: DilemmaEnum, expected: str):
+    assert expected in move_as_str(choice, condition)
 
 
 def test_run_repeated_game(mocker, base_condition):
