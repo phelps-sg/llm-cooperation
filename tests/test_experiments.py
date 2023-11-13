@@ -2,10 +2,13 @@ import os
 from unittest.mock import MagicMock
 
 import pandas as pd
+import pytest
+from pytest_lazyfixture import lazy_fixture
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, ModelSetup, Results
+from llm_cooperation import DEFAULT_MODEL_SETUP, ModelSetup, Results, Settings
 from llm_cooperation.experiments import (
     DEFAULT_NUM_REPLICATIONS,
+    apply_case_condition,
     create_results_dir,
     run_and_record_experiment,
 )
@@ -45,3 +48,17 @@ def test_run_and_record_experiment(mocker):
 
     csv_filename = os.path.join(results_dir, f"{name}.csv")
     df_mock.to_csv.assert_called_once_with(csv_filename)
+
+
+@pytest.mark.parametrize(
+    ["condition", "expected"],
+    [
+        (lazy_fixture("with_upper_case"), "HELLO"),
+        (lazy_fixture("with_lower_case"), "hello"),
+        (lazy_fixture("base_condition"), "Hello"),
+    ],
+)
+def test_apply_case_condition(condition: Settings, expected: str):
+    test_prompt = "Hello"
+    result = apply_case_condition(condition, test_prompt)
+    assert result == expected

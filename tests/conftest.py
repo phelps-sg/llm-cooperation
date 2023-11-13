@@ -66,3 +66,13 @@ def with_numerals(base_condition: Settings) -> Settings:
 @pytest.fixture
 def with_numbers(base_condition: Settings) -> Settings:
     return modify_condition(base_condition, CONDITION_LABEL, Label.NUMBERS.value)
+
+
+@pytest.fixture
+def with_upper_case(base_condition: Settings) -> Settings:
+    return modify_condition(base_condition, CONDITION_CASE, Case.UPPER.value)
+
+
+@pytest.fixture
+def with_lower_case(base_condition: Settings) -> Settings:
+    return modify_condition(base_condition, CONDITION_CASE, Case.LOWER.value)
