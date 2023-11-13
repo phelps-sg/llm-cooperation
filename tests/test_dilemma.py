@@ -7,6 +7,7 @@ from pytest_lazyfixture import lazy_fixture
 
 from llm_cooperation import DEFAULT_MODEL_SETUP, Payoffs
 from llm_cooperation.experiments.dilemma import (
+    CONDITION_LABELS_REVERSED,
     Cooperate,
     Defect,
     DilemmaChoice,
@@ -15,6 +16,8 @@ from llm_cooperation.experiments.dilemma import (
     R,
     S,
     T,
+    cooperate_label,
+    defect_label,
     extract_choice_pd,
     get_prompt_pd,
     move_as_str,
@@ -28,6 +31,7 @@ from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import GameSetup, play_game
 from llm_cooperation.main import Settings
 from tests.common import make_completion
+from tests.conftest import modify_condition
 
 
 @pytest.mark.parametrize(
@@ -139,6 +143,43 @@ def test_dilemma_choice():
 )
 def test_move_as_str(condition: Settings, choice: DilemmaEnum, expected: str):
     assert expected in move_as_str(choice, condition)
+
+
+@pytest.mark.parametrize(
+    ["condition", "expected"],
+    [
+        (lazy_fixture("base_condition"), "Green"),
+        (lazy_fixture("with_numbers"), "One"),
+        (lazy_fixture("with_numerals"), "1"),
+    ],
+)
+def test_cooperate_label(condition: Settings, expected: str):
+    assert cooperate_label(condition) == expected
+
+
+@pytest.mark.parametrize(
+    ["condition", "expected"],
+    [
+        (lazy_fixture("base_condition"), "Blue"),
+        (lazy_fixture("with_numbers"), "Two"),
+        (lazy_fixture("with_numerals"), "2"),
+    ],
+)
+def test_defect_label(condition: Settings, expected: str):
+    assert defect_label(condition) == expected
+
+
+@pytest.mark.parametrize(
+    ["condition", "expected"],
+    [
+        (lazy_fixture("base_condition"), "Blue"),
+        (lazy_fixture("with_numerals"), "2"),
+        (lazy_fixture("with_numbers"), "Two"),
+    ],
+)
+def test_cooperate_label_reversed(condition: Settings, expected: str):
+    condition_reversed = modify_condition(condition, CONDITION_LABELS_REVERSED, True)
+    assert cooperate_label(condition_reversed) == expected
 
 
 def test_run_repeated_game(mocker, base_condition):

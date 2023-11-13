@@ -84,7 +84,7 @@ def labels(condition: Settings) -> Tuple[str, str]:
         result = ["1", "2"]
     if result is not None:
         if condition[CONDITION_LABELS_REVERSED]:
-            return result[0], result[1]
+            return result[1], result[0]
         return result[0], result[1]
     raise ValueError(
         f"Unknown value {condition[CONDITION_LABEL]} for {CONDITION_LABEL}"
