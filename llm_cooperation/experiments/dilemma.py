@@ -103,16 +103,19 @@ def get_prompt_pd(condition: Settings, role_prompt: str) -> str:
     return apply_case_condition(condition, get_prompt_base(condition, role_prompt))
 
 
-def get_prompt_base(condition: Settings, role_prompt: str) -> str:
-    cooperate = f"""'Project {cooperate_label(condition)}'"""
-    defect = f"""'Project {defect_label(condition)}'"""
-
+def get_choice_template(condition: Settings, cooperate: str, defect: str) -> str:
     choices = (
         f"""{defect} | {cooperate}]"""
         if condition[CONDITION_DEFECT_FIRST]
         else f"""{cooperate} | {defect}"""
     )
-    choice_template = f"""Choice: [{choices}]"""
+    return f"""Choice: [{choices}]"""
+
+
+def get_prompt_base(condition: Settings, role_prompt: str) -> str:
+    cooperate = f"""'Project {cooperate_label(condition)}'"""
+    defect = f"""'Project {defect_label(condition)}'"""
+    choice_template = get_choice_template(condition, cooperate, defect)
 
     def payout(amount: int) -> str:
         return f"${amount}.00"

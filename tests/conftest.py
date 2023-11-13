@@ -76,3 +76,8 @@ def with_upper_case(base_condition: Settings) -> Settings:
 @pytest.fixture
 def with_lower_case(base_condition: Settings) -> Settings:
     return modify_condition(base_condition, CONDITION_CASE, Case.LOWER.value)
+
+
+@pytest.fixture
+def with_defect_first(base_condition: Settings) -> Settings:
+    return modify_condition(base_condition, CONDITION_DEFECT_FIRST, True)

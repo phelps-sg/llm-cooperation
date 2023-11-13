@@ -1,3 +1,4 @@
+import re
 from typing import List
 from unittest.mock import Mock
 
@@ -19,6 +20,7 @@ from llm_cooperation.experiments.dilemma import (
     cooperate_label,
     defect_label,
     extract_choice_pd,
+    get_choice_template,
     get_prompt_pd,
     move_as_str,
     payoffs_pd,
@@ -52,6 +54,19 @@ def test_get_instruction_prompt(condition: Settings):
     for payoff in [R, S, T, P]:
         assert f"${payoff}.00" in prompt
     assert role_prompt in prompt
+
+
+@pytest.mark.parametrize(
+    ["condition", "expected_regex"],
+    [
+        (lazy_fixture("base_condition"), r"blue.*green"),
+        (lazy_fixture("with_defect_first"), r"green.*blue"),
+    ],
+)
+def test_get_choice_template(condition: Settings, expected_regex: str):
+    result = get_choice_template(condition, "blue", "green").lower()
+    match = re.search(expected_regex, result)
+    assert match is not None
 
 
 @pytest.mark.parametrize(
