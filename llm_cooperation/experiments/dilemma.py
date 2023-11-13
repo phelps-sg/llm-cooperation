@@ -42,6 +42,7 @@ CONDITION_LABEL = "label"
 CONDITION_LABELS_REVERSED = "labels_reversed"
 CONDITION_CHAIN_OF_THOUGHT = "chain_of_thought"
 CONDITION_DEFECT_FIRST = "defect_first"
+CONDITION_PRONOUN = "pronoun"
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,12 @@ class Label(Enum):
     COLORS = "colors"
     NUMBERS = "numbers"
     NUMERALS = "numerals"
+
+
+class Pronoun(Enum):
+    HE = "he"
+    SHE = "she"
+    THEY = "they"
 
 
 def labels(condition: Settings) -> Tuple[str, str]:
@@ -112,10 +119,23 @@ def get_choice_template(condition: Settings, cooperate: str, defect: str) -> str
     return f"""Choice: [{choices}]"""
 
 
+def get_pronoun_phrasing(condition: Settings) -> str:
+    if condition[CONDITION_PRONOUN] == Pronoun.HE.value:
+        return "He is"
+    elif condition[CONDITION_PRONOUN] == Pronoun.SHE.value:
+        return "She is"
+    elif condition[CONDITION_PRONOUN] == Pronoun.THEY.value:
+        return "They are"
+    raise ValueError(
+        f"Invalid value {condition[CONDITION_PRONOUN]} for {CONDITION_PRONOUN}"
+    )
+
+
 def get_prompt_base(condition: Settings, role_prompt: str) -> str:
     cooperate = f"""'Project {cooperate_label(condition)}'"""
     defect = f"""'Project {defect_label(condition)}'"""
     choice_template = get_choice_template(condition, cooperate, defect)
+    pronoun_phrase = get_pronoun_phrasing(condition)
 
     def payout(amount: int) -> str:
         return f"${amount}.00"
@@ -134,7 +154,7 @@ Explanation: [why I made my choice]
     return f"""{role_prompt}
 This is a study of investment choices in different situations.
 You will be making your choices with an investment partner
-who is another person. She is in the next room waiting.
+who is another person. {pronoun_phrase} in the next room waiting.
 In a minute I will take you there to meet your investment partner.
 You and your partner will be choosing between two investment projects and
 you will do so for a total of {NUM_ROUNDS} rounds, where in each round both you and
@@ -199,6 +219,7 @@ def move_as_str(move: DilemmaEnum, participant_condition: Settings) -> str:
 
 
 def choice_from_str(choice: str, participant_condition: Settings) -> DilemmaChoice:
+    logger.debug("participant_condition = %s", participant_condition)
     if choice == cooperate_label(participant_condition).lower():
         return Cooperate
     elif choice == defect_label(participant_condition).lower():
@@ -210,6 +231,7 @@ def choice_from_str(choice: str, participant_condition: Settings) -> DilemmaChoi
 def extract_choice_pd(
     participant_condition: Settings, completion: Completion, **__kwargs__: bool
 ) -> DilemmaChoice:
+    logger.debug("participant_condition = %s", participant_condition)
     cooperate = cooperate_label(participant_condition)
     defect = defect_label(participant_condition)
     regex: str = rf".*project\s+({cooperate}|{defect})".lower()
@@ -262,6 +284,7 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
                 CONDITION_CHAIN_OF_THOUGHT: [True, False],
                 CONDITION_LABEL: [label.value for label in Label],
                 CONDITION_CASE: [case.value for case in Case],
+                CONDITION_PRONOUN: [pronoun.value for pronoun in Pronoun],
                 CONDITION_DEFECT_FIRST: [True, False],
                 CONDITION_LABELS_REVERSED: [True, False],
             }

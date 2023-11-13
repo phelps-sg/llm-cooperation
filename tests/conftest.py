@@ -10,7 +10,9 @@ from llm_cooperation.experiments.dilemma import (
     CONDITION_DEFECT_FIRST,
     CONDITION_LABEL,
     CONDITION_LABELS_REVERSED,
+    CONDITION_PRONOUN,
     Label,
+    Pronoun,
 )
 
 COLOR_COOPERATE = "Green"
@@ -42,6 +44,7 @@ def base_condition() -> Settings:
         CONDITION_CHAIN_OF_THOUGHT: False,
         CONDITION_DEFECT_FIRST: False,
         CONDITION_CASE: Case.STANDARD.value,
+        CONDITION_PRONOUN: Pronoun.SHE.value,
     }
 
 

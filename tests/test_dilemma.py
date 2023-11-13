@@ -9,11 +9,13 @@ from pytest_lazyfixture import lazy_fixture
 from llm_cooperation import DEFAULT_MODEL_SETUP, Payoffs
 from llm_cooperation.experiments.dilemma import (
     CONDITION_LABELS_REVERSED,
+    CONDITION_PRONOUN,
     Cooperate,
     Defect,
     DilemmaChoice,
     DilemmaEnum,
     P,
+    Pronoun,
     R,
     S,
     T,
@@ -22,6 +24,7 @@ from llm_cooperation.experiments.dilemma import (
     extract_choice_pd,
     get_choice_template,
     get_prompt_pd,
+    get_pronoun_phrasing,
     move_as_str,
     payoffs_pd,
     strategy_cooperate,
@@ -67,6 +70,19 @@ def test_get_choice_template(condition: Settings, expected_regex: str):
     result = get_choice_template(condition, "blue", "green").lower()
     match = re.search(expected_regex, result)
     assert match is not None
+
+
+@pytest.mark.parametrize(
+    "pronoun, expected",
+    [
+        (Pronoun.HE.value, "he"),
+        (Pronoun.SHE.value, "she"),
+        (Pronoun.THEY.value, "they"),
+    ],
+)
+def test_get_pronoun_phrasing(base_condition, pronoun: str, expected: str):
+    condition = modify_condition(base_condition, CONDITION_PRONOUN, pronoun)
+    assert expected.lower() in get_pronoun_phrasing(condition).lower()
 
 
 @pytest.mark.parametrize(
