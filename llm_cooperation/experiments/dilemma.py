@@ -3,12 +3,12 @@ import re
 from dataclasses import dataclass
 from enum import Enum, auto
 from functools import partial
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Type
 
 import numpy as np
 from openai_pygenerator import Completion
 
-from llm_cooperation import ModelSetup, Payoffs, Settings, randomized
+from llm_cooperation import ConfigValue, ModelSetup, Payoffs, Settings, randomized
 from llm_cooperation.experiments import (
     AI_PARTICIPANTS,
     CONDITION_CASE,
@@ -78,6 +78,10 @@ class Pronoun(Enum):
     HE = "he"
     SHE = "she"
     THEY = "they"
+
+
+def all_values(enum_type: Type[Enum]) -> List[ConfigValue]:
+    return [v.value for v in enum_type]
 
 
 def labels(condition: Settings) -> Tuple[str, str]:
@@ -282,9 +286,9 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
         choose_participant_condition=lambda: randomized(
             {
                 CONDITION_CHAIN_OF_THOUGHT: [True, False],
-                CONDITION_LABEL: [label.value for label in Label],
-                CONDITION_CASE: [case.value for case in Case],
-                CONDITION_PRONOUN: [pronoun.value for pronoun in Pronoun],
+                CONDITION_LABEL: all_values(Label),
+                CONDITION_CASE: all_values(Case),
+                CONDITION_PRONOUN: all_values(Pronoun),
                 CONDITION_DEFECT_FIRST: [True, False],
                 CONDITION_LABELS_REVERSED: [True, False],
             }
