@@ -96,7 +96,7 @@ dependencies:
   - h11=0.14.0=pyhd8ed1ab_0
   - h2=4.1.0=pyhd8ed1ab_0
   - hpack=4.0.0=pyh9f0ad1d_0
-  - httpcore=1.0.1=pyhd8ed1ab_0
+  - httpcore=1.0.2=pyhd8ed1ab_0
   - httpx=0.25.1=pyhd8ed1ab_0
   - hyperframe=6.0.1=pyhd8ed1ab_0
   - icu=73.2=h59595ed_0
@@ -203,6 +203,7 @@ dependencies:
   - mdurl=0.1.0=pyhd8ed1ab_0
   - mistune=3.0.2=pyhd8ed1ab_0
   - mock=5.1.0=pyhd8ed1ab_0
+  - msgpack-python=1.0.6=py310hd41b1e2_0
   - multidict=6.0.4=py310h2372a71_1
   - munkres=1.1.4=pyh9f0ad1d_0
   - mypy=1.7.0=py310h2372a71_0
@@ -215,6 +216,7 @@ dependencies:
   - nbconvert-pandoc=7.11.0=pyhd8ed1ab_0
   - nbformat=5.9.2=pyhd8ed1ab_0
   - ncurses=6.4=h59595ed_2
+  - neovim=0.3.1=pyhd8ed1ab_3
   - nest-asyncio=1.5.8=pyhd8ed1ab_0
   - nltk=3.8.1=pyhd8ed1ab_0
   - nodeenv=1.8.0=pyhd8ed1ab_0
@@ -267,6 +269,7 @@ dependencies:
   - pygments=2.16.1=pyhd8ed1ab_0
   - pyjwt=2.8.0=pyhd8ed1ab_0
   - pylint=3.0.2=pyhd8ed1ab_0
+  - pynvim=0.4.3=pyhd8ed1ab_1
   - pyopenssl=22.1.0=pyhd8ed1ab_0
   - pyparsing=3.1.1=pyhd8ed1ab_0
   - pyppeteer=1.0.2=pyhd8ed1ab_0
@@ -380,5 +383,5 @@ dependencies:
   - zstd=1.5.5=hfc55251_0
   - pip:
       - openai==0.28.1
-      - openai-pygenerator==0.5.5
+      - openai-pygenerator==0.5.6
       - returns==0.22.0
