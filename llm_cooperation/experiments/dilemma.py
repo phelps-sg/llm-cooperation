@@ -42,9 +42,9 @@ from llm_cooperation.experiments import (
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import (
     Choices,
+    ExperimentSetup,
     GameSetup,
     GameState,
-    MeasurementSetup,
     RepeatedGameResults,
     run_experiment,
 )
@@ -303,7 +303,7 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
         analyse_rounds=simultaneous.analyse_rounds,
         model_setup=model_setup,
     )
-    measurement_setup: MeasurementSetup[DilemmaChoice] = MeasurementSetup(
+    experiment_setup: ExperimentSetup[DilemmaChoice] = ExperimentSetup(
         num_replications=sample_size,
         compute_freq=compute_freq_pd,
         choose_participant_condition=lambda: randomized(
@@ -325,7 +325,7 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
             "tit for tat C": strategy_t4t_cooperate,
             "tit for tat D": strategy_t4t_defect,
         },
-        measurement_setup=measurement_setup,
+        experiment_setup=experiment_setup,
         game_setup=game_setup,
     )
 

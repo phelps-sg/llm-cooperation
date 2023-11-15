@@ -77,7 +77,7 @@ class GameSetup(Generic[CT, RT]):
 
 
 @dataclass(frozen=True)
-class MeasurementSetup(Generic[CT]):
+class ExperimentSetup(Generic[CT]):
     num_replications: int
     compute_freq: CooperationFrequencyFunction[CT]
     choose_participant_condition: Callable[[], Settings]
@@ -245,7 +245,7 @@ def analyse(
 def generate_replications(
     participant: RT,
     partner_strategy: Strategy[CT],
-    measurement_setup: MeasurementSetup[CT],
+    measurement_setup: ExperimentSetup[CT],
     game_setup: GameSetup[CT, RT],
 ) -> Iterable[Tuple[float, float, Optional[List[Choices[CT]]], List[str], Settings]]:
     # pylint: disable=R0801
@@ -274,7 +274,7 @@ def generate_replications(
 def run_experiment(
     ai_participants: Dict[Group, List[RT]],
     partner_conditions: Dict[str, Strategy[CT]],
-    measurement_setup: MeasurementSetup[CT],
+    experiment_setup: ExperimentSetup[CT],
     game_setup: GameSetup[CT, RT],
 ) -> RepeatedGameResults:
     return RepeatedGameResults(
@@ -296,7 +296,7 @@ def run_experiment(
         for score, freq, choices, history, participant_condition in generate_replications(
             participant=participant,
             partner_strategy=strategy_fn,
-            measurement_setup=measurement_setup,
+            measurement_setup=experiment_setup,
             game_setup=game_setup,
         )
     )

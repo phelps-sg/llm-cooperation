@@ -35,9 +35,9 @@ from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experime
 from llm_cooperation.gametypes import alternating
 from llm_cooperation.gametypes.repeated import (
     Choices,
+    ExperimentSetup,
     GameSetup,
     GameState,
-    MeasurementSetup,
     RepeatedGameResults,
     Strategy,
     run_experiment,
@@ -227,7 +227,7 @@ def run(model_setup: ModelSetup, num_replications: int) -> RepeatedGameResults:
         analyse_rounds=alternating.analyse_rounds,
         model_setup=model_setup,
     )
-    measurement_setup: MeasurementSetup[UltimatumChoice] = MeasurementSetup(
+    measurement_setup: ExperimentSetup[UltimatumChoice] = ExperimentSetup(
         num_replications=num_replications,
         compute_freq=compute_freq_ultimatum,
         choose_participant_condition=lambda: dict(),  # pylint: disable=unnecessary-lambda
@@ -235,7 +235,7 @@ def run(model_setup: ModelSetup, num_replications: int) -> RepeatedGameResults:
     return run_experiment(
         ai_participants=AI_PARTICIPANTS,
         partner_conditions={"cooperate": strategy_cooperate},
-        measurement_setup=measurement_setup,
+        experiment_setup=measurement_setup,
         game_setup=game_setup,
     )
 

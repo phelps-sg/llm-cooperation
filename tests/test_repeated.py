@@ -50,9 +50,9 @@ from llm_cooperation.experiments.dilemma import (
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import (
     Choices,
+    ExperimentSetup,
     GameSetup,
     GameState,
-    MeasurementSetup,
     RepeatedGameResults,
     ResultRepeatedGame,
     Scores,
@@ -190,7 +190,7 @@ def test_run_experiment(mocker):
     result: pd.DataFrame = run_experiment(
         ai_participants=ai_participants,
         partner_conditions=user_conditions,  # type: ignore
-        measurement_setup=MeasurementSetup(
+        experiment_setup=ExperimentSetup(
             num_replications=len(samples),
             compute_freq=compute_freq_pd,
             choose_participant_condition=lambda: participant_condition,
