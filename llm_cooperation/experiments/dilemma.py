@@ -25,7 +25,7 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import Enum, auto
-from functools import partial
+from functools import lru_cache, partial
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -71,6 +71,8 @@ CONDITION_DEFECT_FIRST = "defect_first"
 CONDITION_PRONOUN = "pronoun"
 CONDITION_ROLE = "role"
 CONDITION_GROUP = "group"
+
+SEED_VALUE = 101  # Ensure same participants are used across all experiments
 
 logger = logging.getLogger(__name__)
 
@@ -295,6 +297,30 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
+@lru_cache()
+def create_participants(num_participant_samples: int) -> List[Participant]:
+    participant_conditions = GROUP_PROMPT_CONDITIONS
+    random_attributes: Grid = {
+        CONDITION_CHAIN_OF_THOUGHT: [True, False],
+        CONDITION_LABEL: all_values(Label),
+        CONDITION_CASE: all_values(Case),
+        CONDITION_PRONOUN: all_values(Pronoun),
+        CONDITION_DEFECT_FIRST: [True, False],
+        CONDITION_LABELS_REVERSED: [True, False],
+    }
+    result = list(
+        participants(
+            participant_conditions,
+            random_attributes,
+            num_participant_samples,
+            seed=SEED_VALUE,
+        )
+    )
+    for i, participant in enumerate(result):
+        participant["id"] = i
+    return result
+
+
 def run(
     model_setup: ModelSetup, num_replications: int, num_participant_samples: int
 ) -> RepeatedGameResults:
@@ -311,19 +337,8 @@ def run(
         num_replications=num_replications,
         compute_freq=compute_freq_pd,
     )
-    participant_conditions = GROUP_PROMPT_CONDITIONS
-    random_attributes: Grid = {
-        CONDITION_CHAIN_OF_THOUGHT: [True, False],
-        CONDITION_LABEL: all_values(Label),
-        CONDITION_CASE: all_values(Case),
-        CONDITION_PRONOUN: all_values(Pronoun),
-        CONDITION_DEFECT_FIRST: [True, False],
-        CONDITION_LABELS_REVERSED: [True, False],
-    }
     return run_experiment(
-        participants=participants(
-            participant_conditions, random_attributes, num_participant_samples
-        ),
+        participants=iter(create_participants(num_participant_samples)),
         partner_conditions={
             "unconditional cooperate": strategy_cooperate,
             "unconditional defect": strategy_defect,
