@@ -29,7 +29,7 @@ import pandas as pd
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Grid, Settings
+from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Grid, Participant
 from llm_cooperation.experiments.dictator import CONDITION_ROLE
 from llm_cooperation.gametypes.oneshot import (
     OneShotResults,
@@ -56,7 +56,9 @@ def test_run_experiment(mocker):
     mock_run_sample.return_value = samples
     n = 5
     result: pd.DataFrame = run_experiment(
-        participants=(({CONDITION_ROLE: f"Participant {i}"} for i in range(n))),
+        participants=(
+            (Participant({CONDITION_ROLE: f"Participant {i}"}) for i in range(n))
+        ),
         num_replications=3,
         generate_instruction_prompt=Mock(),
         payoffs=Mock(),
@@ -83,14 +85,14 @@ def test_generate_samples(mocker):
             extract_choice=Mock(),
             compute_freq=Mock(),
             model_setup=DEFAULT_MODEL_SETUP,
-            participant={CONDITION_ROLE: "Group 1"},
+            participant=Participant({CONDITION_ROLE: "Group 1"}),
         )
     )
     assert len(result) == test_n
     assert result == [mock_result_row for __i__ in range(3)]
 
 
-def test_compute_scores(base_condition: Settings):
+def test_compute_scores(base_condition: Participant):
     mock_payoff = 0.5
     mock_choice = Mock(spec=Choice)
     result = compute_scores(
@@ -112,7 +114,7 @@ def test_play_game(mocker):
     mock_generate = Mock()
     mock_generate.return_value = test_prompt
     result = play_game(
-        participant={CONDITION_ROLE: "test"},
+        participant=Participant({CONDITION_ROLE: "test"}),
         generate_instruction_prompt=mock_generate,
         model_setup=DEFAULT_MODEL_SETUP,
     )
@@ -134,7 +136,7 @@ def test_analyse(mocker):
     mock_compute_freq.return_value = test_freq
 
     test_messages = [f"test{i}" for i in range(3)]
-    test_condition: Settings = {"chain_of_thought": True}
+    test_condition: Participant = Participant({"chain_of_thought": True})
 
     result = analyse(
         conversation=[user_message(c) for c in test_messages],
@@ -202,5 +204,5 @@ def participant_conditions() -> Grid:
 
 
 @pytest.fixture
-def base_condition() -> Settings:
-    return dict()
+def base_condition() -> Participant:
+    return Participant(dict())

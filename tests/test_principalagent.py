@@ -24,7 +24,7 @@
 import pytest
 from openai_pygenerator import user_message
 
-from llm_cooperation import Settings
+from llm_cooperation import Participant
 from llm_cooperation.experiments.principalagent import (
     ATTRIBUTE_CUSTOMER,
     ATTRIBUTE_PRINCIPAL,
@@ -44,15 +44,17 @@ from llm_cooperation.experiments.principalagent import (
         ("choice:  product id: 35", 35),
     ],
 )
-def test_extract_choice_pa(test_input: str, expected: int):
-    result = extract_choice_pa(dict(), user_message(test_input))
+def test_extract_choice_pa(test_input: str, expected: int, base_condition: Participant):
+    result = extract_choice_pa(base_condition, user_message(test_input))
     assert result.value == expected
 
 
 def test_get_prompt_principal_agent():
-    test_condition: Settings = {"shared_with_principal": True, "shared_with_user": True}
+    test_condition: Participant = Participant(
+        {"shared_with_principal": True, "shared_with_user": True}
+    )
     test_role = PARTICIPANT_SHELL
-    result = get_prompt_principal_agent(test_condition | test_role)
+    result = get_prompt_principal_agent(Participant(test_condition | test_role))
     assert test_role[ATTRIBUTE_PRINCIPAL] in result
     assert test_role[ATTRIBUTE_SIMULACRUM] in result
     assert test_role[ATTRIBUTE_QUERY_RESULTS] in result

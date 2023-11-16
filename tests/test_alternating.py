@@ -26,7 +26,7 @@ from typing import List
 import pytest
 from openai_pygenerator import Completion, user_message
 
-from llm_cooperation import Settings, assistant_message
+from llm_cooperation import Participant, assistant_message
 from llm_cooperation.experiments.ultimatum import (
     Accept,
     ProposerChoice,
@@ -49,7 +49,7 @@ from llm_cooperation.gametypes.repeated import Choices
     ],
 )
 def test_analyse_round(
-    i: int, expected_choices: Choices, alternating_history, base_condition: Settings
+    i: int, expected_choices: Choices, alternating_history, base_condition: Participant
 ):
     __scores__, choices = alternating.analyse_round(
         i,
@@ -62,8 +62,8 @@ def test_analyse_round(
 
 
 @pytest.fixture
-def base_condition() -> Settings:
-    return dict()
+def base_condition() -> Participant:
+    return Participant(dict())
 
 
 @pytest.fixture

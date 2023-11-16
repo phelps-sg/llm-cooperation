@@ -24,7 +24,7 @@
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import ModelSetup, Settings, completer_for, exhaustive
+from llm_cooperation import ModelSettings, ModelSetup, completer_for, exhaustive
 from llm_cooperation.main import (
     Configuration,
     Grid,
@@ -38,7 +38,9 @@ from llm_cooperation.main import (
     "settings, expected_result",
     [
         (
-            {"model": "gpt-turbo-3.5", "temperature": 0.5, "max_tokens": 100},
+            ModelSettings(
+                {"model": "gpt-turbo-3.5", "temperature": 0.5, "max_tokens": 100}
+            ),
             ModelSetup(
                 model="gpt-turbo-3.5", temperature=0.5, max_tokens=100, dry_run=None
             ),
@@ -48,14 +50,18 @@ from llm_cooperation.main import (
             ModelSetup(model="gpt-4", temperature=0.2, max_tokens=5, dry_run=None),
         ),
         (
-            {"model": "gpt-4", "temperature": 0.1, "dry_run": "project green"},
+            ModelSettings(
+                {"model": "gpt-4", "temperature": 0.1, "dry_run": "project green"}
+            ),
             ModelSetup(
                 model="gpt-4", temperature=0.1, max_tokens=5, dry_run="project green"
             ),
         ),
     ],
 )
-def test_setup_from_settings(mocker, settings: Settings, expected_result: ModelSetup):
+def test_setup_from_settings(
+    mocker, settings: ModelSettings, expected_result: ModelSetup
+):
     mocker.patch("openai_pygenerator.GPT_MAX_TOKENS", 5)
     result = setup_from_settings(settings)
     assert result == expected_result

@@ -28,7 +28,7 @@ from typing import Dict
 
 from openai_pygenerator import Completion, content
 
-from llm_cooperation import ModelSetup, Settings, amount_as_str
+from llm_cooperation import ModelSetup, Participant, amount_as_str
 from llm_cooperation.experiments import (
     GROUP_PROMPT_CONDITIONS,
     get_role_prompt,
@@ -40,7 +40,6 @@ from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 TOTAL_SHARE = 4
 
 NUM_REPLICATIONS = 3
-NUM_PARTICIPANT_SAMPLES = 30
 
 CONDITION_ROLE = "role"
 
@@ -75,7 +74,7 @@ class DictatorChoice:
     value: DictatorEnum
 
     # pylint: disable=unused-argument
-    def description(self, participant_condition: Settings) -> str:
+    def description(self, participant_condition: Participant) -> str:
         return project(color_mappings[self.value])
 
     @property
@@ -120,8 +119,8 @@ def choice_menu() -> str:
 
 
 # pylint: disable=unused-argument
-def get_prompt_dictator(condition: Settings) -> str:
-    role_prompt = get_role_prompt(condition)
+def get_prompt_dictator(participant: Participant) -> str:
+    role_prompt = get_role_prompt(participant)
     return f"""
 {role_prompt}
 This is a study of investment choices in different situations.
@@ -149,7 +148,7 @@ Choice: [{choice_menu()}]
 
 
 def extract_choice_dictator(
-    participant_condition: Settings, completion: Completion
+    participant: Participant, completion: Completion
 ) -> DictatorChoice:
     text = content(completion).lower()
     match = re.search(r"choice:\s*(.*)", text)
@@ -172,7 +171,7 @@ def compute_freq_dictator(history: DictatorChoice) -> float:
 def run(
     model_setup: ModelSetup,
     num_replications: int = NUM_REPLICATIONS,
-    num_participant_samples: int = NUM_PARTICIPANT_SAMPLES,
+    __num_participant_samples__: int = 0,
 ) -> OneShotResults[DictatorChoice]:
     return run_experiment(
         participants=participants(GROUP_PROMPT_CONDITIONS),

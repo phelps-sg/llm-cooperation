@@ -31,7 +31,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 from openai_pygenerator import Completion
 
-from llm_cooperation import Grid, ModelSetup, Payoffs, Settings
+from llm_cooperation import Grid, ModelSetup, Participant, Payoffs
 from llm_cooperation.experiments import (
     CONDITION_CASE,
     GROUP_PROMPT_CONDITIONS,
@@ -84,7 +84,7 @@ class DilemmaEnum(Enum):
 class DilemmaChoice:
     value: DilemmaEnum
 
-    def description(self, participant_condition: Settings) -> str:
+    def description(self, participant_condition: Participant) -> str:
         return move_as_str(self.value, participant_condition)
 
     @property
@@ -108,8 +108,8 @@ class Pronoun(Enum):
     THEY = "they"
 
 
-def labels(condition: Settings) -> Tuple[str, str]:
-    value = condition[CONDITION_LABEL]
+def labels(participant: Participant) -> Tuple[str, str]:
+    value = participant[CONDITION_LABEL]
     result: Optional[List[str]] = None
     if value == Label.COLORS.value:
         result = ["Green", "Blue"]
@@ -118,59 +118,59 @@ def labels(condition: Settings) -> Tuple[str, str]:
     elif value == Label.NUMERALS.value:
         result = ["1", "2"]
     if result is not None:
-        if condition[CONDITION_LABELS_REVERSED]:
+        if participant[CONDITION_LABELS_REVERSED]:
             return result[1], result[0]
         return result[0], result[1]
     raise ValueError(
-        f"Unknown value {condition[CONDITION_LABEL]} for {CONDITION_LABEL}"
+        f"Unknown value {participant[CONDITION_LABEL]} for {CONDITION_LABEL}"
     )
 
 
-def cooperate_label(condition: Settings) -> str:
-    return labels(condition)[0]
+def cooperate_label(participant: Participant) -> str:
+    return labels(participant)[0]
 
 
-def defect_label(condition: Settings) -> str:
-    return labels(condition)[1]
+def defect_label(participant: Participant) -> str:
+    return labels(participant)[1]
 
 
-def get_prompt_pd(condition: Settings) -> str:
-    return apply_case_condition(condition, get_prompt_base(condition))
+def get_prompt_pd(participant: Participant) -> str:
+    return apply_case_condition(participant, get_prompt_base(participant))
 
 
-def get_choice_template(condition: Settings, cooperate: str, defect: str) -> str:
+def get_choice_template(participant: Participant, cooperate: str, defect: str) -> str:
     choices = (
         f"""{defect} | {cooperate}]"""
-        if condition[CONDITION_DEFECT_FIRST]
+        if participant[CONDITION_DEFECT_FIRST]
         else f"""{cooperate} | {defect}"""
     )
     return f"""Choice: [{choices}]"""
 
 
-def get_pronoun_phrasing(condition: Settings) -> str:
-    if condition[CONDITION_PRONOUN] == Pronoun.HE.value:
+def get_pronoun_phrasing(participant: Participant) -> str:
+    if participant[CONDITION_PRONOUN] == Pronoun.HE.value:
         return "He is"
-    elif condition[CONDITION_PRONOUN] == Pronoun.SHE.value:
+    elif participant[CONDITION_PRONOUN] == Pronoun.SHE.value:
         return "She is"
-    elif condition[CONDITION_PRONOUN] == Pronoun.THEY.value:
+    elif participant[CONDITION_PRONOUN] == Pronoun.THEY.value:
         return "They are"
     raise ValueError(
-        f"Invalid value {condition[CONDITION_PRONOUN]} for {CONDITION_PRONOUN}"
+        f"Invalid value {participant[CONDITION_PRONOUN]} for {CONDITION_PRONOUN}"
     )
 
 
-def get_prompt_base(condition: Settings) -> str:
-    role_prompt = get_role_prompt(condition)
-    cooperate = f"""'Project {cooperate_label(condition)}'"""
-    defect = f"""'Project {defect_label(condition)}'"""
-    choice_template = get_choice_template(condition, cooperate, defect)
-    pronoun_phrase = get_pronoun_phrasing(condition)
+def get_prompt_base(participant: Participant) -> str:
+    role_prompt = get_role_prompt(participant)
+    cooperate = f"""'Project {cooperate_label(participant)}'"""
+    defect = f"""'Project {defect_label(participant)}'"""
+    choice_template = get_choice_template(participant, cooperate, defect)
+    pronoun_phrase = get_pronoun_phrasing(participant)
 
     def payout(amount: int) -> str:
         return f"${amount}.00"
 
     def round_instructions() -> str:
-        if condition["chain_of_thought"]:
+        if participant["chain_of_thought"]:
             return f"""
 For each round, give your answer in the format below on two separate lines:
 Explanation: [why I made my choice]
@@ -239,37 +239,37 @@ strategy_t4t_defect = partial(strategy_t4t, Defect)
 strategy_t4t_cooperate = partial(strategy_t4t, Cooperate)
 
 
-def move_as_str(move: DilemmaEnum, participant_condition: Settings) -> str:
+def move_as_str(move: DilemmaEnum, participant: Participant) -> str:
     if move == DilemmaEnum.D:
-        return f"Project {defect_label(participant_condition)}"
+        return f"Project {defect_label(participant)}"
     elif move == DilemmaEnum.C:
-        return f"Project {cooperate_label(participant_condition)}"
+        return f"Project {cooperate_label(participant)}"
     raise ValueError(f"Invalid choice {move}")
 
 
-def choice_from_str(choice: str, participant_condition: Settings) -> DilemmaChoice:
-    logger.debug("participant_condition = %s", participant_condition)
-    if choice == cooperate_label(participant_condition).lower():
+def choice_from_str(choice: str, participant: Participant) -> DilemmaChoice:
+    logger.debug("participant_condition = %s", participant)
+    if choice == cooperate_label(participant).lower():
         return Cooperate
-    elif choice == defect_label(participant_condition).lower():
+    elif choice == defect_label(participant).lower():
         return Defect
     else:
         raise ValueError(f"Cannot determine choice from {choice}")
 
 
 def extract_choice_pd(
-    participant_condition: Settings, completion: Completion, **__kwargs__: bool
+    participant: Participant, completion: Completion, **__kwargs__: bool
 ) -> DilemmaChoice:
-    logger.debug("participant_condition = %s", participant_condition)
-    cooperate = cooperate_label(participant_condition)
-    defect = defect_label(participant_condition)
+    logger.debug("participant_condition = %s", participant)
+    cooperate = cooperate_label(participant)
+    defect = defect_label(participant)
     regex: str = rf".*project\s+({cooperate}|{defect})".lower()
     choice_regex: str = f"choice:{regex}"
     logger.debug("completion = %s", completion)
     lower = completion["content"].lower().strip()
 
     def matched_choice(m: re.Match) -> DilemmaChoice:
-        return choice_from_str(m.group(1), participant_condition)
+        return choice_from_str(m.group(1), participant)
 
     match = re.search(choice_regex, lower)
     if match is not None:

@@ -28,7 +28,7 @@ import pandas as pd
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Settings, assistant_message
+from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Participant, assistant_message
 from llm_cooperation.experiments.dictator import CONDITION_ROLE
 from llm_cooperation.experiments.dilemma import (
     Cooperate,
@@ -58,7 +58,7 @@ from llm_cooperation.gametypes.repeated import (
 from llm_cooperation.gametypes.simultaneous import next_round
 
 
-def test_play_game(mocker, base_condition: Settings):
+def test_play_game(mocker, base_condition: Participant):
     instruction_prompt = "You are a helpful assistant etc."
     assistant_prompt = assistant_message("My choice is cooperate")
     test_response = assistant_message("test-response")
@@ -137,7 +137,7 @@ def test_compute_scores(conversation, base_condition):
     assert scores == Scores(ai=S + T + P + P + R, user=T + S + P + P + R)
 
 
-def test_next_round(base_condition: Settings):
+def test_next_round(base_condition: Participant):
     test_choice = "my choice"
     my_payoff = 99
     other_payoff = 66
@@ -176,7 +176,9 @@ def test_run_experiment(mocker):
         "strategy_B": Mock(),
     }
     result: pd.DataFrame = run_experiment(
-        participants=(({CONDITION_ROLE: f"Participant {i}"} for i in range(n))),
+        participants=(
+            (Participant({CONDITION_ROLE: f"Participant {i}"}) for i in range(n))
+        ),
         partner_conditions=user_conditions,  # type: ignore
         experiment_setup=ExperimentSetup(
             num_replications=len(samples),
@@ -209,8 +211,8 @@ def test_results_to_df(results: Iterable[ResultRepeatedGame]):
 def results(
     cooperate_choices,
     defect_choices,
-    base_condition: Settings,
-    with_chain_of_thought: Settings,
+    base_condition: Participant,
+    with_chain_of_thought: Participant,
 ) -> Iterable[ResultRepeatedGame]:
     return iter(
         [

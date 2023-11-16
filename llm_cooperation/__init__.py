@@ -33,6 +33,7 @@ from typing import (
     Hashable,
     Iterable,
     List,
+    NewType,
     Optional,
     Protocol,
     Tuple,
@@ -54,7 +55,9 @@ logging.basicConfig(
 
 ConfigValue = float | str | bool
 Grid = Dict[str, List[ConfigValue]]
-Settings = Dict[str, ConfigValue]
+_Settings = Dict[str, ConfigValue]
+Participant = NewType("Participant", _Settings)
+ModelSettings = NewType("ModelSettings", _Settings)
 
 
 class Choice(Protocol):
@@ -62,7 +65,7 @@ class Choice(Protocol):
     def value(self) -> Hashable:
         ...
 
-    def description(self, participant_condition: Settings) -> str:
+    def description(self, participant_condition: Participant) -> str:
         ...
 
 
@@ -118,14 +121,14 @@ def all_combinations(grid: Grid) -> itertools.product:
 
 def settings_from_combinations(
     keys: List[str], combinations: Iterable[ConfigValue]
-) -> Settings:
-    settings: Settings = dict()
+) -> _Settings:
+    settings: _Settings = dict()
     for i, value in enumerate(combinations):
         settings[keys[i]] = value
     return settings
 
 
-def randomized(grid: Grid) -> Settings:
+def randomized(grid: Grid) -> _Settings:
     keys = list(grid.keys())
     combinations = list(all_combinations(grid))
     num_combinations = len(combinations)
@@ -133,7 +136,7 @@ def randomized(grid: Grid) -> Settings:
     return settings_from_combinations(keys, combinations[random_index])
 
 
-def exhaustive(grid: Grid) -> Iterable[Settings]:
+def exhaustive(grid: Grid) -> Iterable[_Settings]:
     variables = list(grid.keys())
     for values in all_combinations(grid):
         yield settings_from_combinations(variables, values)

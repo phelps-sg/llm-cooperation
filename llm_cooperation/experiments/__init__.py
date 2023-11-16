@@ -38,8 +38,8 @@ from llm_cooperation import (
     Grid,
     Group,
     ModelSetup,
+    Participant,
     Results,
-    Settings,
     exhaustive,
     randomized,
 )
@@ -132,7 +132,7 @@ GROUP_PROMPT_CONDITIONS: Grid = {
 }
 
 
-def get_role_prompt(participant: Settings) -> str:
+def get_role_prompt(participant: Participant) -> str:
     group: Group = Group[str(participant[CONDITION_GROUP])]
     prompts: List[str] = AI_PARTICIPANTS[group]
     index = int(participant[CONDITION_PROMPT_INDEX])
@@ -184,7 +184,7 @@ def run_and_record_experiment(
     return results
 
 
-def apply_case_condition(condition: Settings, prompt: str) -> str:
+def apply_case_condition(condition: Participant, prompt: str) -> str:
     if condition[CONDITION_CASE] == Case.UPPER.value:
         return prompt.upper()
     elif condition[CONDITION_CASE] == Case.LOWER.value:
@@ -201,14 +201,14 @@ def participants(
     random_attributes: Optional[Grid] = None,
     sample_size: int = 0,
     seed: Optional[int] = None,
-) -> Iterable[Settings]:
+) -> Iterable[Participant]:
     if seed is not None:
         np.random.seed(seed)
     for controlled in exhaustive(conditions):
         if random_attributes is None:
-            yield controlled
+            yield Participant(controlled)
         else:
             for sampled in (
                 randomized(random_attributes) for __i__ in range(sample_size)
             ):
-                yield controlled | sampled
+                yield Participant(controlled | sampled)

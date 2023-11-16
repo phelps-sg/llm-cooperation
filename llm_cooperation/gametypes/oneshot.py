@@ -29,11 +29,11 @@ import numpy as np
 import pandas as pd
 from openai_pygenerator import Completion, transcript
 
-from llm_cooperation import CT, ModelSetup, Results, Settings, logger
+from llm_cooperation import CT, ModelSetup, Participant, Results, logger
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
 ResultSingleShotGame = Tuple[
-    Settings,
+    Participant,
     float,
     float,
     Optional[CT],
@@ -76,7 +76,7 @@ class OneShotResults(Results, Generic[CT]):
 
 
 def play_game(
-    participant: Settings,
+    participant: Participant,
     generate_instruction_prompt: PromptGenerator,
     model_setup: ModelSetup,
 ) -> List[Completion]:
@@ -92,8 +92,8 @@ def play_game(
 def compute_scores(
     conversation: List[Completion],
     payoffs: Callable[[CT], float],
-    extract_choice: Callable[[Settings, Completion], CT],
-    participant_condition: Settings,
+    extract_choice: Callable[[Participant, Completion], CT],
+    participant_condition: Participant,
 ) -> Tuple[float, CT]:
     ai_choice = extract_choice(participant_condition, conversation[1])
     logger.debug("ai_choice = %s", ai_choice)
@@ -104,9 +104,9 @@ def compute_scores(
 def analyse(
     conversation: List[Completion],
     payoffs: Callable[[CT], float],
-    extract_choice: Callable[[Settings, Completion], CT],
+    extract_choice: Callable[[Participant, Completion], CT],
     compute_freq: Callable[[CT], float],
-    participant_condition: Settings,
+    participant_condition: Participant,
 ) -> Tuple[float, float, Optional[CT], List[str]]:
     try:
         history = transcript(conversation)
@@ -121,11 +121,11 @@ def analyse(
 
 
 def generate_replications(
-    participant: Settings,
+    participant: Participant,
     num_replications: int,
     generate_instruction_prompt: PromptGenerator,
     payoffs: Callable[[CT], float],
-    extract_choice: Callable[[Settings, Completion], CT],
+    extract_choice: Callable[[Participant, Completion], CT],
     compute_freq: Callable[[CT], float],
     model_setup: ModelSetup,
 ) -> Iterable[Tuple[float, float, Optional[CT], List[str]]]:
@@ -140,11 +140,11 @@ def generate_replications(
 
 
 def run_experiment(
-    participants: Iterable[Settings],
+    participants: Iterable[Participant],
     num_replications: int,
     generate_instruction_prompt: PromptGenerator,
     payoffs: Callable[[CT], float],
-    extract_choice: Callable[[Settings, Completion], CT],
+    extract_choice: Callable[[Participant, Completion], CT],
     compute_freq: Callable[[CT], float],
     model_setup: ModelSetup,
 ) -> OneShotResults[CT]:

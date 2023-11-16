@@ -28,7 +28,7 @@ from typing import Any, Dict, Iterable, List, Optional
 
 import openai_pygenerator
 
-from llm_cooperation import Experiment, Grid, ModelSetup, Settings, exhaustive
+from llm_cooperation import Experiment, Grid, ModelSettings, ModelSetup, exhaustive
 from llm_cooperation.experiments import (
     DEFAULT_NUM_PARTICIPANT_SAMPLES,
     DEFAULT_NUM_REPLICATIONS,
@@ -101,7 +101,7 @@ def get_config() -> Configuration:
     return DEFAULT_CONFIGURATION
 
 
-def setup_from_settings(settings: Settings) -> ModelSetup:
+def setup_from_settings(settings: ModelSettings) -> ModelSetup:
     return ModelSetup(
         model=str(settings.get("model", openai_pygenerator.GPT_MODEL)),
         temperature=float(
@@ -115,7 +115,7 @@ def setup_from_settings(settings: Settings) -> ModelSetup:
 def run_all() -> None:
     configuration = get_config()
     for settings in exhaustive(configuration.grid):
-        setup = setup_from_settings(settings)
+        setup = setup_from_settings(ModelSettings(settings))
         for name in configuration.experiment_names:
             experiment = experiments[name]
             logger.info(

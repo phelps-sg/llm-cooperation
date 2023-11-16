@@ -26,7 +26,7 @@ from typing import List
 
 from openai_pygenerator import Completion
 
-from llm_cooperation import CT, Settings
+from llm_cooperation import CT, Participant
 from llm_cooperation.gametypes.repeated import (
     ChoiceExtractor,
     Choices,
@@ -42,7 +42,7 @@ def analyse_rounds(
     history: List[Completion],
     payoffs: PayoffFunction[CT],
     extract_choice: ChoiceExtractor[CT],
-    participant_condition: Settings,
+    participant_condition: Participant,
 ) -> List[ResultForRound[CT]]:
     num_messages = len(history)
     return [
@@ -56,7 +56,7 @@ def analyse_round(
     conversation: List[Completion],
     payoffs: PayoffFunction[CT],
     extract_choice: ChoiceExtractor[CT],
-    participant_condition: Settings,
+    participant_condition: Participant,
 ) -> ResultForRound[CT]:
     """
         Analyse round of this form:

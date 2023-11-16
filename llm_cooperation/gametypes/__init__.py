@@ -27,23 +27,23 @@ from typing import List, Protocol, Tuple
 
 from openai_pygenerator import Completer, Completion, logging, user_message
 
-from llm_cooperation import ModelSetup, Settings, completer_for
+from llm_cooperation import ModelSetup, Participant, completer_for
 
 logger = logging.getLogger(__name__)
 
 
 class PromptGenerator(Protocol):
-    def __call__(self, condition: Settings) -> str:
+    def __call__(self, participant: Participant) -> str:
         ...
 
 
 def start_game(
     prompt_generator: PromptGenerator,
     model_setup: ModelSetup,
-    participant_condition: Settings,
+    participant: Participant,
 ) -> Tuple[Completer, List[Completion]]:
     logger.debug("model_setup = %s", model_setup)
     gpt_completions = completer_for(model_setup)
-    messages: List[Completion] = [user_message(prompt_generator(participant_condition))]
+    messages: List[Completion] = [user_message(prompt_generator(participant))]
     logger.debug("gpt_completions = %s", gpt_completions)
     return gpt_completions, messages

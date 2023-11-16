@@ -26,7 +26,7 @@ from typing import List
 import pytest
 from openai_pygenerator import Completion
 
-from llm_cooperation import ConfigValue, Group, Settings
+from llm_cooperation import ConfigValue, Group, Participant
 from llm_cooperation.experiments import (
     CONDITION_CASE,
     CONDITION_GROUP,
@@ -65,52 +65,54 @@ def conversation() -> List[Completion]:
 
 
 @pytest.fixture
-def base_condition() -> Settings:
-    return {
-        CONDITION_GROUP: Group.Control.value,
-        CONDITION_PROMPT_INDEX: 0,
-        CONDITION_LABEL: Label.COLORS.value,
-        CONDITION_LABELS_REVERSED: False,
-        CONDITION_CHAIN_OF_THOUGHT: False,
-        CONDITION_DEFECT_FIRST: False,
-        CONDITION_CASE: Case.STANDARD.value,
-        CONDITION_PRONOUN: Pronoun.SHE.value,
-    }
+def base_condition() -> Participant:
+    return Participant(
+        {
+            CONDITION_GROUP: Group.Control.value,
+            CONDITION_PROMPT_INDEX: 0,
+            CONDITION_LABEL: Label.COLORS.value,
+            CONDITION_LABELS_REVERSED: False,
+            CONDITION_CHAIN_OF_THOUGHT: False,
+            CONDITION_DEFECT_FIRST: False,
+            CONDITION_CASE: Case.STANDARD.value,
+            CONDITION_PRONOUN: Pronoun.SHE.value,
+        }
+    )
 
 
 def modify_condition(
-    base_condition: Settings, key: str, value: ConfigValue
-) -> Settings:
+    base_condition: Participant, key: str, value: ConfigValue
+) -> Participant:
     result = base_condition.copy()
     result[key] = value
-    return result
+    return Participant(result)
 
 
 @pytest.fixture
-def with_chain_of_thought(base_condition: Settings) -> Settings:
+def with_chain_of_thought(base_condition: Participant) -> Participant:
     return modify_condition(base_condition, CONDITION_CHAIN_OF_THOUGHT, True)
 
 
 @pytest.fixture
-def with_numerals(base_condition: Settings) -> Settings:
+def with_numerals(base_condition: Participant) -> Participant:
     return modify_condition(base_condition, CONDITION_LABEL, Label.NUMERALS.value)
 
 
 @pytest.fixture
-def with_numbers(base_condition: Settings) -> Settings:
+def with_numbers(base_condition: Participant) -> Participant:
     return modify_condition(base_condition, CONDITION_LABEL, Label.NUMBERS.value)
 
 
 @pytest.fixture
-def with_upper_case(base_condition: Settings) -> Settings:
+def with_upper_case(base_condition: Participant) -> Participant:
     return modify_condition(base_condition, CONDITION_CASE, Case.UPPER.value)
 
 
 @pytest.fixture
-def with_lower_case(base_condition: Settings) -> Settings:
+def with_lower_case(base_condition: Participant) -> Participant:
     return modify_condition(base_condition, CONDITION_CASE, Case.LOWER.value)
 
 
 @pytest.fixture
-def with_defect_first(base_condition: Settings) -> Settings:
+def with_defect_first(base_condition: Participant) -> Participant:
     return modify_condition(base_condition, CONDITION_DEFECT_FIRST, True)

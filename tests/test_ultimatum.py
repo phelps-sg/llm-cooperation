@@ -28,7 +28,7 @@ import numpy as np
 import pytest
 from openai_pygenerator import content
 
-from llm_cooperation import Group, Payoffs, Settings, amount_as_str
+from llm_cooperation import Group, Participant, Payoffs, amount_as_str
 from llm_cooperation.experiments import AI_PARTICIPANTS
 from llm_cooperation.experiments.ultimatum import (
     MAX_AMOUNT,
@@ -101,7 +101,7 @@ def test_amount_from_str(amount_str: str, expected: float):
     ],
 )
 def test_extract_choice(
-    text: str, proposer: bool, expected: UltimatumChoice, base_condition: Settings
+    text: str, proposer: bool, expected: UltimatumChoice, base_condition: Participant
 ):
     assert (
         extract_choice_ultimatum(
@@ -172,7 +172,7 @@ def test_ultimatum_choice():
 def test_next_round_ultimatum(
     user_response: UltimatumChoice,
     user_proposal: UltimatumChoice,
-    base_condition: Settings,
+    base_condition: Participant,
 ):
     # pylint: disable=unused-argument
     def test_strategy(state: GameState, **kwargs: bool) -> UltimatumChoice:

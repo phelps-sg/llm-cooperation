@@ -29,7 +29,7 @@ import pytest
 from openai_pygenerator import Completion, logger
 from pytest_lazyfixture import lazy_fixture
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Group, Payoffs
+from llm_cooperation import DEFAULT_MODEL_SETUP, Group, Participant, Payoffs
 from llm_cooperation.experiments import AI_PARTICIPANTS
 from llm_cooperation.experiments.dilemma import (
     CONDITION_LABELS_REVERSED,
@@ -58,7 +58,6 @@ from llm_cooperation.experiments.dilemma import (
 )
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import GameSetup, play_game
-from llm_cooperation.main import Settings
 from tests.common import make_completion
 from tests.conftest import modify_condition
 
@@ -70,7 +69,7 @@ from tests.conftest import modify_condition
         lazy_fixture("with_chain_of_thought"),
     ],
 )
-def test_get_instruction_prompt(condition: Settings):
+def test_get_instruction_prompt(condition: Participant):
     role_prompt = AI_PARTICIPANTS[Group.Control][0]
     prompt = get_prompt_pd(condition)
     logger.debug("prompt = %s", prompt)
@@ -90,7 +89,7 @@ def test_get_instruction_prompt(condition: Settings):
         (lazy_fixture("with_defect_first"), r"green.*blue"),
     ],
 )
-def test_get_choice_template(condition: Settings, expected_regex: str):
+def test_get_choice_template(condition: Participant, expected_regex: str):
     result = get_choice_template(condition, "blue", "green").lower()
     match = re.search(expected_regex, result)
     assert match is not None
@@ -131,7 +130,7 @@ Choice: Project Blue""",
     ],
 )
 def test_extract_choice_pd(
-    condition: Settings, text: str, expected_move: DilemmaChoice
+    condition: Participant, text: str, expected_move: DilemmaChoice
 ):
     move = extract_choice_pd(condition, make_completion(text))
     assert move == expected_move
@@ -196,7 +195,7 @@ def test_dilemma_choice():
         (lazy_fixture("with_numbers"), DilemmaEnum.D, "Two"),
     ],
 )
-def test_move_as_str(condition: Settings, choice: DilemmaEnum, expected: str):
+def test_move_as_str(condition: Participant, choice: DilemmaEnum, expected: str):
     assert expected in move_as_str(choice, condition)
 
 
@@ -208,7 +207,7 @@ def test_move_as_str(condition: Settings, choice: DilemmaEnum, expected: str):
         (lazy_fixture("with_numerals"), "1"),
     ],
 )
-def test_cooperate_label(condition: Settings, expected: str):
+def test_cooperate_label(condition: Participant, expected: str):
     assert cooperate_label(condition) == expected
 
 
@@ -220,7 +219,7 @@ def test_cooperate_label(condition: Settings, expected: str):
         (lazy_fixture("with_numerals"), "2"),
     ],
 )
-def test_defect_label(condition: Settings, expected: str):
+def test_defect_label(condition: Participant, expected: str):
     assert defect_label(condition) == expected
 
 
@@ -232,7 +231,7 @@ def test_defect_label(condition: Settings, expected: str):
         (lazy_fixture("with_numbers"), "Two"),
     ],
 )
-def test_cooperate_label_reversed(condition: Settings, expected: str):
+def test_cooperate_label_reversed(condition: Participant, expected: str):
     condition_reversed = modify_condition(condition, CONDITION_LABELS_REVERSED, True)
     assert cooperate_label(condition_reversed) == expected
 

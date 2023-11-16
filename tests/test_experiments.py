@@ -33,8 +33,8 @@ from llm_cooperation import (
     Grid,
     Group,
     ModelSetup,
+    Participant,
     Results,
-    Settings,
 )
 from llm_cooperation.experiments import (
     CONDITION_GROUP,
@@ -92,7 +92,7 @@ def test_run_and_record_experiment(mocker):
         (lazy_fixture("base_condition"), "Hello"),
     ],
 )
-def test_apply_case_condition(condition: Settings, expected: str):
+def test_apply_case_condition(condition: Participant, expected: str):
     test_prompt = "Hello"
     result = apply_case_condition(condition, test_prompt)
     assert result == expected

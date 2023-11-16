@@ -24,7 +24,7 @@
 import pytest
 from openai_pygenerator import user_message
 
-from llm_cooperation import Group, Settings
+from llm_cooperation import Group, Participant
 from llm_cooperation.experiments import (
     AI_PARTICIPANTS,
     CONDITION_GROUP,
@@ -68,7 +68,7 @@ def test_dictator_choice(
     expected_payoff_allo,
 ):
     choice = DictatorChoice(enum)
-    condition: Settings = dict()
+    condition: Participant = Participant(dict())
     assert expected_description in choice.description(condition).lower()
     assert choice.payoff_ego == expected_payoff_ego
     assert choice.payoff_allo == expected_payoff_allo
@@ -86,13 +86,19 @@ def test_dictator_choice(
         ("Choice: White", WHITE),
     ],
 )
-def test_extract_choice_dictator(text: str, expected_result: DictatorChoice):
-    assert extract_choice_dictator(dict(), user_message(text)) == expected_result
+def test_extract_choice_dictator(
+    text: str, expected_result: DictatorChoice, base_condition: Participant
+):
     assert (
-        extract_choice_dictator(dict(), user_message(text.upper())) == expected_result
+        extract_choice_dictator(base_condition, user_message(text)) == expected_result
     )
     assert (
-        extract_choice_dictator(dict(), user_message(text.lower())) == expected_result
+        extract_choice_dictator(base_condition, user_message(text.upper()))
+        == expected_result
+    )
+    assert (
+        extract_choice_dictator(base_condition, user_message(text.lower()))
+        == expected_result
     )
 
 
@@ -122,7 +128,7 @@ def test_compute_freq_dictator(test_choice: DictatorChoice):
 
 def test_get_prompt_dictator():
     result = get_prompt_dictator(
-        {CONDITION_GROUP: Group.Control.value, CONDITION_PROMPT_INDEX: 0}
+        Participant({CONDITION_GROUP: Group.Control.value, CONDITION_PROMPT_INDEX: 0})
     )
     assert AI_PARTICIPANTS[Group.Control][0] in result
     for choice in all_dictator_choices:

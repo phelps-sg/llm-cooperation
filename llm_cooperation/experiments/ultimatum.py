@@ -30,7 +30,7 @@ from typing import List
 import numpy as np
 from openai_pygenerator import Completion, content, user_message
 
-from llm_cooperation import ModelSetup, Payoffs, Settings, amount_as_str
+from llm_cooperation import ModelSetup, Participant, Payoffs, amount_as_str
 from llm_cooperation.experiments import (
     GROUP_PROMPT_CONDITIONS,
     get_role_prompt,
@@ -71,7 +71,7 @@ class ProposerChoice:
         return self.value
 
     # pylint: disable=unused-argument
-    def description(self, participant_condition: Settings) -> str:
+    def description(self, participant_condition: Participant) -> str:
         return amount_as_str(self.value)
 
 
@@ -80,7 +80,7 @@ class ResponderChoice:
     value: ResponderEnum
 
     # pylint: disable=unused-argument
-    def description(self, participant_condition: Settings) -> str:
+    def description(self, participant_condition: Participant) -> str:
         if self.value is ResponderEnum.Accept:
             return "Accept"
         elif self.value is ResponderEnum.Reject:
@@ -125,9 +125,9 @@ def strategy_cooperate(
         return Accept
 
 
-def get_prompt_ultimatum(condition: Settings) -> str:
-    role_prompt = get_role_prompt(condition)
-    logger.debug("condition = %s", condition)
+def get_prompt_ultimatum(participant: Participant) -> str:
+    role_prompt = get_role_prompt(participant)
+    logger.debug("condition = %s", participant)
     logger.debug("role_prompt = %s", role_prompt)
     return f"""
     {role_prompt}
@@ -189,7 +189,7 @@ def extract_proposer_choice(completion: Completion) -> ProposerChoice:
 
 
 def extract_choice_ultimatum(
-    participant_condition: Settings, completion: Completion, **kwargs: bool
+    participant: Participant, completion: Completion, **kwargs: bool
 ) -> UltimatumChoice:
     if kwargs["proposer"]:
         return extract_proposer_choice(completion)

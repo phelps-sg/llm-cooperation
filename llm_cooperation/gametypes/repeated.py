@@ -31,7 +31,15 @@ import numpy as np
 import pandas as pd
 from openai_pygenerator import Completion, transcript
 
-from llm_cooperation import CT, CT_co, CT_contra, ModelSetup, Payoffs, Results, Settings
+from llm_cooperation import (
+    CT,
+    CT_co,
+    CT_contra,
+    ModelSetup,
+    Participant,
+    Payoffs,
+    Results,
+)
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
 logger = logging.getLogger(__name__)
@@ -71,12 +79,12 @@ class GameState(Generic[CT]):
     messages: List[Completion]
     round: int
     game_setup: GameSetup[CT]
-    participant_condition: Settings
+    participant_condition: Participant
 
 
 class ChoiceExtractor(Protocol[CT_co]):
     def __call__(
-        self, participant_condition: Settings, completion: Completion, **kwargs: bool
+        self, participant: Participant, completion: Completion, **kwargs: bool
     ) -> CT_co:
         ...
 
@@ -101,14 +109,12 @@ class PayoffFunction(Protocol[CT_contra]):
 
 ResultForRound = Tuple[Scores, Choices[CT]]
 RoundsAnalyser = Callable[
-    [List[Completion], PayoffFunction[CT], ChoiceExtractor[CT], Settings],
+    [List[Completion], PayoffFunction[CT], ChoiceExtractor[CT], Participant],
     List[ResultForRound[CT]],
 ]
 
 ResultRepeatedGame = Tuple[
-    # Group,
-    # RT,
-    Settings,
+    Participant,
     str,
     float,
     float,
@@ -154,7 +160,7 @@ class RepeatedGameResults(Results):
 
 
 def play_game(
-    participant: Settings,
+    participant: Participant,
     partner_strategy: Strategy[CT],
     game_setup: GameSetup[CT],
 ) -> List[Completion]:
@@ -179,7 +185,7 @@ def compute_scores(
     payoffs: PayoffFunction[CT],
     extract_choice: ChoiceExtractor[CT],
     analyse_rounds: RoundsAnalyser[CT],
-    participant_condition: Settings,
+    participant_condition: Participant,
 ) -> Tuple[Scores, List[Choices[CT]]]:
     conversation = conversation[1:]
     num_messages = len(conversation)
@@ -199,7 +205,7 @@ def analyse(
     extract_choice: ChoiceExtractor[CT],
     compute_freq: CooperationFrequencyFunction[CT],
     analyse_rounds: RoundsAnalyser,
-    participant_condition: Settings,
+    participant_condition: Participant,
 ) -> Tuple[float, float, Optional[List[Choices[CT]]], List[str]]:
     try:
         history = transcript(conversation)
@@ -219,7 +225,7 @@ def analyse(
 
 
 def generate_replications(
-    participant: Settings,
+    participant: Participant,
     partner_strategy: Strategy[CT],
     measurement_setup: ExperimentSetup[CT],
     game_setup: GameSetup[CT],
@@ -246,7 +252,7 @@ def generate_replications(
 
 
 def run_experiment(
-    participants: Iterable[Settings],
+    participants: Iterable[Participant],
     partner_conditions: Dict[str, Strategy[CT]],
     experiment_setup: ExperimentSetup[CT],
     game_setup: GameSetup[CT],
