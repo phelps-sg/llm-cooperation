@@ -298,7 +298,7 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
 
 
 @lru_cache()
-def create_participants(num_participant_samples: int) -> List[Participant]:
+def get_participants(num_participant_samples: int) -> List[Participant]:
     participant_conditions = GROUP_PROMPT_CONDITIONS
     random_attributes: Grid = {
         CONDITION_CHAIN_OF_THOUGHT: [True, False],
@@ -338,7 +338,7 @@ def run(
         compute_freq=compute_freq_pd,
     )
     return run_experiment(
-        participants=iter(create_participants(num_participant_samples)),
+        participants=iter(get_participants(num_participant_samples)),
         partner_conditions={
             "unconditional cooperate": strategy_cooperate,
             "unconditional defect": strategy_defect,
