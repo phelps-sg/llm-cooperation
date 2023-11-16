@@ -29,6 +29,7 @@ from typing import List, Tuple
 from openai_pygenerator import Completion, is_assistant_role, user_message
 
 from llm_cooperation import CT, Participant
+from llm_cooperation.experiments import apply_case_condition
 from llm_cooperation.gametypes.repeated import (
     ChoiceExtractor,
     Choices,
@@ -88,10 +89,13 @@ def next_round(
     ai_payoff, user_payoff = state.game_setup.payoffs(ai_choice, user_choice)
     return [
         user_message(
-            f"Your partner chose {user_choice.description(state.participant_condition)}"
-            f"in that round, and therefore you earned {ai_payoff} and your partner"
-            f"earned {user_payoff}. "
-            "Now we will move on the next round. "
-            "What is your choice for the next round?"
+            apply_case_condition(
+                state.participant_condition,
+                f"Your partner chose {user_choice.description(state.participant_condition)}"
+                f" in that round, and therefore you earned {ai_payoff} and your partner"
+                f" earned {user_payoff}. "
+                "Now we will move on the next round. "
+                "What is your choice for the next round?",
+            )
         )
     ]

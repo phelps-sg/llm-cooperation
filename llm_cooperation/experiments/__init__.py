@@ -191,9 +191,9 @@ def apply_case_condition(condition: Participant, prompt: str) -> str:
         return prompt.lower()
     elif condition[CONDITION_CASE] == Case.STANDARD.value:
         return prompt
-    raise ValueError(
-        f"Unrecognized condition {CONDITION_CASE} for {condition[CONDITION_CASE]}"
-    )
+    else:
+        logger.warning("No case condition.")
+    return prompt
 
 
 def participants(
