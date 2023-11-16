@@ -29,12 +29,20 @@ from typing import Dict
 from openai_pygenerator import Completion, content
 
 from llm_cooperation import ModelSetup, Settings, amount_as_str
-from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
+from llm_cooperation.experiments import (
+    GROUP_PROMPT_CONDITIONS,
+    get_role_prompt,
+    participants,
+    run_and_record_experiment,
+)
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
 TOTAL_SHARE = 4
 
-NUM_REPLICATIONS = 30
+NUM_REPLICATIONS = 3
+NUM_PARTICIPANT_SAMPLES = 30
+
+CONDITION_ROLE = "role"
 
 
 class DictatorEnum(Enum):
@@ -112,7 +120,8 @@ def choice_menu() -> str:
 
 
 # pylint: disable=unused-argument
-def get_prompt_dictator(condition: Settings, role_prompt: str) -> str:
+def get_prompt_dictator(condition: Settings) -> str:
+    role_prompt = get_role_prompt(condition)
     return f"""
 {role_prompt}
 This is a study of investment choices in different situations.
@@ -163,16 +172,16 @@ def compute_freq_dictator(history: DictatorChoice) -> float:
 def run(
     model_setup: ModelSetup,
     num_replications: int = NUM_REPLICATIONS,
-) -> OneShotResults[DictatorChoice, str]:
+    num_participant_samples: int = NUM_PARTICIPANT_SAMPLES,
+) -> OneShotResults[DictatorChoice]:
     return run_experiment(
-        ai_participants=AI_PARTICIPANTS,
+        participants=participants(GROUP_PROMPT_CONDITIONS),
         num_replications=num_replications,
         generate_instruction_prompt=get_prompt_dictator,
         extract_choice=extract_choice_dictator,
         payoffs=payoffs_dictator,
         compute_freq=compute_freq_dictator,
         model_setup=model_setup,
-        choose_participant_condition=lambda: dict(),  # pylint: disable=unnecessary-lambda
     )
 
 

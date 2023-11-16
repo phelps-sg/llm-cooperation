@@ -26,24 +26,37 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Iterable, List, Optional, Type
 
+import numpy as np
 from openai_pygenerator import Enum
 
 from llm_cooperation import (
     DEFAULT_MODEL_SETUP,
+    ConfigValue,
     Experiment,
+    Grid,
     Group,
     ModelSetup,
     Results,
     Settings,
+    exhaustive,
+    randomized,
 )
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_NUM_REPLICATIONS = 30
+
+def all_values(enum_type: Type[Enum]) -> List[ConfigValue]:
+    return [v.value for v in enum_type]
+
+
+DEFAULT_NUM_REPLICATIONS = 3
+DEFAULT_NUM_PARTICIPANT_SAMPLES = 30
 
 CONDITION_CASE = "case"
+CONDITION_GROUP = "group"
+CONDITION_PROMPT_INDEX = "prompt_index"
 
 AI_PARTICIPANTS = {
     #
@@ -113,6 +126,18 @@ AI_PARTICIPANTS = {
     ],
 }
 
+GROUP_PROMPT_CONDITIONS: Grid = {
+    CONDITION_GROUP: all_values(Group),
+    CONDITION_PROMPT_INDEX: [0, 1, 2],
+}
+
+
+def get_role_prompt(participant: Settings) -> str:
+    group: Group = Group[str(participant[CONDITION_GROUP])]
+    prompts: List[str] = AI_PARTICIPANTS[group]
+    index = int(participant[CONDITION_PROMPT_INDEX])
+    return prompts[index]
+
 
 class Case(Enum):
     UPPER = "upper"
@@ -137,8 +162,9 @@ def run_and_record_experiment(
     run: Experiment,
     model_setup: ModelSetup = DEFAULT_MODEL_SETUP,
     sample_size: int = DEFAULT_NUM_REPLICATIONS,
+    num_participant_samples: int = DEFAULT_NUM_PARTICIPANT_SAMPLES,
 ) -> Results:
-    results = run(model_setup, sample_size)
+    results = run(model_setup, sample_size, num_participant_samples)
     logger.info("Experiment complete.")
     df = results.to_df()
     results_dir = create_results_dir(model_setup)
@@ -168,3 +194,21 @@ def apply_case_condition(condition: Settings, prompt: str) -> str:
     raise ValueError(
         f"Unrecognized condition {CONDITION_CASE} for {condition[CONDITION_CASE]}"
     )
+
+
+def participants(
+    conditions: Grid,
+    random_attributes: Optional[Grid] = None,
+    sample_size: int = 0,
+    seed: Optional[int] = None,
+) -> Iterable[Settings]:
+    if seed is not None:
+        np.random.seed(seed)
+    for controlled in exhaustive(conditions):
+        if random_attributes is None:
+            yield controlled
+        else:
+            for sampled in (
+                randomized(random_attributes) for __i__ in range(sample_size)
+            ):
+                yield controlled | sampled

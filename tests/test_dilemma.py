@@ -29,7 +29,8 @@ import pytest
 from openai_pygenerator import Completion, logger
 from pytest_lazyfixture import lazy_fixture
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Payoffs
+from llm_cooperation import DEFAULT_MODEL_SETUP, Group, Payoffs
+from llm_cooperation.experiments import AI_PARTICIPANTS
 from llm_cooperation.experiments.dilemma import (
     CONDITION_LABELS_REVERSED,
     CONDITION_PRONOUN,
@@ -70,8 +71,8 @@ from tests.conftest import modify_condition
     ],
 )
 def test_get_instruction_prompt(condition: Settings):
-    role_prompt = "You are a helpful assistant."
-    prompt = get_prompt_pd(condition, role_prompt)
+    role_prompt = AI_PARTICIPANTS[Group.Control][0]
+    prompt = get_prompt_pd(condition)
     logger.debug("prompt = %s", prompt)
     assert "COLOR_COOPERATE" not in prompt
     assert "COLOR_DEFECT" not in prompt
@@ -248,8 +249,7 @@ def test_run_repeated_game(mocker, base_condition):
     conversation: List[Completion] = list(
         play_game(
             partner_strategy=strategy_defect,
-            role_prompt="You are a participant in a psychology experiment",
-            participant_condition=condition,
+            participant=condition,
             game_setup=GameSetup(
                 num_rounds=3,
                 generate_instruction_prompt=get_prompt_pd,

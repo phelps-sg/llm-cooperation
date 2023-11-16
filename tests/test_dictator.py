@@ -24,7 +24,12 @@
 import pytest
 from openai_pygenerator import user_message
 
-from llm_cooperation import Settings
+from llm_cooperation import Group, Settings
+from llm_cooperation.experiments import (
+    AI_PARTICIPANTS,
+    CONDITION_GROUP,
+    CONDITION_PROMPT_INDEX,
+)
 from llm_cooperation.experiments.dictator import (
     BLACK,
     BLUE,
@@ -116,9 +121,10 @@ def test_compute_freq_dictator(test_choice: DictatorChoice):
 
 
 def test_get_prompt_dictator():
-    role_prompt = "test-role"
-    result = get_prompt_dictator(None, role_prompt)  # type: ignore
-    assert role_prompt in result
+    result = get_prompt_dictator(
+        {CONDITION_GROUP: Group.Control.value, CONDITION_PROMPT_INDEX: 0}
+    )
+    assert AI_PARTICIPANTS[Group.Control][0] in result
     for choice in all_dictator_choices:
         assert describe_payoffs(choice) in result
 

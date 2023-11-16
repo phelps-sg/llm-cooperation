@@ -28,13 +28,8 @@ import pandas as pd
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import (
-    DEFAULT_MODEL_SETUP,
-    Choice,
-    Group,
-    Settings,
-    assistant_message,
-)
+from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Settings, assistant_message
+from llm_cooperation.experiments.dictator import CONDITION_ROLE
 from llm_cooperation.experiments.dilemma import (
     Cooperate,
     Defect,
@@ -80,8 +75,7 @@ def test_play_game(mocker, base_condition: Settings):
     n = 1
 
     result = play_game(
-        role_prompt="test-prompt",
-        participant_condition=base_condition,
+        participant=base_condition,
         partner_strategy=strategy_mock,
         game_setup=GameSetup(
             num_rounds=n,
@@ -118,7 +112,6 @@ def test_play_game(mocker, base_condition: Settings):
                     ),
                     participant_condition=base_condition,
                 ),
-                "test-prompt",
             )
         ]
     )
@@ -158,7 +151,7 @@ def test_next_round(base_condition: Settings):
     )
     state.game_setup.payoffs = lambda __i__, __j__: (my_payoff, other_payoff)
     state.participant_condition = base_condition
-    result = next_round(lambda _: choice, state, "")  # type: ignore
+    result = next_round(lambda _: choice, state)  # type: ignore
     assert len(result) == 1
     result_content = content(result[0])
     assert test_choice in result_content
@@ -171,29 +164,23 @@ def test_run_experiment(mocker):
         "llm_cooperation.gametypes.repeated.generate_replications"
     )
     samples = [
-        (5, 0.5, [Cooperate], ["project green"], {"chain_of_thought": True}),
-        (3, 0.7, [Defect], ["project blue"], {"chain_of_thought": False}),
-        (6, 0.6, [Defect], ["project blue"], {"chain_of_thought": True}),
+        (5, 0.5, [Cooperate], ["project green"]),
+        (3, 0.7, [Defect], ["project blue"]),
+        (6, 0.6, [Defect], ["project blue"]),
     ]
     mock_run_sample.return_value = samples
 
-    ai_participants = {
-        Group.Altruistic: ["Participant 1", "Participant 2"],
-        Group.Control: ["Participant 3"],
-    }
+    n = 3
     user_conditions = {
         "strategy_A": Mock(),
         "strategy_B": Mock(),
     }
-    participant_condition: Settings = {"chain_of_thought": True}
-
     result: pd.DataFrame = run_experiment(
-        ai_participants=ai_participants,
+        participants=(({CONDITION_ROLE: f"Participant {i}"} for i in range(n))),
         partner_conditions=user_conditions,  # type: ignore
         experiment_setup=ExperimentSetup(
             num_replications=len(samples),
             compute_freq=compute_freq_pd,
-            choose_participant_condition=lambda: participant_condition,
         ),
         game_setup=GameSetup(
             num_rounds=6,
@@ -205,20 +192,17 @@ def test_run_experiment(mocker):
             model_setup=DEFAULT_MODEL_SETUP,
         ),
     ).to_df()
-    assert len(result) == len(samples) * len(user_conditions) * 3
+    assert len(result) == len(samples) * len(user_conditions) * n
     assert mock_run_sample.call_count == len(samples) * len(user_conditions)
 
 
-def test_results_to_df(
-    results: Iterable[ResultRepeatedGame], with_chain_of_thought: Settings
-):
+def test_results_to_df(results: Iterable[ResultRepeatedGame]):
     df = RepeatedGameResults(results).to_df()
-    assert len(df.columns) == 10
+    assert len(df.columns) == 8
     # pylint: disable=R0801
     assert len(df) == 2
-    assert df["Group"][0] == str(Group.Altruistic)
-    assert df["Group"][1] == str(Group.Selfish)
-    assert df["Participant Condition"][0] == with_chain_of_thought
+    assert df["Participant Condition"].iloc[0]["chain_of_thought"]
+    assert not df["Participant Condition"].iloc[1]["chain_of_thought"]
 
 
 @pytest.fixture
@@ -227,14 +211,12 @@ def results(
     defect_choices,
     base_condition: Settings,
     with_chain_of_thought: Settings,
-) -> Iterable[ResultRepeatedGame[str]]:
+) -> Iterable[ResultRepeatedGame]:
     return iter(
         [
             (
-                Group.Altruistic,
-                "You are altruistic",
                 with_chain_of_thought,
-                "unconditional cooperate",
+                "cooperate",
                 30,
                 0.2,
                 cooperate_choices,
@@ -243,10 +225,8 @@ def results(
                 0.2,
             ),
             (
-                Group.Selfish,
-                "You are selfish",
                 base_condition,
-                "unconditional cooperate",
+                "defect",
                 60,
                 0.5,
                 defect_choices,

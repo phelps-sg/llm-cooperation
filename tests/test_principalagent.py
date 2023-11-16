@@ -26,6 +26,10 @@ from openai_pygenerator import user_message
 
 from llm_cooperation import Settings
 from llm_cooperation.experiments.principalagent import (
+    ATTRIBUTE_CUSTOMER,
+    ATTRIBUTE_PRINCIPAL,
+    ATTRIBUTE_QUERY_RESULTS,
+    ATTRIBUTE_SIMULACRUM,
     PARTICIPANT_SHELL,
     extract_choice_pa,
     get_prompt_principal_agent,
@@ -48,9 +52,9 @@ def test_extract_choice_pa(test_input: str, expected: int):
 def test_get_prompt_principal_agent():
     test_condition: Settings = {"shared_with_principal": True, "shared_with_user": True}
     test_role = PARTICIPANT_SHELL
-    result = get_prompt_principal_agent(test_condition, test_role)
-    assert test_role.principal in result
-    assert test_role.simulacrum in result
-    assert test_role.query_results in result
-    assert test_role.customer in result
+    result = get_prompt_principal_agent(test_condition | test_role)
+    assert test_role[ATTRIBUTE_PRINCIPAL] in result
+    assert test_role[ATTRIBUTE_SIMULACRUM] in result
+    assert test_role[ATTRIBUTE_QUERY_RESULTS] in result
+    assert test_role[ATTRIBUTE_CUSTOMER] in result
     assert "film" not in result.lower()

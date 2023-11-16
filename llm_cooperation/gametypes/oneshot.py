@@ -23,18 +23,16 @@
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Generic, Iterable, List, Optional, Tuple
+from typing import Callable, Generic, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 from openai_pygenerator import Completion, transcript
 
-from llm_cooperation import CT, RT, Group, ModelSetup, Results, Settings, logger
+from llm_cooperation import CT, ModelSetup, Results, Settings, logger
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
 ResultSingleShotGame = Tuple[
-    Group,
-    RT,
     Settings,
     float,
     float,
@@ -45,16 +43,15 @@ ResultSingleShotGame = Tuple[
 ]
 
 
-class OneShotResults(Results, Generic[CT, RT]):
-    def __init__(self, rows: Iterable[ResultSingleShotGame[RT, CT]]):
-        self._rows: Iterable[ResultSingleShotGame[RT, CT]] = rows
+class OneShotResults(Results, Generic[CT]):
+    def __init__(self, rows: Iterable[ResultSingleShotGame[CT]]):
+        self._rows: Iterable[ResultSingleShotGame[CT]] = rows
 
     def to_df(self) -> pd.DataFrame:
         return pd.DataFrame(
+            # pylint: disable=unnecessary-comprehension
             [
                 (
-                    str(group),
-                    prompt,
                     condition,
                     score,
                     freq,
@@ -64,12 +61,10 @@ class OneShotResults(Results, Generic[CT, RT]):
                     temp,
                 )
                 # pylint: disable=line-too-long
-                for group, prompt, condition, score, freq, choice, history, model, temp in self._rows
+                for condition, score, freq, choice, history, model, temp in self._rows
             ],
             columns=[
-                "Group",
                 "Participant",
-                "Condition",
                 "Score",
                 "Cooperation frequency",
                 "Choice",
@@ -81,13 +76,12 @@ class OneShotResults(Results, Generic[CT, RT]):
 
 
 def play_game(
-    role_prompt: RT,
-    participant_condition: Settings,
-    generate_instruction_prompt: PromptGenerator[RT],
+    participant: Settings,
+    generate_instruction_prompt: PromptGenerator,
     model_setup: ModelSetup,
 ) -> List[Completion]:
     gpt_completions, messages = start_game(
-        generate_instruction_prompt, model_setup, participant_condition, role_prompt
+        generate_instruction_prompt, model_setup, participant
     )
     # gpt_completions = completer_for(model_setup)
     # messages = [user_message(generate_instruction_prompt(role_prompt))]
@@ -113,56 +107,50 @@ def analyse(
     extract_choice: Callable[[Settings, Completion], CT],
     compute_freq: Callable[[CT], float],
     participant_condition: Settings,
-) -> Tuple[float, float, Optional[CT], List[str], Settings]:
+) -> Tuple[float, float, Optional[CT], List[str]]:
     try:
         history = transcript(conversation)
         score, ai_choice = compute_scores(
             list(conversation), payoffs, extract_choice, participant_condition
         )
         freq = compute_freq(ai_choice)
-        return score, freq, ai_choice, history, participant_condition
+        return score, freq, ai_choice, history
     except ValueError as e:
         logger.error("ValueError while running sample: %s", e)
-        return 0, np.nan, None, [str(e)], dict()
+        return 0, np.nan, None, [str(e)]
 
 
 def generate_replications(
-    prompt: RT,
+    participant: Settings,
     num_replications: int,
-    generate_instruction_prompt: PromptGenerator[RT],
+    generate_instruction_prompt: PromptGenerator,
     payoffs: Callable[[CT], float],
     extract_choice: Callable[[Settings, Completion], CT],
     compute_freq: Callable[[CT], float],
     model_setup: ModelSetup,
-    choose_participant_condition: Callable[[], Settings],
-) -> Iterable[Tuple[float, float, Optional[CT], List[str], Settings]]:
+) -> Iterable[Tuple[float, float, Optional[CT], List[str]]]:
     # pylint: disable=R0801
     for __i__ in range(num_replications):
-        condition = choose_participant_condition()
         conversation = play_game(
-            role_prompt=prompt,
-            participant_condition=condition,
+            participant=participant,
             generate_instruction_prompt=generate_instruction_prompt,
             model_setup=model_setup,
         )
-        yield analyse(conversation, payoffs, extract_choice, compute_freq, condition)
+        yield analyse(conversation, payoffs, extract_choice, compute_freq, participant)
 
 
 def run_experiment(
-    ai_participants: Dict[Group, List[RT]],
+    participants: Iterable[Settings],
     num_replications: int,
-    generate_instruction_prompt: PromptGenerator[RT],
+    generate_instruction_prompt: PromptGenerator,
     payoffs: Callable[[CT], float],
     extract_choice: Callable[[Settings, Completion], CT],
     compute_freq: Callable[[CT], float],
     model_setup: ModelSetup,
-    choose_participant_condition: Callable[[], Settings],
-) -> OneShotResults[CT, RT]:
+) -> OneShotResults[CT]:
     return OneShotResults(
         (
-            group,
             participant,
-            participant_condition,
             score,
             freq,
             choices,
@@ -170,16 +158,14 @@ def run_experiment(
             model_setup.model,
             model_setup.temperature,
         )
-        for group, participants in ai_participants.items()
         for participant in participants
-        for score, freq, choices, history, participant_condition in generate_replications(
-            prompt=participant,
+        for score, freq, choices, history in generate_replications(
             num_replications=num_replications,
             generate_instruction_prompt=generate_instruction_prompt,
             payoffs=payoffs,
             extract_choice=extract_choice,
             compute_freq=compute_freq,
             model_setup=model_setup,
-            choose_participant_condition=choose_participant_condition,
+            participant=participant,
         )
     )

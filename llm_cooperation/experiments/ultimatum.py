@@ -31,7 +31,12 @@ import numpy as np
 from openai_pygenerator import Completion, content, user_message
 
 from llm_cooperation import ModelSetup, Payoffs, Settings, amount_as_str
-from llm_cooperation.experiments import AI_PARTICIPANTS, run_and_record_experiment
+from llm_cooperation.experiments import (
+    GROUP_PROMPT_CONDITIONS,
+    get_role_prompt,
+    participants,
+    run_and_record_experiment,
+)
 from llm_cooperation.gametypes import alternating
 from llm_cooperation.gametypes.repeated import (
     Choices,
@@ -94,8 +99,7 @@ dollar_float_pattern = re.compile(r"\$(\d+(?:\.\d+)?)")
 
 def next_round_ultimatum(
     partner_strategy: Strategy[UltimatumChoice],
-    state: GameState[UltimatumChoice, str],
-    __tag__: str,
+    state: GameState[UltimatumChoice],
 ) -> List[Completion]:
     user_response = partner_strategy(state, propose=False)
     user_proposal = partner_strategy(state, propose=True)
@@ -113,7 +117,7 @@ def next_round_ultimatum(
 
 # pylint: disable=unused-argument
 def strategy_cooperate(
-    state: GameState[UltimatumChoice, str], **kwargs: bool
+    state: GameState[UltimatumChoice], **kwargs: bool
 ) -> UltimatumChoice:
     if kwargs["propose"]:
         return ProposerChoice(MAX_AMOUNT)
@@ -121,7 +125,8 @@ def strategy_cooperate(
         return Accept
 
 
-def get_prompt_ultimatum(condition: Settings, role_prompt: str) -> str:
+def get_prompt_ultimatum(condition: Settings) -> str:
+    role_prompt = get_role_prompt(condition)
     logger.debug("condition = %s", condition)
     logger.debug("role_prompt = %s", role_prompt)
     return f"""
@@ -217,8 +222,10 @@ def payoffs_ultimatum(player1: UltimatumChoice, player2: UltimatumChoice) -> Pay
         raise ValueError(f"Invalid choice combination: {player1}, {player2}")
 
 
-def run(model_setup: ModelSetup, num_replications: int) -> RepeatedGameResults:
-    game_setup: GameSetup[UltimatumChoice, str] = GameSetup(
+def run(
+    model_setup: ModelSetup, num_replications: int, __num_participant_samples__: int = 0
+) -> RepeatedGameResults:
+    game_setup: GameSetup[UltimatumChoice] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_ultimatum,
         extract_choice=extract_choice_ultimatum,
@@ -230,10 +237,9 @@ def run(model_setup: ModelSetup, num_replications: int) -> RepeatedGameResults:
     measurement_setup: ExperimentSetup[UltimatumChoice] = ExperimentSetup(
         num_replications=num_replications,
         compute_freq=compute_freq_ultimatum,
-        choose_participant_condition=lambda: dict(),  # pylint: disable=unnecessary-lambda
     )
     return run_experiment(
-        ai_participants=AI_PARTICIPANTS,
+        participants=participants(GROUP_PROMPT_CONDITIONS),
         partner_conditions={"cooperate": strategy_cooperate},
         experiment_setup=measurement_setup,
         game_setup=game_setup,

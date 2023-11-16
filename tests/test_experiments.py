@@ -28,13 +28,24 @@ import pandas as pd
 import pytest
 from pytest_lazyfixture import lazy_fixture
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, ModelSetup, Results, Settings
+from llm_cooperation import (
+    DEFAULT_MODEL_SETUP,
+    Grid,
+    Group,
+    ModelSetup,
+    Results,
+    Settings,
+)
 from llm_cooperation.experiments import (
+    CONDITION_GROUP,
+    CONDITION_PROMPT_INDEX,
     DEFAULT_NUM_REPLICATIONS,
     apply_case_condition,
     create_results_dir,
+    participants,
     run_and_record_experiment,
 )
+from llm_cooperation.experiments.dilemma import all_values
 
 
 def test_create_results_dir(mocker):
@@ -61,7 +72,7 @@ def test_run_and_record_experiment(mocker):
     name = "test_experiment"
     run_and_record_experiment(
         name,
-        run=lambda __setup__, __n__: results_mock,
+        run=lambda __setup__, __n__, __j__: results_mock,
         model_setup=DEFAULT_MODEL_SETUP,
         sample_size=DEFAULT_NUM_REPLICATIONS,
     )
@@ -85,3 +96,34 @@ def test_apply_case_condition(condition: Settings, expected: str):
     test_prompt = "Hello"
     result = apply_case_condition(condition, test_prompt)
     assert result == expected
+
+
+def test_participants(conditions: Grid):
+    result = list(participants(conditions))
+    assert len(result) == 2 * len(all_values(Group)) * 3
+    for participant in result:
+        assert "chain_of_thought" in participant
+        assert CONDITION_GROUP in participant
+        assert CONDITION_PROMPT_INDEX in participant
+
+
+def test_participants_randomized(conditions: Grid):
+    n = 5
+    random_attributes: Grid = {"reversed": [True, False], "level": [0, 1, 2]}
+    result = list(participants(conditions, random_attributes, n, seed=42))
+    assert len(result) == 2 * len(all_values(Group)) * 3 * n
+    for participant in result:
+        assert "reversed" in participant
+        assert "level" in participant
+        assert "chain_of_thought" in participant
+        assert CONDITION_GROUP in participant
+        assert CONDITION_PROMPT_INDEX in participant
+
+
+@pytest.fixture
+def conditions():
+    return {
+        "chain_of_thought": [True, False],
+        CONDITION_GROUP: all_values(Group),
+        CONDITION_PROMPT_INDEX: [0, 1, 2],
+    }

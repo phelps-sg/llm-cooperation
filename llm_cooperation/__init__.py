@@ -66,10 +66,13 @@ class Choice(Protocol):
         ...
 
 
-Group = Enum(
-    "Group",
-    ["Cooperative", "Competitive", "Altruistic", "Selfish", "Mixed", "Control"],
-)
+class Group(Enum):
+    Cooperative = "Cooperative"
+    Competitive = "Competitive"
+    Altruistic = "Altruistic"
+    Selfish = "Selfish"
+    Mixed = "Mixed"
+    Control = "Control"
 
 
 class Results(ABC):
@@ -86,7 +89,7 @@ class ModelSetup:
     dry_run: Optional[str]
 
 
-Experiment = Callable[[ModelSetup, int], Results]
+Experiment = Callable[[ModelSetup, int, int], Results]
 
 DEFAULT_MODEL_SETUP = ModelSetup(
     model=openai_pygenerator.GPT_MODEL,
@@ -99,8 +102,8 @@ CT = TypeVar("CT", bound=Choice)
 CT_co = TypeVar("CT_co", bound=Choice, covariant=True)
 CT_contra = TypeVar("CT_contra", bound=Choice, contravariant=True)
 
-RT = TypeVar("RT")
-RT_contra = TypeVar("RT_contra", contravariant=True)
+# RT = TypeVar("RT")
+# RT_contra = TypeVar("RT_contra", contravariant=True)
 
 Payoffs = Tuple[float, float]
 

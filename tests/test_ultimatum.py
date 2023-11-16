@@ -28,9 +28,11 @@ import numpy as np
 import pytest
 from openai_pygenerator import content
 
-from llm_cooperation import Payoffs, Settings, amount_as_str
+from llm_cooperation import Group, Payoffs, Settings, amount_as_str
+from llm_cooperation.experiments import AI_PARTICIPANTS
 from llm_cooperation.experiments.ultimatum import (
     MAX_AMOUNT,
+    NUM_ROUNDS,
     Accept,
     ProposerChoice,
     Reject,
@@ -56,12 +58,10 @@ def test_amount_as_str(amount: float, expected: str):
     assert amount_as_str(amount) == expected
 
 
-def test_get_instruction_prompt():
-    rounds = 6
-    role_prompt = "You are a helpful assistant."
-    prompt = get_prompt_ultimatum(rounds, role_prompt)  # type: ignore
-    assert f"{rounds} rounds" in prompt
-    assert role_prompt in prompt
+def test_get_instruction_prompt(base_condition):
+    prompt = get_prompt_ultimatum(base_condition)  # type: ignore
+    assert f"{NUM_ROUNDS} rounds" in prompt
+    assert AI_PARTICIPANTS[Group.Control][0] in prompt
 
 
 @pytest.mark.parametrize(
@@ -182,7 +182,7 @@ def test_next_round_ultimatum(
             return user_response
 
     state = Mock()
-    result = content(next_round_ultimatum(test_strategy, state, "")[0]).lower()
+    result = content(next_round_ultimatum(test_strategy, state)[0]).lower()
     assert (
         f"your partner proposes {user_proposal.description(base_condition).lower()}"
         in result

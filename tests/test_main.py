@@ -75,7 +75,7 @@ def test_run_all(mocker, grid):
     )
     mocker.patch(
         "llm_cooperation.main.get_config",
-        return_value=Configuration(grid, 30, experiments.keys()),
+        return_value=Configuration(grid, 3, 30, experiments.keys()),
     )
     run_all()
     assert run_and_record.call_count == 6 * len(list(experiments.items()))

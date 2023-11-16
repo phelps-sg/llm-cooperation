@@ -31,17 +31,7 @@ import numpy as np
 import pandas as pd
 from openai_pygenerator import Completion, transcript
 
-from llm_cooperation import (
-    CT,
-    RT,
-    CT_co,
-    CT_contra,
-    Group,
-    ModelSetup,
-    Payoffs,
-    Results,
-    Settings,
-)
+from llm_cooperation import CT, CT_co, CT_contra, ModelSetup, Payoffs, Results, Settings
 from llm_cooperation.gametypes import PromptGenerator, start_game
 
 logger = logging.getLogger(__name__)
@@ -59,17 +49,11 @@ class Scores:
     ai: float
 
 
-# @dataclass(frozen=True)
-# class RoundsSetup:
-#     analyse_round: RoundAnalyser
-#     analyse_rounds: RoundsAnalyser
-
-
 @dataclass(frozen=True)
-class GameSetup(Generic[CT, RT]):
+class GameSetup(Generic[CT]):
     num_rounds: int
-    generate_instruction_prompt: PromptGenerator[RT]
-    next_round: RoundGenerator[CT, RT]
+    generate_instruction_prompt: PromptGenerator
+    next_round: RoundGenerator[CT]
     analyse_rounds: RoundsAnalyser[CT]
     payoffs: PayoffFunction[CT]
     extract_choice: ChoiceExtractor[CT]
@@ -80,14 +64,13 @@ class GameSetup(Generic[CT, RT]):
 class ExperimentSetup(Generic[CT]):
     num_replications: int
     compute_freq: CooperationFrequencyFunction[CT]
-    choose_participant_condition: Callable[[], Settings]
 
 
 @dataclass(frozen=True)
-class GameState(Generic[CT, RT]):
+class GameState(Generic[CT]):
     messages: List[Completion]
     round: int
-    game_setup: GameSetup[CT, RT]
+    game_setup: GameSetup[CT]
     participant_condition: Settings
 
 
@@ -103,7 +86,7 @@ class Strategy(Protocol[CT_co]):
         ...
 
 
-RoundGenerator = Callable[[Strategy[CT], GameState[CT, RT], RT], List[Completion]]
+RoundGenerator = Callable[[Strategy[CT], GameState[CT]], List[Completion]]
 
 
 class CooperationFrequencyFunction(Protocol[CT]):
@@ -116,16 +99,15 @@ class PayoffFunction(Protocol[CT_contra]):
         ...
 
 
-# PromptGenerator = Callable[[ParticipantCondition, str], str]
 ResultForRound = Tuple[Scores, Choices[CT]]
 RoundsAnalyser = Callable[
-    [List[Completion], PayoffFunction, ChoiceExtractor[CT], Settings],
+    [List[Completion], PayoffFunction[CT], ChoiceExtractor[CT], Settings],
     List[ResultForRound[CT]],
 ]
 
 ResultRepeatedGame = Tuple[
-    Group,
-    RT,
+    # Group,
+    # RT,
     Settings,
     str,
     float,
@@ -143,10 +125,9 @@ class RepeatedGameResults(Results):
 
     def to_df(self) -> pd.DataFrame:
         return pd.DataFrame(
+            # pylint: disable=unnecessary-comprehension
             [
                 (
-                    str(group),
-                    participant,
                     condition,
                     strategy,
                     score,
@@ -157,11 +138,9 @@ class RepeatedGameResults(Results):
                     temp,
                 )
                 # pylint: disable=line-too-long
-                for group, participant, condition, strategy, score, freq, choices, history, model, temp in self._rows
+                for condition, strategy, score, freq, choices, history, model, temp in self._rows
             ],
             columns=[
-                "Group",
-                "Participant",
                 "Participant Condition",
                 "Partner Condition",
                 "Score",
@@ -175,24 +154,21 @@ class RepeatedGameResults(Results):
 
 
 def play_game(
-    role_prompt: RT,
-    participant_condition: Settings,
+    participant: Settings,
     partner_strategy: Strategy[CT],
-    game_setup: GameSetup[CT, RT],
+    game_setup: GameSetup[CT],
 ) -> List[Completion]:
     gpt_completions, messages = start_game(
         game_setup.generate_instruction_prompt,
         game_setup.model_setup,
-        participant_condition,
-        role_prompt,
+        participant,
     )
     for i in range(game_setup.num_rounds):
         completion = gpt_completions(messages, 1)
         messages += completion
         partner_response = game_setup.next_round(
             partner_strategy,
-            GameState(messages, i, game_setup, participant_condition),
-            role_prompt,
+            GameState(messages, i, game_setup, participant),
         )
         messages += partner_response
     return messages
@@ -200,7 +176,7 @@ def play_game(
 
 def compute_scores(
     conversation: List[Completion],
-    payoffs: PayoffFunction[CT_contra],
+    payoffs: PayoffFunction[CT],
     extract_choice: ChoiceExtractor[CT],
     analyse_rounds: RoundsAnalyser[CT],
     participant_condition: Settings,
@@ -219,12 +195,12 @@ def compute_scores(
 
 def analyse(
     conversation: List[Completion],
-    payoffs: PayoffFunction[CT_contra],
+    payoffs: PayoffFunction[CT],
     extract_choice: ChoiceExtractor[CT],
     compute_freq: CooperationFrequencyFunction[CT],
     analyse_rounds: RoundsAnalyser,
     participant_condition: Settings,
-) -> Tuple[float, float, Optional[List[Choices[CT]]], List[str], Settings]:
+) -> Tuple[float, float, Optional[List[Choices[CT]]], List[str]]:
     try:
         history = transcript(conversation)
         result: Tuple[Scores, List[Choices[CT]]] = compute_scores(
@@ -236,27 +212,25 @@ def analyse(
         )
         scores, choices = result
         freq = compute_freq(choices)
-        return scores.ai, freq, choices, history, participant_condition
+        return scores.ai, freq, choices, history
     except ValueError as e:
         logger.error("ValueError while running sample: %s", e)
-        return 0, np.nan, None, [str(e)], dict()
+        return 0, np.nan, None, [str(e)]
 
 
 def generate_replications(
-    participant: RT,
+    participant: Settings,
     partner_strategy: Strategy[CT],
     measurement_setup: ExperimentSetup[CT],
-    game_setup: GameSetup[CT, RT],
-) -> Iterable[Tuple[float, float, Optional[List[Choices[CT]]], List[str], Settings]]:
+    game_setup: GameSetup[CT],
+) -> Iterable[Tuple[float, float, Optional[List[Choices[CT]]], List[str]]]:
     # pylint: disable=R0801
     for __i__ in range(measurement_setup.num_replications):
         try:
-            participant_condition = measurement_setup.choose_participant_condition()
             conversation = play_game(
                 partner_strategy=partner_strategy,
-                participant_condition=participant_condition,
                 game_setup=game_setup,
-                role_prompt=participant,
+                participant=participant,
             )
             yield analyse(
                 conversation,
@@ -264,24 +238,22 @@ def generate_replications(
                 game_setup.extract_choice,
                 measurement_setup.compute_freq,
                 game_setup.analyse_rounds,
-                participant_condition,
+                participant,
             )
         except ValueError as ex:
             logger.exception(ex)
-            yield np.nan, np.nan, None, [str(ex)], dict()
+            yield np.nan, np.nan, None, [str(ex)]
 
 
 def run_experiment(
-    ai_participants: Dict[Group, List[RT]],
+    participants: Iterable[Settings],
     partner_conditions: Dict[str, Strategy[CT]],
     experiment_setup: ExperimentSetup[CT],
-    game_setup: GameSetup[CT, RT],
+    game_setup: GameSetup[CT],
 ) -> RepeatedGameResults:
     return RepeatedGameResults(
         (
-            group,
             participant,
-            participant_condition,
             strategy_name,
             score,
             freq,
@@ -290,10 +262,9 @@ def run_experiment(
             game_setup.model_setup.model,
             game_setup.model_setup.temperature,
         )
-        for group, participants in ai_participants.items()
         for participant in participants
         for strategy_name, strategy_fn in partner_conditions.items()
-        for score, freq, choices, history, participant_condition in generate_replications(
+        for score, freq, choices, history in generate_replications(
             participant=participant,
             partner_strategy=strategy_fn,
             measurement_setup=experiment_setup,

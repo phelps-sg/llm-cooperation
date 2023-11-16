@@ -29,7 +29,8 @@ import pandas as pd
 import pytest
 from openai_pygenerator import content, user_message
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Grid, Group, Settings
+from llm_cooperation import DEFAULT_MODEL_SETUP, Choice, Grid, Settings
+from llm_cooperation.experiments.dictator import CONDITION_ROLE
 from llm_cooperation.gametypes.oneshot import (
     OneShotResults,
     ResultSingleShotGame,
@@ -48,29 +49,23 @@ def test_run_experiment(mocker):
         "llm_cooperation.gametypes.oneshot.generate_replications"
     )
     samples = [
-        (5, 0.5, mock_choice, ["project green"], {"chain_of_thought": True}),
-        (3, 0.7, mock_choice, ["project blue"], {"chain_of_thought": False}),
-        (6, 0.6, mock_choice, ["project blue"], {"chain_of_thought": True}),
+        (5, 0.5, mock_choice, ["project green"]),
+        (3, 0.7, mock_choice, ["project blue"]),
+        (6, 0.6, mock_choice, ["project blue"]),
     ]
     mock_run_sample.return_value = samples
-
-    ai_participants = {
-        Group.Altruistic: ["Participant 1", "Participant 2"],
-        Group.Control: ["Participant 3"],
-    }
-
+    n = 5
     result: pd.DataFrame = run_experiment(
-        ai_participants=ai_participants,
-        num_replications=len(samples),
+        participants=(({CONDITION_ROLE: f"Participant {i}"} for i in range(n))),
+        num_replications=3,
         generate_instruction_prompt=Mock(),
         payoffs=Mock(),
         extract_choice=Mock(),
         compute_freq=Mock(),
         model_setup=DEFAULT_MODEL_SETUP,
-        choose_participant_condition=lambda: {"chain_of_thought": True},
     ).to_df()
-    assert len(result) == 3 * len(samples)
-    assert mock_run_sample.call_count == len(samples)
+    assert len(result) == 5 * len(samples)
+    assert mock_run_sample.call_count == n
 
 
 def test_generate_samples(mocker):
@@ -82,14 +77,13 @@ def test_generate_samples(mocker):
     test_n = 3
     result = list(
         generate_replications(
-            prompt="test-prompt",
             num_replications=test_n,
             generate_instruction_prompt=Mock(),
             payoffs=Mock(),
             extract_choice=Mock(),
             compute_freq=Mock(),
             model_setup=DEFAULT_MODEL_SETUP,
-            choose_participant_condition=lambda: {"chain_of_thought": True},
+            participant={CONDITION_ROLE: "Group 1"},
         )
     )
     assert len(result) == test_n
@@ -97,8 +91,8 @@ def test_generate_samples(mocker):
 
 
 def test_compute_scores(base_condition: Settings):
-    mock_choice = Mock(spec=Choice)
     mock_payoff = 0.5
+    mock_choice = Mock(spec=Choice)
     result = compute_scores(
         conversation=[user_message("prompt"), user_message("answer")],
         payoffs=lambda _: mock_payoff,
@@ -118,12 +112,10 @@ def test_play_game(mocker):
     mock_generate = Mock()
     mock_generate.return_value = test_prompt
     result = play_game(
-        role_prompt="test-role-prompt",
-        participant_condition=dict(),
+        participant={CONDITION_ROLE: "test"},
         generate_instruction_prompt=mock_generate,
         model_setup=DEFAULT_MODEL_SETUP,
     )
-    print(result)
     assert len(result) == 2
     assert result[1] == mock_completion
     assert content(result[0]) == test_prompt
@@ -151,7 +143,7 @@ def test_analyse(mocker):
         compute_freq=mock_compute_freq,
         participant_condition=test_condition,
     )
-    assert result == (test_score, test_freq, mock_choice, test_messages, test_condition)
+    assert result == (test_score, test_freq, mock_choice, test_messages)
 
     mock_compute_freq_with_ex = Mock()
     test_err_message = "test exception"
@@ -163,7 +155,7 @@ def test_analyse(mocker):
         compute_freq=mock_compute_freq_with_ex,
         participant_condition=test_condition,
     )
-    assert len(err_result) == 5
+    assert len(err_result) == 4
     assert np.isnan(err_result[1])
     assert err_result[2] is None
     assert test_err_message in err_result[3]
@@ -171,11 +163,11 @@ def test_analyse(mocker):
 
 def test_results_to_df(results: Iterable[ResultSingleShotGame]):
     df = OneShotResults(results).to_df()
-    assert len(df.columns) == 9
+    assert len(df.columns) == 7
     # pylint: disable=R0801
     assert len(df) == 2
-    assert df["Group"][0] == str(Group.Altruistic)
-    assert df["Group"][1] == str(Group.Selfish)
+    assert df["Participant"].iloc[0]["condition"]
+    assert not df["Participant"].iloc[1]["condition"]
 
 
 @pytest.fixture
@@ -183,8 +175,6 @@ def results() -> Iterable[ResultSingleShotGame]:
     return iter(
         [
             (
-                Group.Altruistic,
-                "You are altruistic",
                 {"condition": True},
                 30.0,
                 0.2,
@@ -194,8 +184,6 @@ def results() -> Iterable[ResultSingleShotGame]:
                 0.2,
             ),
             (
-                Group.Selfish,
-                "You are selfish",
                 {"condition": False},
                 60.0,
                 0.5,

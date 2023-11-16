@@ -26,8 +26,13 @@ from typing import List
 import pytest
 from openai_pygenerator import Completion
 
-from llm_cooperation import ConfigValue, Settings
-from llm_cooperation.experiments import CONDITION_CASE, Case
+from llm_cooperation import ConfigValue, Group, Settings
+from llm_cooperation.experiments import (
+    CONDITION_CASE,
+    CONDITION_GROUP,
+    CONDITION_PROMPT_INDEX,
+    Case,
+)
 from llm_cooperation.experiments.dilemma import (
     CONDITION_CHAIN_OF_THOUGHT,
     CONDITION_DEFECT_FIRST,
@@ -62,6 +67,8 @@ def conversation() -> List[Completion]:
 @pytest.fixture
 def base_condition() -> Settings:
     return {
+        CONDITION_GROUP: Group.Control.value,
+        CONDITION_PROMPT_INDEX: 0,
         CONDITION_LABEL: Label.COLORS.value,
         CONDITION_LABELS_REVERSED: False,
         CONDITION_CHAIN_OF_THOUGHT: False,

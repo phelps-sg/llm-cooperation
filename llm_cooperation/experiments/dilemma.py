@@ -26,17 +26,20 @@ import re
 from dataclasses import dataclass
 from enum import Enum, auto
 from functools import partial
-from typing import List, Optional, Tuple, Type
+from typing import List, Optional, Tuple
 
 import numpy as np
 from openai_pygenerator import Completion
 
-from llm_cooperation import ConfigValue, ModelSetup, Payoffs, Settings, randomized
+from llm_cooperation import Grid, ModelSetup, Payoffs, Settings
 from llm_cooperation.experiments import (
-    AI_PARTICIPANTS,
     CONDITION_CASE,
+    GROUP_PROMPT_CONDITIONS,
     Case,
+    all_values,
     apply_case_condition,
+    get_role_prompt,
+    participants,
     run_and_record_experiment,
 )
 from llm_cooperation.gametypes import simultaneous
@@ -66,6 +69,8 @@ CONDITION_LABELS_REVERSED = "labels_reversed"
 CONDITION_CHAIN_OF_THOUGHT = "chain_of_thought"
 CONDITION_DEFECT_FIRST = "defect_first"
 CONDITION_PRONOUN = "pronoun"
+CONDITION_ROLE = "role"
+CONDITION_GROUP = "group"
 
 logger = logging.getLogger(__name__)
 
@@ -103,10 +108,6 @@ class Pronoun(Enum):
     THEY = "they"
 
 
-def all_values(enum_type: Type[Enum]) -> List[ConfigValue]:
-    return [v.value for v in enum_type]
-
-
 def labels(condition: Settings) -> Tuple[str, str]:
     value = condition[CONDITION_LABEL]
     result: Optional[List[str]] = None
@@ -133,8 +134,8 @@ def defect_label(condition: Settings) -> str:
     return labels(condition)[1]
 
 
-def get_prompt_pd(condition: Settings, role_prompt: str) -> str:
-    return apply_case_condition(condition, get_prompt_base(condition, role_prompt))
+def get_prompt_pd(condition: Settings) -> str:
+    return apply_case_condition(condition, get_prompt_base(condition))
 
 
 def get_choice_template(condition: Settings, cooperate: str, defect: str) -> str:
@@ -158,7 +159,8 @@ def get_pronoun_phrasing(condition: Settings) -> str:
     )
 
 
-def get_prompt_base(condition: Settings, role_prompt: str) -> str:
+def get_prompt_base(condition: Settings) -> str:
+    role_prompt = get_role_prompt(condition)
     cooperate = f"""'Project {cooperate_label(condition)}'"""
     defect = f"""'Project {defect_label(condition)}'"""
     choice_template = get_choice_template(condition, cooperate, defect)
@@ -204,21 +206,21 @@ Here is your investment partner. What is your choice in the first round?
 
 # pylint: disable=unused-argument
 def strategy_defect(
-    state: GameState[DilemmaChoice, str], **__kwargs__: bool
+    state: GameState[DilemmaChoice], **__kwargs__: bool
 ) -> DilemmaChoice:
     return Defect
 
 
 # pylint: disable=unused-argument
 def strategy_cooperate(
-    state: GameState[DilemmaChoice, str], **__kwargs__: bool
+    state: GameState[DilemmaChoice], **__kwargs__: bool
 ) -> DilemmaChoice:
     return Cooperate
 
 
 def strategy_t4t(
     initial_choice: DilemmaChoice,
-    state: GameState[DilemmaChoice, str],
+    state: GameState[DilemmaChoice],
     **__kwargs__: bool,
 ) -> DilemmaChoice:
     if len(state.messages) == 2:
@@ -293,8 +295,10 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
-def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
-    game_setup: GameSetup[DilemmaChoice, str] = GameSetup(
+def run(
+    model_setup: ModelSetup, num_replications: int, num_participant_samples: int
+) -> RepeatedGameResults:
+    game_setup: GameSetup[DilemmaChoice] = GameSetup(
         num_rounds=NUM_ROUNDS,
         generate_instruction_prompt=get_prompt_pd,
         payoffs=payoffs_pd,
@@ -304,21 +308,22 @@ def run(model_setup: ModelSetup, sample_size: int) -> RepeatedGameResults:
         model_setup=model_setup,
     )
     experiment_setup: ExperimentSetup[DilemmaChoice] = ExperimentSetup(
-        num_replications=sample_size,
+        num_replications=num_replications,
         compute_freq=compute_freq_pd,
-        choose_participant_condition=lambda: randomized(
-            {
-                CONDITION_CHAIN_OF_THOUGHT: [True, False],
-                CONDITION_LABEL: all_values(Label),
-                CONDITION_CASE: all_values(Case),
-                CONDITION_PRONOUN: all_values(Pronoun),
-                CONDITION_DEFECT_FIRST: [True, False],
-                CONDITION_LABELS_REVERSED: [True, False],
-            }
-        ),
     )
+    participant_conditions = GROUP_PROMPT_CONDITIONS
+    random_attributes: Grid = {
+        CONDITION_CHAIN_OF_THOUGHT: [True, False],
+        CONDITION_LABEL: all_values(Label),
+        CONDITION_CASE: all_values(Case),
+        CONDITION_PRONOUN: all_values(Pronoun),
+        CONDITION_DEFECT_FIRST: [True, False],
+        CONDITION_LABELS_REVERSED: [True, False],
+    }
     return run_experiment(
-        ai_participants=AI_PARTICIPANTS,
+        participants=participants(
+            participant_conditions, random_attributes, num_participant_samples
+        ),
         partner_conditions={
             "unconditional cooperate": strategy_cooperate,
             "unconditional defect": strategy_defect,
