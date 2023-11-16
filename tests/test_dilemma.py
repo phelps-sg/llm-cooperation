@@ -29,8 +29,8 @@ import pytest
 from openai_pygenerator import Completion, logger
 from pytest_lazyfixture import lazy_fixture
 
-from llm_cooperation import DEFAULT_MODEL_SETUP, Group, Participant, Payoffs
-from llm_cooperation.experiments import AI_PARTICIPANTS
+from llm_cooperation import DEFAULT_MODEL_SETUP, Group, Participant, Payoffs, exhaustive
+from llm_cooperation.experiments import AI_PARTICIPANTS, GROUP_PROMPT_CONDITIONS
 from llm_cooperation.experiments.dilemma import (
     CONDITION_LABELS_REVERSED,
     CONDITION_PRONOUN,
@@ -47,6 +47,7 @@ from llm_cooperation.experiments.dilemma import (
     defect_label,
     extract_choice_pd,
     get_choice_template,
+    get_participants,
     get_prompt_pd,
     get_pronoun_phrasing,
     move_as_str,
@@ -234,6 +235,18 @@ def test_defect_label(condition: Participant, expected: str):
 def test_cooperate_label_reversed(condition: Participant, expected: str):
     condition_reversed = modify_condition(condition, CONDITION_LABELS_REVERSED, True)
     assert cooperate_label(condition_reversed) == expected
+
+
+def test_get_participants():
+    n = 5
+    random_participants = get_participants(num_participant_samples=n)
+    assert len(random_participants) == n * len(
+        list(exhaustive(GROUP_PROMPT_CONDITIONS))
+    )
+    assert get_participants(n) == random_participants
+    factorial_participants = get_participants(num_participant_samples=0)
+    assert get_participants(0) == factorial_participants
+    assert len(factorial_participants) == 3888
 
 
 def test_run_repeated_game(mocker, base_condition):

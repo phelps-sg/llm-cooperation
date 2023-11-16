@@ -299,8 +299,7 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
 
 @lru_cache()
 def get_participants(num_participant_samples: int) -> List[Participant]:
-    participant_conditions = GROUP_PROMPT_CONDITIONS
-    random_attributes: Grid = {
+    pd_attributes: Grid = {
         CONDITION_CHAIN_OF_THOUGHT: [True, False],
         CONDITION_LABEL: all_values(Label),
         CONDITION_CASE: all_values(Case),
@@ -310,10 +309,14 @@ def get_participants(num_participant_samples: int) -> List[Participant]:
     }
     result = list(
         participants(
-            participant_conditions,
-            random_attributes,
+            GROUP_PROMPT_CONDITIONS,
+            pd_attributes,
             num_participant_samples,
             seed=SEED_VALUE,
+        )
+        if num_participant_samples > 0
+        else participants(
+            GROUP_PROMPT_CONDITIONS | pd_attributes,
         )
     )
     for i, participant in enumerate(result):
