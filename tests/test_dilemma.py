@@ -26,7 +26,7 @@ from typing import List
 from unittest.mock import Mock
 
 import pytest
-from openai_pygenerator import Completion, logger
+from openai_pygenerator import Completion, logger, user_message
 from pytest_lazyfixture import lazy_fixture
 
 from llm_cooperation import DEFAULT_MODEL_SETUP, Group, Participant, Payoffs, exhaustive
@@ -59,7 +59,6 @@ from llm_cooperation.experiments.dilemma import (
 )
 from llm_cooperation.gametypes import simultaneous
 from llm_cooperation.gametypes.repeated import GameSetup, play_game
-from tests.common import make_completion
 from tests.conftest import modify_condition
 
 
@@ -133,7 +132,7 @@ Choice: Project Blue""",
 def test_extract_choice_pd(
     condition: Participant, text: str, expected_move: DilemmaChoice
 ):
-    move = extract_choice_pd(condition, make_completion(text))
+    move = extract_choice_pd(condition, user_message(text))
     assert move == expected_move
 
 

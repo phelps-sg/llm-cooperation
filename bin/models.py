@@ -29,6 +29,6 @@ import openai
 
 if __name__ == "__main__":
     openai.api_key = os.environ["OPENAI_API_KEY"]
-    models = openai.Model.list()
-    for model_id in [m["id"] for m in models.data if "gpt" in m["id"]]:
+    models = openai.models.list()
+    for model_id in [m.id for m in models if "gpt" in m.id]:
         print(model_id)

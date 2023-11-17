@@ -29,7 +29,7 @@ from functools import lru_cache, partial
 from typing import List, Optional, Tuple
 
 import numpy as np
-from openai_pygenerator import Completion
+from openai_pygenerator import Completion, content
 
 from llm_cooperation import Grid, ModelSetup, Participant, Payoffs
 from llm_cooperation.experiments import (
@@ -268,7 +268,7 @@ def extract_choice_pd(
     regex: str = rf".*project\s+({cooperate}|{defect})".lower()
     choice_regex: str = f"choice:{regex}"
     logger.debug("completion = %s", completion)
-    lower = completion["content"].lower().strip()
+    lower = content(completion).lower().strip()
 
     def matched_choice(m: re.Match) -> DilemmaChoice:
         return choice_from_str(m.group(1), participant)

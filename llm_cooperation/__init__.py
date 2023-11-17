@@ -43,7 +43,13 @@ from typing import (
 import numpy as np
 import openai_pygenerator
 import pandas as pd
-from openai_pygenerator import Completer, Completion, Completions, History
+from openai_pygenerator import (
+    Completer,
+    Completion,
+    Completions,
+    History,
+    assistant_message,
+)
 from plotly.basedatatypes import itertools
 
 logger = logging.getLogger(__name__)
@@ -109,10 +115,6 @@ CT_contra = TypeVar("CT_contra", bound=Choice, contravariant=True)
 # RT_contra = TypeVar("RT_contra", contravariant=True)
 
 Payoffs = Tuple[float, float]
-
-
-def assistant_message(description: str) -> Completion:
-    return {"role": "assistant", "content": description}
 
 
 def all_combinations(grid: Grid) -> itertools.product:

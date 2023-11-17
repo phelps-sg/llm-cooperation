@@ -26,7 +26,7 @@ from unittest.mock import Mock
 
 import numpy as np
 import pytest
-from openai_pygenerator import content
+from openai_pygenerator import content, user_message
 
 from llm_cooperation import Group, Participant, Payoffs, amount_as_str
 from llm_cooperation.experiments import AI_PARTICIPANTS
@@ -48,7 +48,6 @@ from llm_cooperation.experiments.ultimatum import (
     strategy_cooperate,
 )
 from llm_cooperation.gametypes.repeated import Choices, GameState
-from tests.common import make_completion
 
 
 @pytest.mark.parametrize(
@@ -104,9 +103,7 @@ def test_extract_choice(
     text: str, proposer: bool, expected: UltimatumChoice, base_condition: Participant
 ):
     assert (
-        extract_choice_ultimatum(
-            base_condition, make_completion(text), proposer=proposer
-        )
+        extract_choice_ultimatum(base_condition, user_message(text), proposer=proposer)
         == expected
     )
 

@@ -24,7 +24,7 @@
 from typing import List
 
 import pytest
-from openai_pygenerator import Completion
+from openai_pygenerator import Completion, assistant_message, user_message
 
 from llm_cooperation import ConfigValue, Group, Participant
 from llm_cooperation.experiments import (
@@ -50,17 +50,17 @@ COLOR_DEFECT = "Blue"
 @pytest.fixture
 def conversation() -> List[Completion]:
     return [
-        {"user": "scenario prompt.  What is your choice in the first round?"},
-        {"role": "assistant", "content": f"project {COLOR_COOPERATE}"},
-        {"role": "user", "content": f"Your partner chose project {COLOR_DEFECT}"},
-        {"role": "assistant", "content": f"project {COLOR_DEFECT}"},
-        {"role": "user", "content": f"Your partner chose project {COLOR_COOPERATE}"},
-        {"role": "assistant", "content": f"project {COLOR_DEFECT}"},
-        {"role": "user", "content": f"Your partner chose project {COLOR_DEFECT}"},
-        {"role": "assistant", "content": f"project {COLOR_DEFECT}"},
-        {"role": "user", "content": f"Your partner chose project {COLOR_DEFECT}"},
-        {"role": "assistant", "content": f"project {COLOR_COOPERATE}"},
-        {"role": "user", "content": f"project {COLOR_COOPERATE}"},
+        user_message("Role prompt.  What is your choice in the first round?"),
+        assistant_message(f"project {COLOR_COOPERATE}"),
+        user_message(f"Your partner chose project {COLOR_DEFECT}"),
+        assistant_message(f"project {COLOR_DEFECT}"),
+        user_message(f"Your partner chose project {COLOR_COOPERATE}"),
+        assistant_message(f"project {COLOR_DEFECT}"),
+        user_message(f"Your partner chose project {COLOR_DEFECT}"),
+        assistant_message(f"project {COLOR_DEFECT}"),
+        user_message(f"Your partner chose project {COLOR_DEFECT}"),
+        assistant_message(f"project {COLOR_COOPERATE}"),
+        user_message(f"project {COLOR_COOPERATE}"),
     ]
 
 
