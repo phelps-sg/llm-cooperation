@@ -110,6 +110,16 @@ class Pronoun(Enum):
     THEY = "they"
 
 
+PD_ATTRIBUTES: Grid = {
+    CONDITION_CHAIN_OF_THOUGHT: [True, False],
+    CONDITION_LABEL: all_values(Label),
+    CONDITION_CASE: all_values(Case),
+    CONDITION_PRONOUN: all_values(Pronoun),
+    CONDITION_DEFECT_FIRST: [True, False],
+    CONDITION_LABELS_REVERSED: [True, False],
+}
+
+
 def labels(participant: Participant) -> Tuple[str, str]:
     value = participant[CONDITION_LABEL]
     result: Optional[List[str]] = None
@@ -299,24 +309,16 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
 
 @lru_cache()
 def get_participants(num_participant_samples: int) -> List[Participant]:
-    pd_attributes: Grid = {
-        CONDITION_CHAIN_OF_THOUGHT: [True, False],
-        CONDITION_LABEL: all_values(Label),
-        CONDITION_CASE: all_values(Case),
-        CONDITION_PRONOUN: all_values(Pronoun),
-        CONDITION_DEFECT_FIRST: [True, False],
-        CONDITION_LABELS_REVERSED: [True, False],
-    }
     result = list(
         participants(
             GROUP_PROMPT_CONDITIONS,
-            pd_attributes,
+            PD_ATTRIBUTES,
             num_participant_samples,
             seed=SEED_VALUE,
         )
         if num_participant_samples > 0
         else participants(
-            GROUP_PROMPT_CONDITIONS | pd_attributes,
+            GROUP_PROMPT_CONDITIONS | PD_ATTRIBUTES,
         )
     )
     for i, participant in enumerate(result):

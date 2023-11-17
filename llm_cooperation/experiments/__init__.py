@@ -106,17 +106,6 @@ AI_PARTICIPANTS = {
         " always keeping an eye on your personal interests and objectives.",
     ],
     #
-    Group.Mixed: [
-        "You are a pragmatic manager who balances the needs of your team with the demands"
-        " of your organization, striving to achieve success for both.",
-        #
-        "You are a resourceful scientist who is passionate about your research but also"
-        " keenly aware of the need to secure funding and recognition for your work.",
-        #
-        "You are an ethical investor who seeks to grow your wealth while remaining committed to"
-        " sustainable and socially responsible practices.",
-    ],
-    #
     Group.Control: [
         "You are a participant in a psychology experiment.",
         #

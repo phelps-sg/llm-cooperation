@@ -34,6 +34,7 @@ from llm_cooperation.experiments import AI_PARTICIPANTS, GROUP_PROMPT_CONDITIONS
 from llm_cooperation.experiments.dilemma import (
     CONDITION_LABELS_REVERSED,
     CONDITION_PRONOUN,
+    PD_ATTRIBUTES,
     Cooperate,
     Defect,
     DilemmaChoice,
@@ -248,7 +249,9 @@ def test_get_participants():
 def test_factorial_participants():
     factorial_participants = get_participants(num_participant_samples=0)
     assert get_participants(0) == factorial_participants
-    assert len(factorial_participants) == 3888
+    assert len(factorial_participants) == len(
+        list(exhaustive(GROUP_PROMPT_CONDITIONS))
+    ) * len(list(exhaustive(PD_ATTRIBUTES)))
 
 
 def test_run_repeated_game(mocker, base_condition):

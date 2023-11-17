@@ -80,7 +80,6 @@ class Group(Enum):
     Competitive = "Competitive"
     Altruistic = "Altruistic"
     Selfish = "Selfish"
-    Mixed = "Mixed"
     Control = "Control"
 
 
@@ -110,10 +109,6 @@ DEFAULT_MODEL_SETUP = ModelSetup(
 CT = TypeVar("CT", bound=Choice)
 CT_co = TypeVar("CT_co", bound=Choice, covariant=True)
 CT_contra = TypeVar("CT_contra", bound=Choice, contravariant=True)
-
-# RT = TypeVar("RT")
-# RT_contra = TypeVar("RT_contra", contravariant=True)
-
 Payoffs = Tuple[float, float]
 
 
