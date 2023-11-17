@@ -274,4 +274,4 @@ def test_run_repeated_game(mocker, base_condition):
     )
     assert len(conversation) == 7
     # pylint: disable=unsubscriptable-object
-    assert Defect.description(condition) in conversation[-1]["content"]
+    assert Defect.description(condition) in str(conversation[-1]["content"])
