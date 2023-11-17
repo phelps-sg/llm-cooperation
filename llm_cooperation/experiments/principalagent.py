@@ -32,12 +32,12 @@ from llm_cooperation.experiments import run_and_record_experiment
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
 
-@dataclass
+@dataclass(frozen=True)
 class PAChoice:
     value: int
 
     # pylint: disable=unused-argument
-    def description(self, participant: Participant) -> str:
+    def description(self, participant_condition: Participant) -> str:
         return str(self.value)
 
 
