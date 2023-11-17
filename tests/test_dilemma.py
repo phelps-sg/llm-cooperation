@@ -243,6 +243,9 @@ def test_get_participants():
         list(exhaustive(GROUP_PROMPT_CONDITIONS))
     )
     assert get_participants(n) == random_participants
+
+
+def test_factorial_participants():
     factorial_participants = get_participants(num_participant_samples=0)
     assert get_participants(0) == factorial_participants
     assert len(factorial_participants) == 3888
