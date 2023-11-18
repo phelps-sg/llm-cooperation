@@ -27,6 +27,7 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
+from functools import lru_cache
 from typing import (
     Callable,
     Dict,
@@ -143,6 +144,7 @@ def amount_as_str(amount: float) -> str:
     return f"${amount:.02f}"
 
 
+@lru_cache
 def completer_for(model_setup: ModelSetup) -> Completer:
     if model_setup.dry_run is not None:
         dummy_completions: Tuple[Completion] = (assistant_message(model_setup.dry_run),)
