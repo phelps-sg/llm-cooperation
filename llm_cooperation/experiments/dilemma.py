@@ -182,7 +182,7 @@ def get_prompt_base(participant: Participant) -> str:
         return f"${amount}.00"
 
     def round_instructions() -> str:
-        if participant["chain_of_thought"]:
+        if participant[CONDITION_CHAIN_OF_THOUGHT]:
             return f"""
 For each round, give your answer in the format below on two separate lines:
 Explanation: [why I made my choice]
