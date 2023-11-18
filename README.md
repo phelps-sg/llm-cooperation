@@ -14,7 +14,7 @@ S. Phelps and R. Rannson, *Of Models and Tin Men - a behavioural economics study
 ## Getting started
 
 
-1. Install [mambaforge](https://github.com/conda-forge/miniforge#mambaforge).
+1. Install [miniforge](https://github.com/conda-forge/miniforge#mambaforge).
 2. In a shell:
 ~~~bash
 export OPENAI_API_KEY='<my key>'
