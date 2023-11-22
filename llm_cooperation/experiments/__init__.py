@@ -25,11 +25,11 @@ from __future__ import annotations
 
 import logging
 import os
+from enum import Enum
 from pathlib import Path
 from typing import Callable, Iterable, List, Optional, Type
 
 import numpy as np
-from openai_pygenerator import Enum
 
 from llm_cooperation import (
     DEFAULT_MODEL_SETUP,
@@ -120,6 +120,14 @@ GROUP_PROMPT_CONDITIONS: Grid = {
     CONDITION_PROMPT_INDEX: [0, 1, 2],
 }
 
+CONDITION_PRONOUN = "pronoun"
+
+
+class Pronoun(Enum):
+    HE = "he"
+    SHE = "she"
+    THEY = "they"
+
 
 def get_role_prompt(participant: Participant) -> str:
     group: Group = Group[str(participant[CONDITION_GROUP])]
@@ -201,3 +209,36 @@ def participants(
                 randomized(random_attributes) for __i__ in range(sample_size)
             ):
                 yield Participant(controlled | sampled)
+
+
+def get_pronoun_phrasing(participant: Participant) -> str:
+    if participant[CONDITION_PRONOUN] == Pronoun.HE.value:
+        return "He is"
+    elif participant[CONDITION_PRONOUN] == Pronoun.SHE.value:
+        return "She is"
+    elif participant[CONDITION_PRONOUN] == Pronoun.THEY.value:
+        return "They are"
+    raise ValueError(
+        f"Invalid value {participant[CONDITION_PRONOUN]} for {CONDITION_PRONOUN}"
+    )
+
+
+def get_participants(
+    num_participant_samples: int, attributes: Grid
+) -> List[Participant]:
+    result = list(
+        participants(
+            GROUP_PROMPT_CONDITIONS,
+            attributes,
+            num_participant_samples,
+            seed=SEED_VALUE,
+        )
+        if num_participant_samples > 0
+        else participants(GROUP_PROMPT_CONDITIONS | attributes)
+    )
+    for i, participant in enumerate(result):
+        participant["id"] = i
+    return result
+
+
+SEED_VALUE = 101  # Ensure same participants are used across all experiments

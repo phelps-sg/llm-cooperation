@@ -39,13 +39,17 @@ from llm_cooperation import (
 from llm_cooperation.experiments import (
     CONDITION_GROUP,
     CONDITION_PROMPT_INDEX,
+    CONDITION_PRONOUN,
     DEFAULT_NUM_REPLICATIONS,
+    Pronoun,
     apply_case_condition,
     create_results_dir,
+    get_pronoun_phrasing,
     participants,
     run_and_record_experiment,
 )
 from llm_cooperation.experiments.dilemma import all_values
+from tests.conftest import modify_condition
 
 
 def test_create_results_dir(mocker):
@@ -127,3 +131,16 @@ def conditions():
         CONDITION_GROUP: all_values(Group),
         CONDITION_PROMPT_INDEX: [0, 1, 2],
     }
+
+
+@pytest.mark.parametrize(
+    "pronoun, expected",
+    [
+        (Pronoun.HE.value, "he"),
+        (Pronoun.SHE.value, "she"),
+        (Pronoun.THEY.value, "they"),
+    ],
+)
+def test_get_pronoun_phrasing(base_condition, pronoun: str, expected: str):
+    condition = modify_condition(base_condition, CONDITION_PRONOUN, pronoun)
+    assert expected.lower() in get_pronoun_phrasing(condition).lower()

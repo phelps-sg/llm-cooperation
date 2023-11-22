@@ -31,16 +31,16 @@ from llm_cooperation.experiments import (
     CONDITION_CASE,
     CONDITION_GROUP,
     CONDITION_PROMPT_INDEX,
+    CONDITION_PRONOUN,
     Case,
+    Pronoun,
 )
 from llm_cooperation.experiments.dilemma import (
     CONDITION_CHAIN_OF_THOUGHT,
     CONDITION_DEFECT_FIRST,
     CONDITION_LABEL,
     CONDITION_LABELS_REVERSED,
-    CONDITION_PRONOUN,
     Label,
-    Pronoun,
 )
 
 COLOR_COOPERATE = "Green"

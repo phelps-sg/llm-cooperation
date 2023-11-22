@@ -34,12 +34,14 @@ from openai_pygenerator import Completion, content
 from llm_cooperation import Grid, ModelSetup, Participant, Payoffs
 from llm_cooperation.experiments import (
     CONDITION_CASE,
-    GROUP_PROMPT_CONDITIONS,
+    CONDITION_PRONOUN,
     Case,
+    Pronoun,
     all_values,
     apply_case_condition,
+    get_participants,
+    get_pronoun_phrasing,
     get_role_prompt,
-    participants,
     run_and_record_experiment,
 )
 from llm_cooperation.gametypes import simultaneous
@@ -68,11 +70,8 @@ CONDITION_LABEL = "label"
 CONDITION_LABELS_REVERSED = "labels_reversed"
 CONDITION_CHAIN_OF_THOUGHT = "chain_of_thought"
 CONDITION_DEFECT_FIRST = "defect_first"
-CONDITION_PRONOUN = "pronoun"
 CONDITION_ROLE = "role"
 CONDITION_GROUP = "group"
-
-SEED_VALUE = 101  # Ensure same participants are used across all experiments
 
 logger = logging.getLogger(__name__)
 
@@ -102,12 +101,6 @@ class Label(Enum):
     COLORS = "colors"
     NUMBERS = "numbers"
     NUMERALS = "numerals"
-
-
-class Pronoun(Enum):
-    HE = "he"
-    SHE = "she"
-    THEY = "they"
 
 
 PD_ATTRIBUTES: Grid = {
@@ -157,18 +150,6 @@ def get_choice_template(participant: Participant, cooperate: str, defect: str) -
         else f"""{cooperate} | {defect}"""
     )
     return f"""Choice: [{choices}]"""
-
-
-def get_pronoun_phrasing(participant: Participant) -> str:
-    if participant[CONDITION_PRONOUN] == Pronoun.HE.value:
-        return "He is"
-    elif participant[CONDITION_PRONOUN] == Pronoun.SHE.value:
-        return "She is"
-    elif participant[CONDITION_PRONOUN] == Pronoun.THEY.value:
-        return "They are"
-    raise ValueError(
-        f"Invalid value {participant[CONDITION_PRONOUN]} for {CONDITION_PRONOUN}"
-    )
 
 
 def get_prompt_base(participant: Participant) -> str:
@@ -307,23 +288,9 @@ def compute_freq_pd(choices: List[Choices[DilemmaChoice]]) -> float:
     return len([c for c in choices if c.ai == Cooperate]) / len(choices)
 
 
-@lru_cache()
-def get_participants(num_participant_samples: int) -> List[Participant]:
-    result = list(
-        participants(
-            GROUP_PROMPT_CONDITIONS,
-            PD_ATTRIBUTES,
-            num_participant_samples,
-            seed=SEED_VALUE,
-        )
-        if num_participant_samples > 0
-        else participants(
-            GROUP_PROMPT_CONDITIONS | PD_ATTRIBUTES,
-        )
-    )
-    for i, participant in enumerate(result):
-        participant["id"] = i
-    return result
+@lru_cache
+def get_participants_pd(num_participant_samples: int) -> List[Participant]:
+    return get_participants(num_participant_samples, PD_ATTRIBUTES)
 
 
 def run(
@@ -343,7 +310,7 @@ def run(
         compute_freq=compute_freq_pd,
     )
     return run_experiment(
-        participants=iter(get_participants(num_participant_samples)),
+        participants=iter(get_participants_pd(num_participant_samples)),
         partner_conditions={
             "unconditional cooperate": strategy_cooperate,
             "unconditional defect": strategy_defect,

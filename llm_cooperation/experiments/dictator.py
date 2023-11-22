@@ -24,15 +24,19 @@
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict
+from functools import lru_cache
+from typing import Dict, List
 
 from openai_pygenerator import Completion, content
 
 from llm_cooperation import ModelSetup, Participant, amount_as_str
 from llm_cooperation.experiments import (
-    GROUP_PROMPT_CONDITIONS,
+    CONDITION_CASE,
+    Case,
+    all_values,
+    apply_case_condition,
+    get_participants,
     get_role_prompt,
-    participants,
     run_and_record_experiment,
 )
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
@@ -118,8 +122,12 @@ def choice_menu() -> str:
     return " | ".join([f"'{c.description}'" for c in all_dictator_choices])
 
 
-# pylint: disable=unused-argument
 def get_prompt_dictator(participant: Participant) -> str:
+    return apply_case_condition(participant, get_prompt_base(participant))
+
+
+# pylint: disable=unused-argument
+def get_prompt_base(participant: Participant) -> str:
     role_prompt = get_role_prompt(participant)
     return f"""
 {role_prompt}
@@ -168,13 +176,18 @@ def compute_freq_dictator(history: DictatorChoice) -> float:
     return history.donation / TOTAL_SHARE
 
 
+@lru_cache
+def get_participants_dictator(num_participant_samples: int) -> List[Participant]:
+    return get_participants(num_participant_samples, {CONDITION_CASE: all_values(Case)})
+
+
 def run(
     model_setup: ModelSetup,
     num_replications: int = NUM_REPLICATIONS,
-    __num_participant_samples__: int = 0,
+    num_participant_samples: int = 0,
 ) -> OneShotResults[DictatorChoice]:
     return run_experiment(
-        participants=participants(GROUP_PROMPT_CONDITIONS),
+        participants=get_participants_dictator(num_participant_samples),
         num_replications=num_replications,
         generate_instruction_prompt=get_prompt_dictator,
         extract_choice=extract_choice_dictator,

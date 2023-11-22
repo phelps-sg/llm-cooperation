@@ -25,11 +25,7 @@ import pytest
 from openai_pygenerator import user_message
 
 from llm_cooperation import Group, Participant
-from llm_cooperation.experiments import (
-    AI_PARTICIPANTS,
-    CONDITION_GROUP,
-    CONDITION_PROMPT_INDEX,
-)
+from llm_cooperation.experiments import AI_PARTICIPANTS
 from llm_cooperation.experiments.dictator import (
     BLACK,
     BLUE,
@@ -126,10 +122,8 @@ def test_compute_freq_dictator(test_choice: DictatorChoice):
     assert result == test_choice.payoff_allo / TOTAL_SHARE
 
 
-def test_get_prompt_dictator():
-    result = get_prompt_dictator(
-        Participant({CONDITION_GROUP: Group.Control.value, CONDITION_PROMPT_INDEX: 0})
-    )
+def test_get_prompt_dictator(base_condition):
+    result = get_prompt_dictator(Participant(base_condition))
     assert AI_PARTICIPANTS[Group.Control][0] in result
     for choice in all_dictator_choices:
         assert describe_payoffs(choice) in result

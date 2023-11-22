@@ -33,14 +33,12 @@ from llm_cooperation import DEFAULT_MODEL_SETUP, Group, Participant, Payoffs, ex
 from llm_cooperation.experiments import AI_PARTICIPANTS, GROUP_PROMPT_CONDITIONS
 from llm_cooperation.experiments.dilemma import (
     CONDITION_LABELS_REVERSED,
-    CONDITION_PRONOUN,
     PD_ATTRIBUTES,
     Cooperate,
     Defect,
     DilemmaChoice,
     DilemmaEnum,
     P,
-    Pronoun,
     R,
     S,
     T,
@@ -48,9 +46,8 @@ from llm_cooperation.experiments.dilemma import (
     defect_label,
     extract_choice_pd,
     get_choice_template,
-    get_participants,
+    get_participants_pd,
     get_prompt_pd,
-    get_pronoun_phrasing,
     move_as_str,
     payoffs_pd,
     strategy_cooperate,
@@ -94,19 +91,6 @@ def test_get_choice_template(condition: Participant, expected_regex: str):
     result = get_choice_template(condition, "blue", "green").lower()
     match = re.search(expected_regex, result)
     assert match is not None
-
-
-@pytest.mark.parametrize(
-    "pronoun, expected",
-    [
-        (Pronoun.HE.value, "he"),
-        (Pronoun.SHE.value, "she"),
-        (Pronoun.THEY.value, "they"),
-    ],
-)
-def test_get_pronoun_phrasing(base_condition, pronoun: str, expected: str):
-    condition = modify_condition(base_condition, CONDITION_PRONOUN, pronoun)
-    assert expected.lower() in get_pronoun_phrasing(condition).lower()
 
 
 @pytest.mark.parametrize(
@@ -239,16 +223,16 @@ def test_cooperate_label_reversed(condition: Participant, expected: str):
 
 def test_get_participants():
     n = 5
-    random_participants = get_participants(num_participant_samples=n)
+    random_participants = get_participants_pd(n)
     assert len(random_participants) == n * len(
         list(exhaustive(GROUP_PROMPT_CONDITIONS))
     )
-    assert get_participants(n) == random_participants
+    assert get_participants_pd(n) == random_participants
 
 
 def test_factorial_participants():
-    factorial_participants = get_participants(num_participant_samples=0)
-    assert get_participants(0) == factorial_participants
+    factorial_participants = get_participants_pd(0)
+    assert get_participants_pd(0) == factorial_participants
     assert len(factorial_participants) == len(
         list(exhaustive(GROUP_PROMPT_CONDITIONS))
     ) * len(list(exhaustive(PD_ATTRIBUTES)))
