@@ -20,6 +20,7 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 #
+import re
 
 import pytest
 from openai_pygenerator import user_message
@@ -30,6 +31,7 @@ from llm_cooperation.experiments import (
     AI_PARTICIPANTS,
     CONDITION_CASE,
     CONDITION_CHAIN_OF_THOUGHT,
+    CONDITION_DEFECT_FIRST,
     CONDITION_PRONOUN,
     Case,
 )
@@ -153,12 +155,19 @@ def test_get_prompt_dictator(condition: Participant):
         assert "THIS IS A STUDY" in prompt
 
 
-def test_choice_menu():
-    assert (
-        choice_menu() == f"'{BLACK.description}' | "
-        f"'{BROWN.description}' | '{GREEN.description}' | "
-        f"'{BLUE.description}' | '{WHITE.description}'"
-    )
+@pytest.mark.parametrize(
+    "condition", [lazy_fixture("base_condition"), lazy_fixture("with_defect_first")]
+)
+def test_choice_menu(condition: Participant):
+    result = choice_menu(condition)
+    black = BLACK.description(condition)
+    white = WHITE.description(condition)
+    for choice in all_dictator_choices:
+        assert choice.description(condition) in result
+    if condition[CONDITION_DEFECT_FIRST]:
+        assert re.search(rf"{black}.*{white}", result)
+    else:
+        assert re.search(rf"{white}.*{black}", result)
 
 
 def test_payout_ego():

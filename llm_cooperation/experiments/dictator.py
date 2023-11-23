@@ -33,6 +33,7 @@ from llm_cooperation import Grid, ModelSetup, Participant, amount_as_str
 from llm_cooperation.experiments import (
     CONDITION_CASE,
     CONDITION_CHAIN_OF_THOUGHT,
+    CONDITION_DEFECT_FIRST,
     CONDITION_PRONOUN,
     Case,
     Pronoun,
@@ -113,7 +114,7 @@ DICTATOR_ATTRIBUTES: Grid = {
     # CONDITION_LABEL: all_values(Label),
     CONDITION_CASE: all_values(Case),
     CONDITION_PRONOUN: all_values(Pronoun),
-    # CONDITION_DEFECT_FIRST: [True, False],
+    CONDITION_DEFECT_FIRST: [True, False],
     # CONDITION_LABELS_REVERSED: [True, False],
 }
 
@@ -133,8 +134,13 @@ and your partner will also earn {payout_allo(choice)}.
     """
 
 
-def choice_menu() -> str:
-    return " | ".join([f"'{c.description}'" for c in all_dictator_choices])
+def choice_menu(participant: Participant) -> str:
+    choices = (
+        all_dictator_choices
+        if participant[CONDITION_DEFECT_FIRST]
+        else reversed(all_dictator_choices)
+    )
+    return " | ".join([f"'{c.description(participant)}'" for c in choices])
 
 
 def get_prompt_dictator(participant: Participant) -> str:
@@ -145,7 +151,7 @@ def get_prompt_dictator(participant: Participant) -> str:
 def get_prompt_base(participant: Participant) -> str:
     role_prompt = get_role_prompt(participant)
     pronoun_phrase = get_pronoun_phrasing(participant)
-    choice_template = f"Choice: [{choice_menu()}]"
+    choice_template = f"Choice: [{choice_menu(participant)}]"
     return f"""
 {role_prompt}
 This is a study of investment choices in different situations.

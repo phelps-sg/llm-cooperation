@@ -35,6 +35,7 @@ from llm_cooperation import Grid, ModelSetup, Participant, Payoffs
 from llm_cooperation.experiments import (
     CONDITION_CASE,
     CONDITION_CHAIN_OF_THOUGHT,
+    CONDITION_DEFECT_FIRST,
     CONDITION_PRONOUN,
     Case,
     Pronoun,
@@ -70,7 +71,6 @@ PAYOFFS_PD = np.array([[R, S], [T, P]])
 
 CONDITION_LABEL = "label"
 CONDITION_LABELS_REVERSED = "labels_reversed"
-CONDITION_DEFECT_FIRST = "defect_first"
 CONDITION_ROLE = "role"
 CONDITION_GROUP = "group"
 

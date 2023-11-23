@@ -57,6 +57,8 @@ DEFAULT_NUM_PARTICIPANT_SAMPLES = 30
 CONDITION_CASE = "case"
 CONDITION_GROUP = "group"
 CONDITION_PROMPT_INDEX = "prompt_index"
+CONDITION_CHAIN_OF_THOUGHT = "chain_of_thought"
+CONDITION_DEFECT_FIRST = "defect_first"
 
 AI_PARTICIPANTS = {
     #
@@ -254,6 +256,3 @@ Explanation: [why I made my choice]
         return f"""
 For each round, state your choice without explanation in the format below:
 {choice_template}"""
-
-
-CONDITION_CHAIN_OF_THOUGHT = "chain_of_thought"
