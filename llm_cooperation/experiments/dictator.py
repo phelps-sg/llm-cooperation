@@ -106,7 +106,7 @@ WHITE = DictatorChoice(DictatorEnum.WHITE)
 all_dictator_choices = [DictatorChoice(c) for c in DictatorEnum]
 
 
-PD_ATTRIBUTES: Grid = {
+DICTATOR_ATTRIBUTES: Grid = {
     # CONDITION_CHAIN_OF_THOUGHT: [True, False],
     # CONDITION_LABEL: all_values(Label),
     CONDITION_CASE: all_values(Case),
@@ -192,7 +192,7 @@ def compute_freq_dictator(history: DictatorChoice) -> float:
 
 @lru_cache
 def get_participants_dictator(num_participant_samples: int) -> List[Participant]:
-    return get_participants(num_participant_samples, {CONDITION_CASE: all_values(Case)})
+    return get_participants(num_participant_samples, DICTATOR_ATTRIBUTES)
 
 
 def run(
