@@ -91,21 +91,21 @@ def play_game(
 
 def compute_scores(
     conversation: List[Completion],
-    payoffs: Callable[[CT], float],
+    payoffs: Callable[[Participant, CT], float],
     extract_choice: Callable[[Participant, Completion], CT],
     participant_condition: Participant,
 ) -> Tuple[float, CT]:
     ai_choice = extract_choice(participant_condition, conversation[1])
     logger.debug("ai_choice = %s", ai_choice)
-    score = payoffs(ai_choice)
+    score = payoffs(participant_condition, ai_choice)
     return score, ai_choice
 
 
 def analyse(
     conversation: List[Completion],
-    payoffs: Callable[[CT], float],
+    payoffs: Callable[[Participant, CT], float],
     extract_choice: Callable[[Participant, Completion], CT],
-    compute_freq: Callable[[CT], float],
+    compute_freq: Callable[[Participant, CT], float],
     participant_condition: Participant,
 ) -> Tuple[float, float, Optional[CT], List[str]]:
     try:
@@ -113,7 +113,7 @@ def analyse(
         score, ai_choice = compute_scores(
             list(conversation), payoffs, extract_choice, participant_condition
         )
-        freq = compute_freq(ai_choice)
+        freq = compute_freq(participant_condition, ai_choice)
         return score, freq, ai_choice, history
     except ValueError as e:
         logger.error("ValueError while running sample: %s", e)
@@ -124,9 +124,9 @@ def generate_replications(
     participant: Participant,
     num_replications: int,
     generate_instruction_prompt: PromptGenerator,
-    payoffs: Callable[[CT], float],
+    payoffs: Callable[[Participant, CT], float],
     extract_choice: Callable[[Participant, Completion], CT],
-    compute_freq: Callable[[CT], float],
+    compute_freq: Callable[[Participant, CT], float],
     model_setup: ModelSetup,
 ) -> Iterable[Tuple[float, float, Optional[CT], List[str]]]:
     # pylint: disable=R0801
@@ -143,9 +143,9 @@ def run_experiment(
     participants: Iterable[Participant],
     num_replications: int,
     generate_instruction_prompt: PromptGenerator,
-    payoffs: Callable[[CT], float],
+    payoffs: Callable[[Participant, CT], float],
     extract_choice: Callable[[Participant, Completion], CT],
-    compute_freq: Callable[[CT], float],
+    compute_freq: Callable[[Participant, CT], float],
     model_setup: ModelSetup,
 ) -> OneShotResults[CT]:
     return OneShotResults(

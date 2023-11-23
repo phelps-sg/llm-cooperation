@@ -121,3 +121,8 @@ def with_defect_first(base_condition: Participant) -> Participant:
 @pytest.fixture
 def with_gender_neutral_pronoun(base_condition: Participant) -> Participant:
     return modify_condition(base_condition, CONDITION_PRONOUN, Pronoun.THEY.value)
+
+
+@pytest.fixture
+def with_labels_reversed(base_condition: Participant) -> Participant:
+    return modify_condition(base_condition, CONDITION_LABELS_REVERSED, True)

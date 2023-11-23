@@ -121,11 +121,11 @@ def extract_choice_pa(participant: Participant, completion: Completion) -> PACho
     raise ValueError(f"Cannot determine choice from {completion}")
 
 
-def payoffs_pa(__choice__: PAChoice) -> float:
+def payoffs_pa(__participant__: Participant, __choice__: PAChoice) -> float:
     return np.nan
 
 
-def compute_freq_pa(__choice__: PAChoice) -> float:
+def compute_freq_pa(__participant__: Participant, __choice__: PAChoice) -> float:
     return np.nan
 
 

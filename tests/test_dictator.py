@@ -57,26 +57,26 @@ from llm_cooperation.experiments.dictator import (
 
 
 @pytest.mark.parametrize(
-    "enum, expected_description, expected_payoff_ego, expected_payoff_allo",
+    "condition, enum, expected_description, expected_payoff_ego, expected_payoff_allo",
     [
-        (DictatorEnum.BLACK, "black", 4.0, 0.0),
-        (DictatorEnum.BROWN, "brown", 3.0, 1.0),
-        (DictatorEnum.GREEN, "green", 2.0, 2.0),
-        (DictatorEnum.BLUE, "blue", 1.0, 3.0),
-        (DictatorEnum.WHITE, "white", 0.0, 4.0),
+        (lazy_fixture("base_condition"), DictatorEnum.BLACK, "black", 4.0, 0.0),
+        (lazy_fixture("base_condition"), DictatorEnum.BROWN, "brown", 3.0, 1.0),
+        (lazy_fixture("base_condition"), DictatorEnum.GREEN, "green", 2.0, 2.0),
+        (lazy_fixture("base_condition"), DictatorEnum.BLUE, "blue", 1.0, 3.0),
+        (lazy_fixture("base_condition"), DictatorEnum.WHITE, "white", 0.0, 4.0),
     ],
 )
 def test_dictator_choice(
+    condition: Participant,
     enum: DictatorEnum,
     expected_description: str,
     expected_payoff_ego: float,
     expected_payoff_allo,
 ):
     choice = DictatorChoice(enum)
-    condition: Participant = Participant(dict())
     assert expected_description in choice.description(condition).lower()
-    assert choice.payoff_ego == expected_payoff_ego
-    assert choice.payoff_allo == expected_payoff_allo
+    assert choice.payoff_ego(condition) == expected_payoff_ego
+    assert choice.payoff_allo(condition) == expected_payoff_allo
 
 
 @pytest.mark.parametrize(
@@ -109,27 +109,55 @@ def test_extract_choice_dictator(
 
 
 @pytest.mark.parametrize(
-    "test_choice, expected_payoff",
-    [(BLACK, 4), (BROWN, 3), (GREEN, 2), (BLUE, 1), (WHITE, 0)],
+    "condition, test_choice, expected_payoff",
+    [
+        (lazy_fixture("base_condition"), BLACK, 4),
+        (lazy_fixture("base_condition"), BROWN, 3),
+        (lazy_fixture("base_condition"), GREEN, 2),
+        (lazy_fixture("base_condition"), BLUE, 1),
+        (lazy_fixture("base_condition"), WHITE, 0),
+        (lazy_fixture("with_labels_reversed"), BLACK, 0),
+        (lazy_fixture("with_labels_reversed"), BROWN, 1),
+        (lazy_fixture("with_labels_reversed"), GREEN, 2),
+        (lazy_fixture("with_labels_reversed"), BLUE, 3),
+        (lazy_fixture("with_labels_reversed"), WHITE, 4),
+    ],
 )
-def test_payoffs_dictator(test_choice: DictatorChoice, expected_payoff):
-    result = payoffs_dictator(test_choice)
+def test_payoffs_dictator(
+    condition: Participant, test_choice: DictatorChoice, expected_payoff
+):
+    result = payoffs_dictator(condition, test_choice)
     assert result == expected_payoff
 
 
 @pytest.mark.parametrize(
-    "test_choice, expected_payoff",
-    [(BLACK, 0), (BROWN, 1), (GREEN, 2), (BLUE, 3), (WHITE, 4)],
+    "condition, test_choice, expected_payoff",
+    [
+        (lazy_fixture("base_condition"), BLACK, 0),
+        (lazy_fixture("base_condition"), BROWN, 1),
+        (lazy_fixture("base_condition"), GREEN, 2),
+        (lazy_fixture("base_condition"), BLUE, 3),
+        (lazy_fixture("base_condition"), WHITE, 4),
+        (lazy_fixture("with_labels_reversed"), BLACK, 4),
+        (lazy_fixture("with_labels_reversed"), BROWN, 3),
+        (lazy_fixture("with_labels_reversed"), GREEN, 2),
+        (lazy_fixture("with_labels_reversed"), BLUE, 1),
+        (lazy_fixture("with_labels_reversed"), WHITE, 0),
+    ],
 )
-def test_payoff_allo(test_choice: DictatorChoice, expected_payoff):
-    result = test_choice.payoff_allo
+def test_payoff_allo(
+    condition: Participant, test_choice: DictatorChoice, expected_payoff
+):
+    result = test_choice.payoff_allo(condition)
     assert result == expected_payoff
 
 
 @pytest.mark.parametrize("test_choice", all_dictator_choices)
-def test_compute_freq_dictator(test_choice: DictatorChoice):
-    result = compute_freq_dictator(test_choice)
-    assert result == test_choice.payoff_allo / TOTAL_SHARE
+def test_compute_freq_dictator(
+    base_condition: Participant, test_choice: DictatorChoice
+):
+    result = compute_freq_dictator(base_condition, test_choice)
+    assert result == test_choice.payoff_allo(base_condition) / TOTAL_SHARE
 
 
 @pytest.mark.parametrize(
@@ -173,9 +201,23 @@ def test_choice_menu(condition: Participant):
         assert re.search(rf"{white}.*{black}", result)
 
 
-def test_payout_ego():
-    assert payout_ego(BLACK) == "$4.00"
+@pytest.mark.parametrize(
+    "condition, expected",
+    [
+        (lazy_fixture("base_condition"), "$4.00"),
+        (lazy_fixture("with_labels_reversed"), "$0.00"),
+    ],
+)
+def test_payout_ego(condition: Participant, expected: str):
+    assert payout_ego(condition, BLACK) == expected
 
 
-def test_payout_allo():
-    assert payout_allo(BLACK) == "$0.00"
+@pytest.mark.parametrize(
+    "condition, expected",
+    [
+        (lazy_fixture("base_condition"), "$0.00"),
+        (lazy_fixture("with_labels_reversed"), "$4.00"),
+    ],
+)
+def test_payout_allo(condition: Participant, expected: str):
+    assert payout_allo(condition, BLACK) == expected

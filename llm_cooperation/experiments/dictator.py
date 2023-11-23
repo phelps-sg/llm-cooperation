@@ -45,7 +45,11 @@ from llm_cooperation.experiments import (
     round_instructions,
     run_and_record_experiment,
 )
-from llm_cooperation.experiments.dilemma import CONDITION_LABEL, Label
+from llm_cooperation.experiments.dilemma import (
+    CONDITION_LABEL,
+    CONDITION_LABELS_REVERSED,
+    Label,
+)
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
 TOTAL_SHARE = 4
@@ -115,12 +119,14 @@ class DictatorChoice:
     def donation(self) -> float:
         return float(self.value.value)
 
-    @property
-    def payoff_ego(self) -> float:
+    def payoff_ego(self, participant_condition: Participant) -> float:
+        if participant_condition[CONDITION_LABELS_REVERSED]:
+            return self.donation
         return TOTAL_SHARE - self.donation
 
-    @property
-    def payoff_allo(self) -> float:
+    def payoff_allo(self, participant_condition: Participant) -> float:
+        if participant_condition[CONDITION_LABELS_REVERSED]:
+            return TOTAL_SHARE - self.donation
         return self.donation
 
 
@@ -132,14 +138,13 @@ WHITE = DictatorChoice(DictatorEnum.WHITE)
 
 all_dictator_choices = [DictatorChoice(c) for c in DictatorEnum]
 
-
 DICTATOR_ATTRIBUTES: Grid = {
     CONDITION_CHAIN_OF_THOUGHT: [True, False],
     CONDITION_LABEL: all_values(Label),
     CONDITION_CASE: all_values(Case),
     CONDITION_PRONOUN: all_values(Pronoun),
     CONDITION_DEFECT_FIRST: [True, False],
-    # CONDITION_LABELS_REVERSED: [True, False],
+    CONDITION_LABELS_REVERSED: [True, False],
 }
 
 
@@ -147,19 +152,19 @@ def inverted(mappings: Dict[DictatorEnum, str]) -> Dict[str, DictatorEnum]:
     return {value: key for key, value in mappings.items()}
 
 
-def payout_ego(choice: DictatorChoice) -> str:
-    return amount_as_str(choice.payoff_ego)
+def payout_ego(participant: Participant, choice: DictatorChoice) -> str:
+    return amount_as_str(choice.payoff_ego(participant))
 
 
-def payout_allo(choice: DictatorChoice) -> str:
-    return amount_as_str(choice.payoff_allo)
+def payout_allo(participant: Participant, choice: DictatorChoice) -> str:
+    return amount_as_str(choice.payoff_allo(participant))
 
 
 def describe_payoffs(participant: Participant, choice: DictatorChoice) -> str:
     description: str = choice.description(participant)
     return f"""
-   If you choose '{description}, then you will earn {payout_ego(choice)}
-and your partner will also earn {payout_allo(choice)}.
+   If you choose '{description}, then you will earn {payout_ego(participant, choice)}
+and your partner will also earn {payout_allo(participant, choice)}.
     """
 
 
@@ -216,12 +221,12 @@ def extract_choice_dictator(
     raise ValueError(f"Cannot determine choice from {completion}")
 
 
-def payoffs_dictator(player1: DictatorChoice) -> float:
-    return player1.payoff_ego
+def payoffs_dictator(participant: Participant, player1: DictatorChoice) -> float:
+    return player1.payoff_ego(participant)
 
 
-def compute_freq_dictator(history: DictatorChoice) -> float:
-    return history.donation / TOTAL_SHARE
+def compute_freq_dictator(participant: Participant, history: DictatorChoice) -> float:
+    return history.payoff_allo(participant) / TOTAL_SHARE
 
 
 @lru_cache
