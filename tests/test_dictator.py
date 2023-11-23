@@ -150,7 +150,7 @@ def test_get_prompt_dictator(condition: Participant):
     assert contains(condition[CONDITION_PRONOUN])
     assert contains(AI_PARTICIPANTS[Group.Control][0])
     for choice in all_dictator_choices:
-        assert contains(describe_payoffs(choice))
+        assert contains(describe_payoffs(condition, choice))
     if condition[CONDITION_CASE] == Case.UPPER.value:
         assert "THIS IS A STUDY" in prompt
 

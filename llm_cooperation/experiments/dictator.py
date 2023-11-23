@@ -127,9 +127,10 @@ def payout_allo(choice: DictatorChoice) -> str:
     return amount_as_str(choice.payoff_allo)
 
 
-def describe_payoffs(choice: DictatorChoice) -> str:
+def describe_payoffs(participant: Participant, choice: DictatorChoice) -> str:
+    description: str = choice.description(participant)
     return f"""
-   If you choose '{choice.description}, then you will earn {payout_ego(choice)}
+   If you choose '{description}, then you will earn {payout_ego(choice)}
 and your partner will also earn {payout_allo(choice)}.
     """
 
@@ -152,6 +153,9 @@ def get_prompt_base(participant: Participant) -> str:
     role_prompt = get_role_prompt(participant)
     pronoun_phrase = get_pronoun_phrasing(participant)
     choice_template = f"Choice: [{choice_menu(participant)}]"
+    payoff_description = "\n".join(
+        [describe_payoffs(participant, c) for c in all_dictator_choices]
+    )
     return f"""
 {role_prompt}
 This is a study of investment choices in different situations.
@@ -161,11 +165,7 @@ you there to meet your investment partner. You and your partner will be involved
 the project. However, you are the sole decision maker. Your partner must accept
 your decision. {pronoun_phrase} unable to make the investment decisions. The object is to earn
 money for yourself.
-{describe_payoffs(BLACK)}
-{describe_payoffs(BROWN)}
-{describe_payoffs(GREEN)}
-{describe_payoffs(BLUE)}
-{describe_payoffs(WHITE)}
+{payoff_description}
 You will make decisions that are consistent with the role outlined earlier,
 but you are not allowed to communicate with your partner apart from informing
 them of your choice. Your decision will be
