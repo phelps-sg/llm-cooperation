@@ -59,6 +59,7 @@ CONDITION_GROUP = "group"
 CONDITION_PROMPT_INDEX = "prompt_index"
 CONDITION_CHAIN_OF_THOUGHT = "chain_of_thought"
 CONDITION_DEFECT_FIRST = "defect_first"
+CONDITION_PRONOUN = "pronoun"
 
 AI_PARTICIPANTS = {
     #
@@ -122,8 +123,6 @@ GROUP_PROMPT_CONDITIONS: Grid = {
     CONDITION_PROMPT_INDEX: [0, 1, 2],
 }
 
-CONDITION_PRONOUN = "pronoun"
-
 
 class Pronoun(Enum):
     HE = "he"
@@ -131,17 +130,17 @@ class Pronoun(Enum):
     THEY = "they"
 
 
+class Case(Enum):
+    UPPER = "upper"
+    LOWER = "lower"
+    STANDARD = "standard"
+
+
 def get_role_prompt(participant: Participant) -> str:
     group: Group = Group[str(participant[CONDITION_GROUP])]
     prompts: List[str] = AI_PARTICIPANTS[group]
     index = int(participant[CONDITION_PROMPT_INDEX])
     return prompts[index]
-
-
-class Case(Enum):
-    UPPER = "upper"
-    LOWER = "lower"
-    STANDARD = "standard"
 
 
 def create_dir(directory: str) -> str:
