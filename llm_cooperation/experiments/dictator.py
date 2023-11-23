@@ -163,8 +163,8 @@ def payout_allo(participant: Participant, choice: DictatorChoice) -> str:
 def describe_payoffs(participant: Participant, choice: DictatorChoice) -> str:
     description: str = choice.description(participant)
     return f"""
-   If you choose '{description}, then you will earn {payout_ego(participant, choice)}
-and your partner will also earn {payout_allo(participant, choice)}.
+If you choose '{description}', then you will earn {payout_ego(participant, choice)}
+and your partner will earn {payout_allo(participant, choice)}.
     """
 
 
