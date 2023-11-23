@@ -29,13 +29,16 @@ from typing import Dict, List
 
 from openai_pygenerator import Completion, content
 
-from llm_cooperation import ModelSetup, Participant, amount_as_str
+from llm_cooperation import Grid, ModelSetup, Participant, amount_as_str
 from llm_cooperation.experiments import (
     CONDITION_CASE,
+    CONDITION_PRONOUN,
     Case,
+    Pronoun,
     all_values,
     apply_case_condition,
     get_participants,
+    get_pronoun_phrasing,
     get_role_prompt,
     run_and_record_experiment,
 )
@@ -100,7 +103,17 @@ GREEN = DictatorChoice(DictatorEnum.GREEN)
 BLUE = DictatorChoice(DictatorEnum.BLUE)
 WHITE = DictatorChoice(DictatorEnum.WHITE)
 
-all_dictator_choices = [BLACK, BROWN, GREEN, BLUE, WHITE]
+all_dictator_choices = [DictatorChoice(c) for c in DictatorEnum]
+
+
+PD_ATTRIBUTES: Grid = {
+    # CONDITION_CHAIN_OF_THOUGHT: [True, False],
+    # CONDITION_LABEL: all_values(Label),
+    CONDITION_CASE: all_values(Case),
+    CONDITION_PRONOUN: all_values(Pronoun),
+    # CONDITION_DEFECT_FIRST: [True, False],
+    # CONDITION_LABELS_REVERSED: [True, False],
+}
 
 
 def payout_ego(choice: DictatorChoice) -> str:
@@ -129,14 +142,15 @@ def get_prompt_dictator(participant: Participant) -> str:
 # pylint: disable=unused-argument
 def get_prompt_base(participant: Participant) -> str:
     role_prompt = get_role_prompt(participant)
+    pronoun_phrase = get_pronoun_phrasing(participant)
     return f"""
 {role_prompt}
 This is a study of investment choices in different situations.
 You will be making your choices with an investment
-partner who is another person. She is in the next room waiting. In a minute I will take
+partner who is another person. {pronoun_phrase} in the next room waiting. In a minute I will take
 you there to meet your investment partner. You and your partner will be involved in
 the project. However, you are the sole decision maker. Your partner must accept
-your decision. She is unable to make the investment decisions. The object is to earn
+your decision. {pronoun_phrase} unable to make the investment decisions. The object is to earn
 money for yourself.
 {describe_payoffs(BLACK)}
 {describe_payoffs(BROWN)}

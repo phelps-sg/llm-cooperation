@@ -30,8 +30,13 @@ from openai_pygenerator import Completion, logger, user_message
 from pytest_lazyfixture import lazy_fixture
 
 from llm_cooperation import DEFAULT_MODEL_SETUP, Group, Participant, Payoffs, exhaustive
-from llm_cooperation.experiments import AI_PARTICIPANTS, GROUP_PROMPT_CONDITIONS
+from llm_cooperation.experiments import (
+    AI_PARTICIPANTS,
+    CONDITION_PRONOUN,
+    GROUP_PROMPT_CONDITIONS,
+)
 from llm_cooperation.experiments.dilemma import (
+    CONDITION_CHAIN_OF_THOUGHT,
     CONDITION_LABELS_REVERSED,
     PD_ATTRIBUTES,
     Cooperate,
@@ -65,6 +70,7 @@ from tests.conftest import modify_condition
     [
         lazy_fixture("base_condition"),
         lazy_fixture("with_chain_of_thought"),
+        lazy_fixture("with_gender_neutral_pronoun"),
     ],
 )
 def test_get_instruction_prompt(condition: Participant):
@@ -73,8 +79,9 @@ def test_get_instruction_prompt(condition: Participant):
     logger.debug("prompt = %s", prompt)
     assert "COLOR_COOPERATE" not in prompt
     assert "COLOR_DEFECT" not in prompt
-    assert ("Explanation:" in prompt) == condition["chain_of_thought"]
+    assert ("Explanation:" in prompt) == condition[CONDITION_CHAIN_OF_THOUGHT]
     assert "Choice:" in prompt
+    assert str(condition[CONDITION_PRONOUN]).lower() in prompt.lower()
     for payoff in [R, S, T, P]:
         assert f"${payoff}.00" in prompt
     assert role_prompt in prompt

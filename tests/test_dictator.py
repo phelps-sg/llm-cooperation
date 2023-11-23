@@ -23,9 +23,15 @@
 
 import pytest
 from openai_pygenerator import user_message
+from pytest_lazyfixture import lazy_fixture
 
-from llm_cooperation import Group, Participant
-from llm_cooperation.experiments import AI_PARTICIPANTS
+from llm_cooperation import ConfigValue, Group, Participant
+from llm_cooperation.experiments import (
+    AI_PARTICIPANTS,
+    CONDITION_CASE,
+    CONDITION_PRONOUN,
+    Case,
+)
 from llm_cooperation.experiments.dictator import (
     BLACK,
     BLUE,
@@ -122,11 +128,26 @@ def test_compute_freq_dictator(test_choice: DictatorChoice):
     assert result == test_choice.payoff_allo / TOTAL_SHARE
 
 
-def test_get_prompt_dictator(base_condition):
-    result = get_prompt_dictator(Participant(base_condition))
-    assert AI_PARTICIPANTS[Group.Control][0] in result
+@pytest.mark.parametrize(
+    "condition",
+    [
+        lazy_fixture("base_condition"),
+        lazy_fixture("with_gender_neutral_pronoun"),
+        lazy_fixture("with_upper_case"),
+    ],
+)
+def test_get_prompt_dictator(condition: Participant):
+    prompt = get_prompt_dictator(condition)
+
+    def contains(text: ConfigValue) -> bool:
+        return str(text).lower() in prompt.lower()
+
+    assert contains(condition[CONDITION_PRONOUN])
+    assert contains(AI_PARTICIPANTS[Group.Control][0])
     for choice in all_dictator_choices:
-        assert describe_payoffs(choice) in result
+        assert contains(describe_payoffs(choice))
+    if condition[CONDITION_CASE] == Case.UPPER.value:
+        assert "THIS IS A STUDY" in prompt
 
 
 def test_choice_menu():

@@ -116,3 +116,8 @@ def with_lower_case(base_condition: Participant) -> Participant:
 @pytest.fixture
 def with_defect_first(base_condition: Participant) -> Participant:
     return modify_condition(base_condition, CONDITION_DEFECT_FIRST, True)
+
+
+@pytest.fixture
+def with_gender_neutral_pronoun(base_condition: Participant) -> Participant:
+    return modify_condition(base_condition, CONDITION_PRONOUN, Pronoun.THEY.value)
