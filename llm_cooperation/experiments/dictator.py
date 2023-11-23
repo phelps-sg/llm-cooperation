@@ -45,6 +45,7 @@ from llm_cooperation.experiments import (
     round_instructions,
     run_and_record_experiment,
 )
+from llm_cooperation.experiments.dilemma import CONDITION_LABEL, Label
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
 
 TOTAL_SHARE = 4
@@ -74,9 +75,32 @@ color_mappings: Dict[DictatorEnum, str] = {
     DictatorEnum.WHITE: "white",
 }
 
-reverse_color_mappings: Dict[str, DictatorEnum] = {
-    value: key for key, value in color_mappings.items()
+numeral_mappings: Dict[DictatorEnum, str] = {
+    DictatorEnum.BLACK: "1",
+    DictatorEnum.BROWN: "2",
+    DictatorEnum.GREEN: "3",
+    DictatorEnum.BLUE: "4",
+    DictatorEnum.WHITE: "5",
 }
+
+number_mappings: Dict[DictatorEnum, str] = {
+    DictatorEnum.BLACK: "one",
+    DictatorEnum.BROWN: "two",
+    DictatorEnum.GREEN: "three",
+    DictatorEnum.BLUE: "four",
+    DictatorEnum.WHITE: "five",
+}
+
+
+def mappings_for(participant: Participant) -> Dict[DictatorEnum, str]:
+    label_type = participant[CONDITION_LABEL]
+    if label_type == Label.COLORS.value:
+        return color_mappings
+    elif label_type == Label.NUMBERS.value:
+        return number_mappings
+    elif label_type == Label.NUMERALS.value:
+        return numeral_mappings
+    raise ValueError(f"Unrecognized value {participant[CONDITION_LABEL]}")
 
 
 @dataclass
@@ -85,7 +109,7 @@ class DictatorChoice:
 
     # pylint: disable=unused-argument
     def description(self, participant_condition: Participant) -> str:
-        return project(color_mappings[self.value])
+        return project(mappings_for(participant_condition)[self.value])
 
     @property
     def donation(self) -> float:
@@ -111,12 +135,16 @@ all_dictator_choices = [DictatorChoice(c) for c in DictatorEnum]
 
 DICTATOR_ATTRIBUTES: Grid = {
     CONDITION_CHAIN_OF_THOUGHT: [True, False],
-    # CONDITION_LABEL: all_values(Label),
+    CONDITION_LABEL: all_values(Label),
     CONDITION_CASE: all_values(Case),
     CONDITION_PRONOUN: all_values(Pronoun),
     CONDITION_DEFECT_FIRST: [True, False],
     # CONDITION_LABELS_REVERSED: [True, False],
 }
+
+
+def inverted(mappings: Dict[DictatorEnum, str]) -> Dict[str, DictatorEnum]:
+    return {value: key for key, value in mappings.items()}
 
 
 def payout_ego(choice: DictatorChoice) -> str:
@@ -182,7 +210,7 @@ def extract_choice_dictator(
     match = re.search(r"choice:\s*(.*)", text)
     if match:
         choice = match.group(1)
-        for key, value in reverse_color_mappings.items():
+        for key, value in inverted(mappings_for(participant)).items():
             if key in choice:
                 return DictatorChoice(value)
     raise ValueError(f"Cannot determine choice from {completion}")

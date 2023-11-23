@@ -80,29 +80,30 @@ def test_dictator_choice(
 
 
 @pytest.mark.parametrize(
-    "text, expected_result",
+    "condition, text, expected_result",
     [
-        ("Choice: Black", BLACK),
-        ("Choice: 'project black'", BLACK),
-        ("choice: 'Project BLACK'", BLACK),
-        ("choice:Brown", BROWN),
-        ("choice: Green", GREEN),
-        ("Choice:   Blue", BLUE),
-        ("Choice: White", WHITE),
+        (lazy_fixture("base_condition"), "Choice: Black", BLACK),
+        (lazy_fixture("base_condition"), "Choice: 'project black'", BLACK),
+        (lazy_fixture("base_condition"), "choice: 'Project BLACK'", BLACK),
+        (lazy_fixture("base_condition"), "choice:Brown", BROWN),
+        (lazy_fixture("base_condition"), "choice: Green", GREEN),
+        (lazy_fixture("base_condition"), "Choice:   Blue", BLUE),
+        (lazy_fixture("base_condition"), "Choice: White", WHITE),
+        (lazy_fixture("with_numerals"), "Choice: 5", WHITE),
+        (lazy_fixture("with_numbers"), "Choice: four", BLUE),
+        (lazy_fixture("with_numbers"), "Choice: Three", GREEN),
     ],
 )
 def test_extract_choice_dictator(
-    text: str, expected_result: DictatorChoice, base_condition: Participant
+    condition: Participant, text: str, expected_result: DictatorChoice
 ):
+    assert extract_choice_dictator(condition, user_message(text)) == expected_result
     assert (
-        extract_choice_dictator(base_condition, user_message(text)) == expected_result
-    )
-    assert (
-        extract_choice_dictator(base_condition, user_message(text.upper()))
+        extract_choice_dictator(condition, user_message(text.upper()))
         == expected_result
     )
     assert (
-        extract_choice_dictator(base_condition, user_message(text.lower()))
+        extract_choice_dictator(condition, user_message(text.lower()))
         == expected_result
     )
 
@@ -138,6 +139,8 @@ def test_compute_freq_dictator(test_choice: DictatorChoice):
         lazy_fixture("with_gender_neutral_pronoun"),
         lazy_fixture("with_upper_case"),
         lazy_fixture("with_chain_of_thought"),
+        lazy_fixture("with_numerals"),
+        lazy_fixture("with_numbers"),
     ],
 )
 def test_get_prompt_dictator(condition: Participant):
