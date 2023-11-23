@@ -32,6 +32,7 @@ from openai_pygenerator import Completion, content
 from llm_cooperation import Grid, ModelSetup, Participant, amount_as_str
 from llm_cooperation.experiments import (
     CONDITION_CASE,
+    CONDITION_CHAIN_OF_THOUGHT,
     CONDITION_PRONOUN,
     Case,
     Pronoun,
@@ -40,6 +41,7 @@ from llm_cooperation.experiments import (
     get_participants,
     get_pronoun_phrasing,
     get_role_prompt,
+    round_instructions,
     run_and_record_experiment,
 )
 from llm_cooperation.gametypes.oneshot import OneShotResults, run_experiment
@@ -107,7 +109,7 @@ all_dictator_choices = [DictatorChoice(c) for c in DictatorEnum]
 
 
 DICTATOR_ATTRIBUTES: Grid = {
-    # CONDITION_CHAIN_OF_THOUGHT: [True, False],
+    CONDITION_CHAIN_OF_THOUGHT: [True, False],
     # CONDITION_LABEL: all_values(Label),
     CONDITION_CASE: all_values(Case),
     CONDITION_PRONOUN: all_values(Pronoun),
@@ -143,6 +145,7 @@ def get_prompt_dictator(participant: Participant) -> str:
 def get_prompt_base(participant: Participant) -> str:
     role_prompt = get_role_prompt(participant)
     pronoun_phrase = get_pronoun_phrasing(participant)
+    choice_template = f"Choice: [{choice_menu()}]"
     return f"""
 {role_prompt}
 This is a study of investment choices in different situations.
@@ -161,11 +164,8 @@ You will make decisions that are consistent with the role outlined earlier,
 but you are not allowed to communicate with your partner apart from informing
 them of your choice. Your decision will be
 final and cannot be changed after you have made it. Here is your investment
-partner. Take care to specify your choice on a separate line after
-your explanation, in the format below.
-
-Explanation: [why you picked your choice]
-Choice: [{choice_menu()}]
+partner.
+{round_instructions(participant, choice_template)}
 """
 
 

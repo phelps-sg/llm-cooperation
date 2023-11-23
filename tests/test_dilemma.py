@@ -32,11 +32,11 @@ from pytest_lazyfixture import lazy_fixture
 from llm_cooperation import DEFAULT_MODEL_SETUP, Group, Participant, Payoffs, exhaustive
 from llm_cooperation.experiments import (
     AI_PARTICIPANTS,
+    CONDITION_CHAIN_OF_THOUGHT,
     CONDITION_PRONOUN,
     GROUP_PROMPT_CONDITIONS,
 )
 from llm_cooperation.experiments.dilemma import (
-    CONDITION_CHAIN_OF_THOUGHT,
     CONDITION_LABELS_REVERSED,
     PD_ATTRIBUTES,
     Cooperate,

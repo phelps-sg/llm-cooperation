@@ -34,6 +34,7 @@ from openai_pygenerator import Completion, content
 from llm_cooperation import Grid, ModelSetup, Participant, Payoffs
 from llm_cooperation.experiments import (
     CONDITION_CASE,
+    CONDITION_CHAIN_OF_THOUGHT,
     CONDITION_PRONOUN,
     Case,
     Pronoun,
@@ -42,6 +43,7 @@ from llm_cooperation.experiments import (
     get_participants,
     get_pronoun_phrasing,
     get_role_prompt,
+    round_instructions,
     run_and_record_experiment,
 )
 from llm_cooperation.gametypes import simultaneous
@@ -68,7 +70,6 @@ PAYOFFS_PD = np.array([[R, S], [T, P]])
 
 CONDITION_LABEL = "label"
 CONDITION_LABELS_REVERSED = "labels_reversed"
-CONDITION_CHAIN_OF_THOUGHT = "chain_of_thought"
 CONDITION_DEFECT_FIRST = "defect_first"
 CONDITION_ROLE = "role"
 CONDITION_GROUP = "group"
@@ -162,17 +163,6 @@ def get_prompt_base(participant: Participant) -> str:
     def payout(amount: int) -> str:
         return f"${amount}.00"
 
-    def round_instructions() -> str:
-        if participant[CONDITION_CHAIN_OF_THOUGHT]:
-            return f"""
-For each round, give your answer in the format below on two separate lines:
-Explanation: [why I made my choice]
-{choice_template}"""
-        else:
-            return f"""
-    For each round, state your choice without explanation in the format below:
-    {choice_template}"""
-
     return f"""{role_prompt}
 This is a study of investment choices in different situations.
 You will be making your choices with an investment partner
@@ -192,7 +182,7 @@ but you will make your choice ahead of your partner telling me your choice.
 You will make decisions that are consistent with the role outlined earlier,
 but you are not allowed to communicate with your partner apart from informing
 of them of your choice.
-{round_instructions()}
+{round_instructions(participant, choice_template)}
 Here is your investment partner. What is your choice in the first round?
 """
 

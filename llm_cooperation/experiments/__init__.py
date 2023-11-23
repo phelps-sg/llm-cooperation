@@ -242,3 +242,18 @@ def get_participants(
 
 
 SEED_VALUE = 101  # Ensure same participants are used across all experiments
+
+
+def round_instructions(participant: Participant, choice_template: str) -> str:
+    if participant[CONDITION_CHAIN_OF_THOUGHT]:
+        return f"""
+For each round, give your answer in the format below on two separate lines:
+Explanation: [why I made my choice]
+{choice_template}"""
+    else:
+        return f"""
+For each round, state your choice without explanation in the format below:
+{choice_template}"""
+
+
+CONDITION_CHAIN_OF_THOUGHT = "chain_of_thought"

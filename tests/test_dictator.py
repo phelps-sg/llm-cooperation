@@ -29,6 +29,7 @@ from llm_cooperation import ConfigValue, Group, Participant
 from llm_cooperation.experiments import (
     AI_PARTICIPANTS,
     CONDITION_CASE,
+    CONDITION_CHAIN_OF_THOUGHT,
     CONDITION_PRONOUN,
     Case,
 )
@@ -134,6 +135,7 @@ def test_compute_freq_dictator(test_choice: DictatorChoice):
         lazy_fixture("base_condition"),
         lazy_fixture("with_gender_neutral_pronoun"),
         lazy_fixture("with_upper_case"),
+        lazy_fixture("with_chain_of_thought"),
     ],
 )
 def test_get_prompt_dictator(condition: Participant):
@@ -142,6 +144,7 @@ def test_get_prompt_dictator(condition: Participant):
     def contains(text: ConfigValue) -> bool:
         return str(text).lower() in prompt.lower()
 
+    assert contains("explanation:") == condition[CONDITION_CHAIN_OF_THOUGHT]
     assert contains(condition[CONDITION_PRONOUN])
     assert contains(AI_PARTICIPANTS[Group.Control][0])
     for choice in all_dictator_choices:
