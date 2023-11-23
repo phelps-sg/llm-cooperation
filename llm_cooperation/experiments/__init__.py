@@ -123,6 +123,8 @@ GROUP_PROMPT_CONDITIONS: Grid = {
     CONDITION_PROMPT_INDEX: [0, 1, 2],
 }
 
+SEED_VALUE = 101  # Ensure same participants are used across all experiments
+
 
 class Pronoun(Enum):
     HE = "he"
@@ -240,9 +242,6 @@ def get_participants(
     for i, participant in enumerate(result):
         participant["id"] = i
     return result
-
-
-SEED_VALUE = 101  # Ensure same participants are used across all experiments
 
 
 def round_instructions(participant: Participant, choice_template: str) -> str:
