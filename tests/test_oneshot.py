@@ -168,8 +168,8 @@ def test_results_to_df(results: Iterable[ResultSingleShotGame]):
     assert len(df.columns) == 7
     # pylint: disable=R0801
     assert len(df) == 2
-    assert df["Participant"].iloc[0]["condition"]
-    assert not df["Participant"].iloc[1]["condition"]
+    assert df["Participant Condition"].iloc[0]["condition"]
+    assert not df["Participant Condition"].iloc[1]["condition"]
 
 
 @pytest.fixture
