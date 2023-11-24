@@ -185,10 +185,17 @@ def run_and_record_experiment(
     return results
 
 
-def load_experiment(name: str, model_setup: ModelSetup) -> pd.DataFrame:
+def load_experiment(experiment_name: str, model_setup: ModelSetup) -> pd.DataFrame:
     results_dir = get_results_dir(model_setup)
-    filename = results_filename(results_dir, name, "pickle")
-    return pd.read_pickle(filename)
+    filename = results_filename(results_dir, experiment_name, "pickle")
+    result = pd.read_pickle(filename)
+    result["Experiment"] = [experiment_name] * len(result)
+    keys = list(result["Participant Condition"].iloc[0].keys())
+    for var in keys:
+        key = f"Participant_{var}"
+        # pylint: disable=cell-var-from-loop
+        result[key] = result["Participant Condition"].map(lambda x: x[var])
+    return result
 
 
 def results_filename(results_dir: str, name: str, file_type: str) -> str:
