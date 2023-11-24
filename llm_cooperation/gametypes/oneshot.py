@@ -64,7 +64,7 @@ class OneShotResults(Results, Generic[CT]):
                 for condition, score, freq, choice, history, model, temp in self._rows
             ],
             columns=[
-                "Participant",
+                "Participant Condition",
                 "Score",
                 "Cooperation frequency",
                 "Choice",
