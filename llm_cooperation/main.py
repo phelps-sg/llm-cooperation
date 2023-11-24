@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional
 
 import openai_pygenerator
+import pandas as pd
 
 from llm_cooperation import Experiment, Grid, ModelSettings, ModelSetup, exhaustive
 from llm_cooperation.experiments import (
@@ -34,6 +35,7 @@ from llm_cooperation.experiments import (
     DEFAULT_NUM_REPLICATIONS,
     dictator,
     dilemma,
+    load_experiment,
     principalagent,
     run_and_record_experiment,
     ultimatum,
@@ -112,8 +114,17 @@ def setup_from_settings(settings: ModelSettings) -> ModelSetup:
     )
 
 
-def run_all() -> None:
-    configuration = get_config()
+def load_all(configuration: Configuration = get_config()) -> pd.DataFrame:
+    return pd.concat(
+        [
+            load_experiment(name, setup_from_settings(ModelSettings(settings)))
+            for name in configuration.experiment_names
+            for settings in exhaustive(configuration.grid)
+        ]
+    ).reset_index(drop=True)
+
+
+def run_all(configuration: Configuration = get_config()) -> None:
     for settings in exhaustive(configuration.grid):
         setup = setup_from_settings(ModelSettings(settings))
         for name in configuration.experiment_names:

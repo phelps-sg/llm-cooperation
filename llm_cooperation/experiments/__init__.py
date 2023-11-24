@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Callable, Iterable, List, Optional, Type
 
 import numpy as np
+import pandas as pd
 
 from llm_cooperation import (
     DEFAULT_MODEL_SETUP,
@@ -150,11 +151,14 @@ def create_dir(directory: str) -> str:
     return directory
 
 
-def create_results_dir(model_setup: ModelSetup) -> str:
-    results_dir = os.path.join(
+def get_results_dir(model_setup: ModelSetup) -> str:
+    return os.path.join(
         "results", f"model-{model_setup.model}", f"temp-{model_setup.temperature}"
     )
-    return create_dir(results_dir)
+
+
+def create_results_dir(model_setup: ModelSetup) -> str:
+    return create_dir(get_results_dir(model_setup))
 
 
 def run_and_record_experiment(
@@ -169,11 +173,8 @@ def run_and_record_experiment(
     df = results.to_df()
     results_dir = create_results_dir(model_setup)
 
-    def results_filename(file_type: str) -> str:
-        return os.path.join(results_dir, f"{name}.{file_type}")
-
     def save_to(fn: Callable[[str], None], file_type: str) -> None:
-        filename = results_filename(file_type)
+        filename = results_filename(results_dir, name, file_type)
         logger.info("Saving results to %s... ", filename)
         fn(filename)
         logger.info("Save complete.")
@@ -182,6 +183,16 @@ def run_and_record_experiment(
     save_to(df.to_csv, "csv")
 
     return results
+
+
+def load_experiment(name: str, model_setup: ModelSetup) -> pd.DataFrame:
+    results_dir = get_results_dir(model_setup)
+    filename = results_filename(results_dir, name, "pickle")
+    return pd.read_pickle(filename)
+
+
+def results_filename(results_dir: str, name: str, file_type: str) -> str:
+    return os.path.join(results_dir, f"{name}.{file_type}")
 
 
 def apply_case_condition(condition: Participant, prompt: str) -> str:
