@@ -119,6 +119,7 @@ def test_get_choice_template(condition: Participant, expected_regex: str):
 Choice: Project Blue""",
             Defect,
         ),
+        (lazy_fixture("with_labels_reversed"), "project blue", Cooperate),
     ],
 )
 def test_extract_choice_pd(
