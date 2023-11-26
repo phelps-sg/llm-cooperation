@@ -25,7 +25,6 @@ dependencies:
   - plotly
   - python-kaleido
   - pyppeteer
-  - xhtml2pdf
   - pip
   - pip:
     - -e ./
