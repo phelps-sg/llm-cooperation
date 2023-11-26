@@ -94,7 +94,7 @@ def query_results(participant: Participant) -> str:
         results = list(reversed(results))
     return f"""
 [Product id: 1] {results[0]}
-[Product is: 2] {results[1]}
+[Product id: 2] {results[1]}
 """
 
 
