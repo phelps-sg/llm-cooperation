@@ -1,26 +1,3 @@
-#  MIT License
-#
-#  Copyright (c) 2023 Steve Phelps
-#
-#  Permission is hereby granted, free of charge, to any person obtaining a copy
-#  of this software and associated documentation files (the "Software"), to deal
-#  in the Software without restriction, including without limitation the rights
-#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#  copies of the Software, and to permit persons to whom the Software is
-#  furnished to do so, subject to the following conditions:
-#
-#  The above copyright notice and this permission notice shall be included in all
-#  copies or substantial portions of the Software.
-#
-#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-#  SOFTWARE.
-#
-
 # ---
 # jupyter:
 #   jupytext:
@@ -28,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.14.5
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -40,102 +17,74 @@
 
 # %% tags=["hide-input"]
 import pandas as pd
+import plotly.express as px
+import pingouin as pg
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
 from llm_cooperation.experiments.dictator import *
+from llm_cooperation.experiments.dilemma import *
+from llm_cooperation.experiments.principalagent import *
+from llm_cooperation.main import load_all, get_config, Configuration
 from llm_cooperation import Choice
+from llm_cooperation.notebook import graph, save_table
 
 # %%
-results = pd.read_pickle("../results/dictator-gpt-4.pickle")
+config = Configuration(
+    grid={
+        "temperature": [0.1, 0.6],
+        "model": ["gpt-3.5-turbo-0301", "gpt-3.5-turbo-0613", "gpt-3.5-turbo-1106"],
+        "max_tokens": [500],
+    },
+    experiment_names=["dilemma"],
+    num_participant_samples=30,
+    num_replications=3,
+)
+config
+
+# %%
+results = load_all(config)
 results
 
 # %%
-colors = results.Choice.map(lambda x: x.payoff_allo if x is not None else None)
+results.to_csv("results/pd-all.csv")
+
+# %% [markdown]
+# ## Anova
 
 # %%
-black_example = results[results.Choice == BLACK].iloc[0].Choice
+results = results[~results["Cooperation frequency"].isnull()]
 
 # %%
-black_examp
+from statsmodels.graphics.factorplots import interaction_plot
+import matplotlib.pyplot as plt
 
-# %%
-colors
-
-# %%
-colors
-
-# %%
-colors = pd.DataFrame(colors)
-colors[colors["Choice"] == "project black"]
-
-# %%
-table1 = results.groupby("Group")["Cooperation frequency"].describe().round(2)
-table1
-
-# %%
-table2 = (
-    results.groupby(["Group", "Participant"])["Cooperation frequency"]
-    .describe()
-    .round(2)
+plt.figure(figsize=(10, 6))
+fig = interaction_plot(
+    x=results["Participant_group"],
+    trace=results["Partner Condition"],
+    response=results["Cooperation frequency"],
 )
-table2
+
 
 # %%
-first_row = results.iloc[1]
-first_row
+anova = pg.mixed_anova(
+    dv="Cooperation frequency",
+    between="Participant_group",
+    within="Partner Condition",
+    subject="Participant_id",
+    data=results,
+)
+anova
 
 # %%
-first_row.Group
+tukey = pairwise_tukeyhsd(
+    endog=results["Cooperation frequency"],  # Data
+    groups=results["Participant_group"],  # Groups
+    alpha=0.05,
+)  # Significance level
+print(tukey)
 
 # %%
-first_row.Participant
-
-# %%
-first_row.Transcript
-
-# %%
-altruist = results[results.Group == "Group.Altruistic"].iloc[0]
-altruist
-
-# %%
-altruist.Transcript
-
-# %%
-import numpy as np
-
-donation = [
-    choice.payoff_allo
-    for choice in results[results.Participant == participant1].Choice.values
-]
-np.mean(donation)
-
-# %%
-np.var(donation)
-
-# %%
-results.groupby("Participant").mean()
-
-# %%
-first_row.Transcript
-
-# %%
-first_row.Choice.payoff_allo
-
-# %%
-first_row.Choice.payoff_ego
-
-# %% tags=["hide-input"]
-
-results = pd.read_pickle("../results/dilemma.pickle")
 N = len(results)
-
-# %%
-import pandas as pd
-from llm_cooperation.experiments.ultimatum import *
-from llm_cooperation import *
-
-results = pd.read_pickle("../results/ultimatum.pickle")
-
-# %% [raw]
-#
 
 # %% [markdown]
 # The data consists of a total of
@@ -149,19 +98,31 @@ print(f"N = {N}")
 # %% tags=["hide-input"]
 results.iloc[0]
 
+# %%
+results.groupby("Participant_id").describe()
 
 # %%
-def save_table(df, name, caption):
-    df = df.style.format(decimal=".", thousands=",", precision=2)
-    df.to_latex(f"../latex/{name}.tex", caption=caption)
-    return df
+450 / 5
 
+# %%
+results[results.Participant_id == 0].iloc[0]
+
+# %%
+results[results.Participant_id == 90].iloc[0]
+
+# %%
+results[results.Participant_id == 0].iloc[1]
+
+# %%
+results[results.Participant_id == 0].iloc[-1]
 
 # %% [markdown]
 # ### Table 1: Cooperation frequency by group
 
 # %% tags=["hide-input"]
-table1 = results.groupby("Group")["Cooperation frequency"].describe().round(2)
+table1 = (
+    results.groupby("Participant_group")["Cooperation frequency"].describe().round(2)
+)
 save_table(table1, "table1", "Cooperation frequency by group")
 
 # %% [markdown]
@@ -169,83 +130,302 @@ save_table(table1, "table1", "Cooperation frequency by group")
 
 # %% tags=["hide-input"]
 table2 = (
-    results.groupby(["Group", "Condition"])["Cooperation frequency"].describe().round(2)
-)
-save_table(table2, "table2", "Cooperation frequency by group/condition")
-
-# %% [markdown]
-# ### Table 3: Cooperation frequency by participant
-
-# %% tags=["hide-input"]
-table3 = results.groupby("Participant")["Cooperation frequency"].describe().round(2)
-save_table(table3, "table3", "Cooperation frequency by participant")
-
-# %% [markdown]
-# ### Table 4 - Cooperation frequency by participant and condition
-
-# %% tags=["hide-input"]
-table4 = (
-    results.groupby(["Participant", "Condition"])["Cooperation frequency"]
+    results.groupby(["Participant_group", "Partner Condition"])["Cooperation frequency"]
     .describe()
     .round(2)
 )
-save_table(table4, "table4", "Cooperation frequency by participant and condition")
+save_table(table2, "table2", "Cooperation frequency by group/condition")
+
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Participant_group",
+        y="Cooperation frequency",
+        color="Model",
+        notched=True,
+    ),
+    "pd-boxplot-group-model",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results, x="Participant_group", y="Cooperation frequency", notched=True
+    ),
+    "pd-boxplot-group",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Participant_group",
+        y="Cooperation frequency",
+        color="Temperature",
+        notched=True,
+    ),
+    "pd-boxplot-group-temperature",
+)
+
+# %%
+graph(
+    lambda: px.box(results, x="Model", y="Cooperation frequency", notched=True),
+    "pd-boxplot-model",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Participant_group",
+        y="Cooperation frequency",
+        color="Participant_pronoun",
+        notched=True,
+    ),
+    "pd-boxplot-group-pronoun",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Participant_group",
+        y="Cooperation frequency",
+        color="Participant_case",
+        notched=True,
+    ),
+    "pd-boxplot-group-case",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Participant_group",
+        y="Cooperation frequency",
+        color="Participant_label",
+        notched=True,
+    ),
+    "pd-boxplot-group-label",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Participant_group",
+        y="Cooperation frequency",
+        color="Participant_defect_first",
+        notched=True,
+    ),
+    "pd-boxplot-group-defect-first",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Partner Condition",
+        y="Cooperation frequency",
+        color="Model",
+        notched=True,
+    ),
+    "pd-boxplot-partner-condition-model",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Partner Condition",
+        y="Cooperation frequency",
+        color="Participant_chain_of_thought",
+        notched=True,
+    ),
+    "pd-boxplot-partner-condition-cot",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Participant_chain_of_thought",
+        color="Temperature",
+        y="Cooperation frequency",
+        notched=True,
+    ),
+    "pd-boxplot-cot-temperature",
+)
 
 # %% tags=["hide-input"]
-import plotly.express as px
-import plotly
-from IPython.core.display import HTML
-from typing import Callable
+graph(
+    lambda: px.box(
+        results,
+        x="Participant_group",
+        y="Cooperation frequency",
+        color="Participant_chain_of_thought",
+        notched=True,
+    ),
+    "pd-boxplot-group-cot",
+)
+
+# %% tags=["hide-input"]
+graph(
+    lambda: px.box(
+        results,
+        x="Participant_group",
+        y="Cooperation frequency",
+        color="Temperature",
+        notched=True,
+    ),
+    "pd-boxplot-group-temperature",
+)
 
 
-def graph(fn: Callable, name: str):
-    fig = fn()
-    fname = f"{name}.html"
-    plotly.offline.plot(fig, filename=fname, auto_open=False)
-    display(HTML(filename=fname))
-
-
-def boxplot(group: str, name: str):
+# %%
+def fig_group_partner_condition(model=None):
+    results_sel = results[results.Model == model] if model is not None else results
+    model_str = "all" if model is None else model
     graph(
         lambda: px.box(
-            results[results.Group == group], x="Condition", y="Cooperation frequency"
+            results_sel,
+            x="Participant_group",
+            y="Cooperation frequency",
+            color="Partner Condition",
+            notched=True,
         ),
-        name,
+        f"pd-boxplot-group-partner-condition-{model_str}",
     )
 
 
-# %% [markdown]
-# ### Figure 1: Cooperation frequency by group
+# %%
+fig_group_partner_condition()
 
-# %% tags=["hide-input"]
-graph(lambda: px.box(results, x="Group", y="Cooperation frequency"), "figure1")
+# %%
+fig_group_partner_condition(model="gpt-3.5-turbo-0301")
 
-# %% [markdown]
-# ### Figure 2: Cooperation frequency by condition
+# %%
+fig_group_partner_condition(model="gpt-3.5-turbo-0613")
 
-# %% tags=["hide-input"]
-graph(lambda: px.box(results, x="Condition", y="Cooperation frequency"), "figure2")
+# %%
+fig_group_partner_condition(model="gpt-3.5-turbo-1106")
 
-# %% [markdown]
-# ### Figure 3: Cooperation frequency by condition- control group
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Participant_chain_of_thought",
+        y="Cooperation frequency",
+        color="Partner Condition",
+        notched=True,
+    ),
+    "pd-boxplot-cot-partner-condition",
+)
 
-# %% tags=["hide-input"]
-boxplot("Group.Control", "figure3")
+# %%
+results_sel = results[results["Participant_group"] == "Cooperative"]
+graph(
+    lambda: px.box(
+        results_sel,
+        x="Partner Condition",
+        y="Cooperation frequency",
+        color="Model",
+        notched=True,
+    ),
+    "pd-boxplot-partner-condition-model",
+)
 
-# %% [markdown]
-# ### Figure 4: Cooperation frequency by condition- altruistic group
+# %%
+results_sel = results[results["Participant_group"] == "Cooperative"]
+graph(
+    lambda: px.box(
+        results_sel,
+        x="Partner Condition",
+        y="Cooperation frequency",
+        color="Participant_chain_of_thought",
+        notched=True,
+    ),
+    "pd-boxplot-cooperative-group-partner-condition-cot",
+)
 
-# %% tags=["hide-input"]
-boxplot("Group.Altruistic", "figure4")
+# %%
+results_sel = results[results["Participant_group"] == "Selfish"]
+graph(
+    lambda: px.box(
+        results_sel,
+        x="Partner Condition",
+        y="Cooperation frequency",
+        color="Participant_chain_of_thought",
+        notched=True,
+    ),
+    "pd-boxplot-selfish-group-partner-condition-cot",
+)
 
-# %% [markdown]
-# ### Figure 5: Cooperation frequency by condition- selfish group
+# %%
+results_sel = results[results["Participant_group"] == "Altruistic"]
+graph(
+    lambda: px.box(
+        results_sel,
+        x="Partner Condition",
+        y="Cooperation frequency",
+        color="Participant_chain_of_thought",
+        notched=True,
+    ),
+    "pd-boxplot-altruistic-group-partner-condition-cot",
+)
 
-# %% tags=["hide-input"]
-boxplot("Group.Selfish", "figure5")
+# %%
+results_sel = results[results["Participant_group"] == "Altruistic"]
+graph(
+    lambda: px.box(
+        results_sel,
+        x="Partner Condition",
+        y="Cooperation frequency",
+        color="Model",
+        notched=True,
+    ),
+    "pd-boxplot-altruistic-group-partner-condition-model",
+)
 
-# %% [markdown]
-# ### Figure 6: Cooperation frequency by condition- mixed group
+# %%
+results_sel = results[
+    (results["Participant_group"] == "Altruistic")
+    & (results["Model"] == "gpt-3.5-turbo-1106")
+]
+graph(
+    lambda: px.box(
+        results_sel,
+        x="Partner Condition",
+        y="Cooperation frequency",
+        color="Participant_chain_of_thought",
+        notched=True,
+    ),
+    "pd-boxplot-altruistic-group-1106-partner-condition-cot",
+)
 
-# %% tags=["hide-input"]
-boxplot("Group.Mixed", "figure6")
+# %%
+results_sel = results[results["Participant_group"] == "Competitive"]
+graph(
+    lambda: px.box(
+        results_sel,
+        x="Partner Condition",
+        y="Cooperation frequency",
+        color="Participant_chain_of_thought",
+        notched=True,
+    ),
+    "pd-boxplot-competitive-group-partner-condition-cot",
+)
+
+# %%
+results_sel = results[results["Participant_group"] == "Control"]
+graph(
+    lambda: px.box(
+        results_sel,
+        x="Partner Condition",
+        y="Cooperation frequency",
+        color="Participant_chain_of_thought",
+        notched=True,
+    ),
+    "pd-boxplot-control-group-partner-condition-cot",
+)
