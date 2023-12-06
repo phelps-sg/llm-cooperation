@@ -3,7 +3,7 @@ channels:
   - conda-forge
   - plotly
 dependencies:
-  - python=3.10
+  - python=3.11
   - blackd
   - evals
   - ipython
@@ -25,6 +25,13 @@ dependencies:
   - plotly
   - python-kaleido
   - pyppeteer
+  - pingouin
+  - r-base
+  - r-tidyverse
+  - r-ggpubr
+  - r-rstatix
+  - r-reticulate
+  - r-irkernel
   - pip
   - pip:
     - -e ./
