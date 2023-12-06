@@ -25,13 +25,13 @@ repos:
   rev: 23.1.0
   hooks:
     - id: black
+      exclude: ^jupyter-book/
       args: # arguments to configure black
         - --line-length=88
         - --include='\.pyi?$'
 
         # these folders won't be formatted by black
         - --exclude="""\.git |
-          jupyter-book|
           \.__pycache__|
           \.hg|
           \.mypy_cache|
