@@ -31,6 +31,7 @@ repos:
 
         # these folders won't be formatted by black
         - --exclude="""\.git |
+          |./jupyter-book|
           \.__pycache__|
           \.hg|
           \.mypy_cache|
