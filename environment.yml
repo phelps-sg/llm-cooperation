@@ -30,8 +30,9 @@ dependencies:
   - r-tidyverse
   - r-ggpubr
   - r-lme4
-  - r-matrix>=1.6.2
+  - r-matrix=1.6.0
   - r-rstatix
+  - r-tmb=1.9.6
   - r-glmmTMB
   - r-reticulate
   - r-irkernel
