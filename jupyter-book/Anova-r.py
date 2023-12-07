@@ -50,14 +50,28 @@ names(results)[2] = "Partner_condition"
 names(results)[4] = "Cooperation_frequency"
 
 # %%
-results.clean <- results %>% convert_as_factor(Participant_group, Partner_condition, t, Model, Participant_id, Temperature) %>% filter(!is.na(Cooperation_frequency))
+results.clean <- results %>% convert_as_factor(Participant_group, Partner_condition, t, Model, Participant_id) %>% filter(!is.na(Cooperation_frequency))
 
 # %%
 results.clean <- results.clean[,c("Participant_group", "Partner_condition", "t", "Model", "Participant_id", "Temperature", "Cooperation_frequency")]
 results.clean
 
 # %%
-hist(results$Cooperation_frequency)
+levels(results.clean$Model)
+
+# %%
+levels(results.clean$Participant_group)
+
+# %%
+levels(results.clean$Partner_condition)
+
+# %%
+results.clean$Participant_group <- relevel(results.clean$Participant_group, ref='Control')
+results.clean$Partner_condition <- relevel(results.clean$Partner_condition, ref='tit for tat D')
+results.clean$Model <- relevel(results.clean$Model, ref='gpt-3.5-turbo-0613')
+
+# %%
+hist(results.clean$Cooperation_frequency)
 
 # %%
 results %>% group_by(Participant_group, Partner_condition, t, Model, Temperature) %>% shapiro_test(Cooperation_frequency)
