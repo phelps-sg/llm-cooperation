@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.15.2
+#       jupytext_version: 1.16.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -26,6 +26,11 @@ from llm_cooperation.experiments.principalagent import *
 from llm_cooperation.main import load_all, get_config, Configuration
 from llm_cooperation import Choice
 from llm_cooperation.notebook import graph, save_table
+from statsmodels.graphics.factorplots import interaction_plot
+import matplotlib.pyplot as plt
+
+# %%
+logging.basicConfig(level=logging.INFO)
 
 # %%
 config = Configuration(
@@ -54,9 +59,7 @@ results.to_csv("results/pd-all.csv")
 results = results[~results["Cooperation frequency"].isnull()]
 
 # %%
-from statsmodels.graphics.factorplots import interaction_plot
-import matplotlib.pyplot as plt
-
+logging.basicConfig(level=logging.INFO)
 plt.figure(figsize=(10, 6))
 fig = interaction_plot(
     x=results["Participant_group"],
@@ -64,6 +67,22 @@ fig = interaction_plot(
     response=results["Cooperation frequency"],
 )
 
+
+# %%
+plt.figure(figsize=(10, 6))
+fig = interaction_plot(
+    x=results["Participant_group"],
+    trace=results["Model"],
+    response=results["Cooperation frequency"],
+)
+
+# %%
+plt.figure(figsize=(10, 6))
+fig = interaction_plot(
+    x=results["Participant_group"],
+    trace=results["Temperature"],
+    response=results["Cooperation frequency"],
+)
 
 # %%
 anova = pg.mixed_anova(
