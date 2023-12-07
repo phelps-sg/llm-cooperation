@@ -29,7 +29,10 @@ dependencies:
   - r-base
   - r-tidyverse
   - r-ggpubr
+  - r-lme4
+  - r-matrix>=1.6.2
   - r-rstatix
+  - r-glmmTMB
   - r-reticulate
   - r-irkernel
   - pip
