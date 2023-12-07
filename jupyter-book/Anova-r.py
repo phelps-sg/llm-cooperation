@@ -16,6 +16,8 @@
 library(reticulate)
 library(ggpubr)
 library(rstatix)
+
+# %%
 llm.coop <- import("llm_cooperation.main")
 
 # %%
@@ -46,5 +48,10 @@ names(results)[2] = "Partner_condition"
 names(results)[4] = "Cooperation_frequency"
 
 # %%
-res.aov <- anova_test(data=results, dv=Cooperation_frequency, wid=Participant_id, between=Participant_group, within=Partner_condition)
+results.clean <- results %>% convert_as_factor(Participant_group, Partner_condition, t, Model, Participant_id, Temperature) %>% filter(!is.na(Cooperation_frequency))
+
+# %%
+res.aov <- anova_test(data=results.clean, dv=Cooperation_frequency, wid=Participant_id, between=Participant_group, within=c(Temperature, t, Partner_condition, Model))
 get_anova_table(res.aov)
+
+# %%
