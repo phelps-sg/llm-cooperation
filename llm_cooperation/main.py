@@ -115,13 +115,15 @@ def setup_from_settings(settings: ModelSettings) -> ModelSetup:
 
 
 def load_all(configuration: Configuration = get_config()) -> pd.DataFrame:
-    return pd.concat(
+    result = pd.concat(
         [
             load_experiment(name, setup_from_settings(ModelSettings(settings)))
             for name in configuration.experiment_names
             for settings in exhaustive(configuration.grid)
         ]
     ).reset_index(drop=True)
+    result["t"] = result.index % configuration.num_replications
+    return result
 
 
 def run_all(configuration: Configuration = get_config()) -> None:
