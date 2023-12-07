@@ -15,7 +15,9 @@
 # %%
 library(reticulate)
 library(ggpubr)
+library(lme4)
 library(rstatix)
+library(glmmTMB)
 
 # %%
 llm.coop <- import("llm_cooperation.main")
@@ -51,7 +53,31 @@ names(results)[4] = "Cooperation_frequency"
 results.clean <- results %>% convert_as_factor(Participant_group, Partner_condition, t, Model, Participant_id, Temperature) %>% filter(!is.na(Cooperation_frequency))
 
 # %%
+results.clean <- results.clean[,c("Participant_group", "Partner_condition", "t", "Model", "Participant_id", "Temperature", "Cooperation_frequency")]
+results.clean
+
+# %%
+hist(results$Cooperation_frequency)
+
+# %%
+results %>% group_by(Participant_group, Partner_condition, t, Model, Temperature) %>% shapiro_test(Cooperation_frequency)
+
+# %%
 res.aov <- anova_test(data=results.clean, dv=Cooperation_frequency, wid=Participant_id, between=Participant_group, within=c(Temperature, t, Partner_condition, Model))
 get_anova_table(res.aov)
+
+# %%
+# Adjust 0s and 1s
+epsilon <- .Machine$double.eps ^ 0.5
+results.clean$Cooperation_frequency[results.clean$Cooperation_frequency == 0] <- epsilon
+results.clean$Cooperation_frequency[results.clean$Cooperation_frequency == 1] <- 1 - epsilon
+
+# %%
+model <- glmmTMB(Cooperation_frequency ~ Participant_group + Partner_condition + t + Model + Temperature +
+               (1 | Participant_id), 
+               data = results.clean, 
+               family = beta_family(link = "logit"))
+
+summary(model)
 
 # %%
