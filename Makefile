@@ -68,4 +68,4 @@ start-notebook:
 	$(CONDA_ACTIVATE); jupyter-notebook
 
 jupytext-sync:
-	$(CONDA_ACTIVATE); jupytext --sync notebooks/*/*.py
+	$(CONDA_ACTIVATE); jupytext --sync jupyter-book/*.py jupyter-notebook/*.py
