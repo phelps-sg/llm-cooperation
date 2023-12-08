@@ -87,8 +87,10 @@ results.clean$Cooperation_frequency[results.clean$Cooperation_frequency == 0] <-
 results.clean$Cooperation_frequency[results.clean$Cooperation_frequency == 1] <- 1 - epsilon
 
 # %%
-model <- glmmTMB(Cooperation_frequency ~ Participant_group + Partner_condition + t + Model + Temperature +
-               (1 | Participant_id), 
+model <- glmmTMB(Cooperation_frequency ~
+                 Participant_group + Partner_condition + t + Model + Temperature +             
+                 Partner_condition:Model + Participant_group:Model +
+                   (1 | Participant_id), 
                data = results.clean, 
                family = beta_family(link = "logit"))
 
