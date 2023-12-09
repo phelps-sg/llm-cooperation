@@ -18,6 +18,7 @@ library(ggpubr)
 library(lme4)
 library(rstatix)
 library(glmmTMB)
+library(DHARMa)
 
 # %%
 llm.coop <- import("llm_cooperation.main")
@@ -50,11 +51,17 @@ names(results)[2] = "Partner_condition"
 names(results)[4] = "Cooperation_frequency"
 
 # %%
-results.clean <- results %>% convert_as_factor(Participant_group, Partner_condition, t, Model, Participant_id) %>% filter(!is.na(Cooperation_frequency))
+results.clean <- results %>% 
+    convert_as_factor(Experiment, Participant_group, Partner_condition, t, Model, Participant_id, Participant_prompt_index, 
+                      Participant_chain_of_thought, Participant_label, Participant_case, Participant_pronoun, 
+                      Participant_defect_first, Participant_labels_reversed) %>% 
+    filter(!is.na(Cooperation_frequency))
 
 # %%
-results.clean <- results.clean[,c("Participant_group", "Partner_condition", "t", "Model", "Participant_id", "Temperature", "Cooperation_frequency")]
 results.clean
+
+# %%
+levels(results.clean$Experiment)
 
 # %%
 levels(results.clean$Model)
@@ -66,9 +73,21 @@ levels(results.clean$Participant_group)
 levels(results.clean$Partner_condition)
 
 # %%
+levels(results.clean$Participant_pronoun)
+
+# %%
+levels(results.clean$Participant_label)
+
+# %%
+levels(results.clean$Participant_case)
+
+# %%
 results.clean$Participant_group <- relevel(results.clean$Participant_group, ref='Control')
 results.clean$Partner_condition <- relevel(results.clean$Partner_condition, ref='tit for tat D')
 results.clean$Model <- relevel(results.clean$Model, ref='gpt-3.5-turbo-0613')
+results.clean$Participant_pronoun <- relevel(results.clean$Participant_pronoun, ref='they')
+results.clean$Participant_case <- relevel(results.clean$Participant_case, ref='standard')
+results.clean$Particpant_labe <- relevel(results.clean$Participant_label, ref='colors')
 
 # %%
 hist(results.clean$Cooperation_frequency)
@@ -88,12 +107,13 @@ results.clean$Cooperation_frequency[results.clean$Cooperation_frequency == 1] <-
 
 # %%
 model <- glmmTMB(Cooperation_frequency ~
-                 Participant_group + Partner_condition + t + Model + Temperature +             
-                 Partner_condition:Model + Participant_group:Model +
-                   (1 | Participant_id), 
-               data = results.clean, 
+                 Participant_group + Partner_condition + t + Model + Temperature +
+                 Partner_condition:Model + Participant_group:Model + Participant_labels_reversed:Participant_label + Participant_labels_reversed:Model +
+                 Participant_label + Participant_chain_of_thought + Participant_pronoun + Participant_defect_first + Participant_labels_reversed +
+                   (1 | Participant_id),
+               data = results.clean,
                family = beta_family(link = "logit"))
-
 summary(model)
 
 # %%
+simulationOutput <- simulateResiduals(fittedModel = model, plot = TRUE)

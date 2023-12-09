@@ -36,6 +36,7 @@ dependencies:
   - r-glmmTMB
   - r-reticulate
   - r-irkernel
+  - r-dharma
   - pip
   - pip:
     - -e ./
