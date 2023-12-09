@@ -106,14 +106,40 @@ results.clean$Cooperation_frequency[results.clean$Cooperation_frequency == 0] <-
 results.clean$Cooperation_frequency[results.clean$Cooperation_frequency == 1] <- 1 - epsilon
 
 # %%
-model <- glmmTMB(Cooperation_frequency ~
+results.clean$Num_cooperates = round(results.clean$Cooperation_frequency * 6)
+
+# %%
+6 - results.clean$Num_cooperates
+
+# %%
+model <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
                  Participant_group + Partner_condition + t + Model + Temperature +
-                 Partner_condition:Model + Participant_group:Model + Participant_labels_reversed:Participant_label + Participant_labels_reversed:Model +
-                 Participant_label + Participant_chain_of_thought + Participant_pronoun + Participant_defect_first + Participant_labels_reversed +
-                   (1 | Participant_id),
+                 Partner_condition:Model + Participant_group:Model +
+                 (1|Participant_id),
                data = results.clean,
-               family = beta_family(link = "logit"))
+               family = betabinomial)
 summary(model)
 
 # %%
-simulationOutput <- simulateResiduals(fittedModel = model, plot = TRUE)
+model <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
+                 Participant_group + Partner_condition + t + Model + Temperature +
+                 Partner_condition:Model + Participant_group:Model + Participant_labels_reversed:Participant_label + Participant_labels_reversed:Model +
+                 Participant_label + Participant_chain_of_thought + Participant_pronoun + Participant_defect_first + Participant_labels_reversed,
+               data = results.clean,
+               family = betabinomial)
+summary(model)
+
+# %%
+simulationOutput <- simulateResiduals(fittedModel = model, plot = TRUE, integerResponse=TRUE)
+
+# %%
+options(repr.plot.width = 20, repr.plot.height = 10)
+
+# %%
+testQuantiles(simulationOutput)
+
+# %%
+hist(residuals(simulationOutput))
+
+# %%
+plotResiduals(simulationOutput, results.clean$Participant_group)
