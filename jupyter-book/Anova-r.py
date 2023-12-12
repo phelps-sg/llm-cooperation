@@ -21,6 +21,9 @@ library(glmmTMB)
 library(DHARMa)
 
 # %%
+options(repr.plot.width = 20, repr.plot.height = 10)
+
+# %%
 llm.coop <- import("llm_cooperation.main")
 
 # %%
@@ -61,6 +64,9 @@ results.clean <- results %>%
 results.clean
 
 # %%
+levels(results.clean$Participant_pronoun)
+
+# %%
 levels(results.clean$Experiment)
 
 # %%
@@ -71,9 +77,6 @@ levels(results.clean$Participant_group)
 
 # %%
 levels(results.clean$Partner_condition)
-
-# %%
-levels(results.clean$Participant_pronoun)
 
 # %%
 levels(results.clean$Participant_label)
@@ -100,6 +103,11 @@ res.aov <- anova_test(data=results.clean, dv=Cooperation_frequency, wid=Particip
 get_anova_table(res.aov)
 
 # %%
+ggplot(results.clean, aes(x = Participant_group, y = Cooperation_frequency)) +
+  geom_boxplot() +
+  facet_wrap(. ~ Model + Temperature + Participant_labels_reversed + Partner_condition, ncol=6)
+
+# %%
 # Adjust 0s and 1s
 epsilon <- .Machine$double.eps ^ 0.5
 results.clean$Cooperation_frequency[results.clean$Cooperation_frequency == 0] <- epsilon
@@ -109,7 +117,8 @@ results.clean$Cooperation_frequency[results.clean$Cooperation_frequency == 1] <-
 results.clean$Num_cooperates = round(results.clean$Cooperation_frequency * 6)
 
 # %%
-6 - results.clean$Num_cooperates
+num_defects <- 6 - results.clean$Num_cooperates
+summary(num_defects)
 
 # %%
 model <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
@@ -121,25 +130,25 @@ model <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
 summary(model)
 
 # %%
-model <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
-                 Participant_group + Partner_condition + t + Model + Temperature +
-                 Partner_condition:Model + Participant_group:Model + Participant_labels_reversed:Participant_label + Participant_labels_reversed:Model +
-                 Participant_label + Participant_chain_of_thought + Participant_pronoun + Participant_defect_first + Participant_labels_reversed,
-               data = results.clean,
-               family = betabinomial)
-summary(model)
-
-# %%
 simulationOutput <- simulateResiduals(fittedModel = model, plot = TRUE, integerResponse=TRUE)
-
-# %%
-options(repr.plot.width = 20, repr.plot.height = 10)
-
-# %%
-testQuantiles(simulationOutput)
 
 # %%
 hist(residuals(simulationOutput))
 
 # %%
-plotResiduals(simulationOutput, results.clean$Participant_group)
+model.factorial <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
+                 Participant_group + Partner_condition + t + Model + Temperature +
+                 Partner_condition:Model + Participant_group:Model + Participant_labels_reversed:Participant_label + Participant_labels_reversed:Model +
+                 Participant_label + Participant_chain_of_thought + Participant_pronoun + Participant_defect_first + Participant_labels_reversed,
+               data = results.clean,
+               family = betabinomial)
+summary(model.factorial)
+
+# %%
+simulationOutput.factorial<- simulateResiduals(fittedModel = model.factorial, plot = TRUE, integerResponse=TRUE)
+
+# %%
+hist(residuals(simulationOutput.factorial))
+
+# %%
+plotResiduals(simulationOutput.factorial, results.clean$Participant_group)
