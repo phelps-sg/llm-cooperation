@@ -85,24 +85,6 @@ fig = interaction_plot(
 )
 
 # %%
-anova = pg.mixed_anova(
-    dv="Cooperation frequency",
-    between="Participant_group",
-    within="Partner Condition",
-    subject="Participant_id",
-    data=results,
-)
-anova
-
-# %%
-tukey = pairwise_tukeyhsd(
-    endog=results["Cooperation frequency"],  # Data
-    groups=results["Participant_group"],  # Groups
-    alpha=0.05,
-)  # Significance level
-print(tukey)
-
-# %%
 N = len(results)
 
 # %% [markdown]
@@ -119,21 +101,6 @@ results.iloc[0]
 
 # %%
 results.groupby("Participant_id").describe()
-
-# %%
-450 / 5
-
-# %%
-results[results.Participant_id == 0].iloc[0]
-
-# %%
-results[results.Participant_id == 90].iloc[0]
-
-# %%
-results[results.Participant_id == 0].iloc[1]
-
-# %%
-results[results.Participant_id == 0].iloc[-1]
 
 # %% [markdown]
 # ### Table 1: Cooperation frequency by group
@@ -251,6 +218,42 @@ graph(
         notched=True,
     ),
     "pd-boxplot-partner-condition-model",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Partner Condition",
+        y="Cooperation frequency",
+        color="Participant_labels_reversed",
+        notched=True,
+    ),
+    "pd-boxplot-partner-condition-labels-reversed",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Model",
+        y="Cooperation frequency",
+        color="Participant_labels_reversed",
+        notched=True,
+    ),
+    "pd-boxplot-model-labels-reversed",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results,
+        x="Participant_label",
+        y="Cooperation frequency",
+        color="Participant_labels_reversed",
+        notched=True,
+    ),
+    "pd-boxplot-label-labels-reversed",
 )
 
 # %%
