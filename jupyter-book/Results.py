@@ -39,7 +39,7 @@ config = Configuration(
         "model": ["gpt-3.5-turbo-0301", "gpt-3.5-turbo-0613", "gpt-3.5-turbo-1106"],
         "max_tokens": [500],
     },
-    experiment_names=["dilemma"],
+    experiment_names=["dilemma", "dictator"],
     num_participant_samples=30,
     num_replications=3,
 )
@@ -50,39 +50,40 @@ results = load_all(config)
 results
 
 # %%
-results.to_csv("results/pd-all.csv")
+results.to_csv("results/all.csv")
 
 # %% [markdown]
-# ## Anova
+# ## Interaction plots
 
 # %%
 results = results[~results["Cooperation frequency"].isnull()]
 
+
 # %%
-logging.basicConfig(level=logging.INFO)
-plt.figure(figsize=(10, 6))
-fig = interaction_plot(
-    x=results["Participant_group"],
-    trace=results["Partner Condition"],
-    response=results["Cooperation frequency"],
-)
+def make_interaction_plot(var, var_fname=None):
+    if var_fname is None:
+        var_fname = var.lower()
+    plt.figure(figsize=(10, 6))
+    fig = interaction_plot(
+        x=results["Participant_group"],
+        trace=results[var],
+        response=results["Cooperation frequency"],
+    )
+    fig.savefig(fname=f"interaction-plot-{var_fname}.pdf")
 
 
 # %%
-plt.figure(figsize=(10, 6))
-fig = interaction_plot(
-    x=results["Participant_group"],
-    trace=results["Model"],
-    response=results["Cooperation frequency"],
-)
+make_interaction_plot("Partner Condition", "partner")
+
 
 # %%
-plt.figure(figsize=(10, 6))
-fig = interaction_plot(
-    x=results["Participant_group"],
-    trace=results["Temperature"],
-    response=results["Cooperation frequency"],
-)
+make_interaction_plot("Model")
+
+# %%
+make_interaction_plot("Temperature")
+
+# %%
+make_interaction_plot("Experiment")
 
 # %%
 N = len(results)
@@ -123,6 +124,9 @@ table2 = (
 save_table(table2, "table2", "Cooperation frequency by group/condition")
 
 # %%
+plt.figure(figsize=(10, 12))
+
+# %%
 graph(
     lambda: px.box(
         results,
@@ -139,7 +143,15 @@ graph(
     lambda: px.box(
         results, x="Participant_group", y="Cooperation frequency", notched=True
     ),
-    "pd-boxplot-group",
+    "all-boxplot-group",
+)
+
+# %%
+graph(
+    lambda: px.box(
+        results, x="Participant_group", y="Cooperation frequency", notched=True, color="Experiment"
+    ),
+    "all-boxplot-group-experiment",
 )
 
 # %%
@@ -158,6 +170,12 @@ graph(
 graph(
     lambda: px.box(results, x="Model", y="Cooperation frequency", notched=True),
     "pd-boxplot-model",
+)
+
+# %%
+graph(
+    lambda: px.box(results, x="Model", y="Cooperation frequency", color="Experiment", notched=True),
+    "all-boxplot-model-experiment",
 )
 
 # %%
