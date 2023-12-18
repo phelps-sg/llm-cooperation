@@ -492,6 +492,7 @@ dependencies:
   - r-sp=2.1_2=r43h57805ef_0
   - r-sparsem=1.81=r43h61816a4_2
   - r-squarem=2021.1=r43hc72bb7e_2
+  - r-stargazer=5.2.3=r43hc72bb7e_2
   - r-statmod=1.5.0=r43hd8f1df9_1
   - r-stringi=1.8.2=r43h9facbd6_0
   - r-stringr=1.5.1=r43h785f33e_0

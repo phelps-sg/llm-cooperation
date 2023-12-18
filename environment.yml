@@ -37,6 +37,7 @@ dependencies:
   - r-reticulate
   - r-irkernel
   - r-dharma
+  - r-stargazer
   - r-modelsummary
   - pip
   - pip:
