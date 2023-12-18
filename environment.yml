@@ -39,6 +39,7 @@ dependencies:
   - r-dharma
   - r-stargazer
   - r-modelsummary
+  - r-texreg
   - pip
   - pip:
     - -e ./

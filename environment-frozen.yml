@@ -501,6 +501,7 @@ dependencies:
   - r-sys=3.4.2=r43h57805ef_1
   - r-systemfonts=1.0.5=r43haf97adc_0
   - r-tables=0.9.17=r43hc72bb7e_1
+  - r-texreg=1.39.3=r43hc72bb7e_0
   - r-textshaping=0.3.7=r43hd87b9d6_0
   - r-tibble=3.2.1=r43h57805ef_2
   - r-tidyr=1.3.0=r43ha503ecb_1
