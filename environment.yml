@@ -34,12 +34,14 @@ dependencies:
   - r-rstatix
   - r-tmb=1.9.6
   - r-glmmTMB
+  - r-geepack
   - r-reticulate
   - r-irkernel
   - r-dharma
   - r-stargazer
   - r-modelsummary
   - r-texreg
+  - r-MCMCglmm
   - pip
   - pip:
     - -e ./
