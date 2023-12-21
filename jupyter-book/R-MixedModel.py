@@ -25,6 +25,12 @@ library(repr)
 library(dplyr)
 library(xtable)
 library(texreg)
+library(geepack)
+library(MCMCglmm)
+library(parallel)
+library(coda)
+library(effects)
+library(ggeffects)
 
 # %%
 options(repr.plot.width = 20, repr.plot.height = 10)
@@ -161,28 +167,106 @@ verbatim <- function(x)
 
 # %%
 model.pd <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
-                 Participant_group + Partner_condition + t + Model + Temperature +
-                 Partner_condition:Model + Participant_group:Model +
+                 Participant_group + Participant_group:Partner_condition + t + Model + Temperature +
                  (1|Participant_id),
                data = results.pd,
                family = betabinomial)
 summary(model.pd)
 
 # %%
+summary(model.pd)
+
+# %%
+model.pd.1 <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
+                 Participant_group + Participant_group:Partner_condition + t + Model + Temperature +
+                 Participant_group:Partner_condition:Model +
+                 (1|Participant_id),
+               data = results.pd,
+               family = betabinomial)
+summary(model.pd.1)
+
+# %%
 texreg(model.pd, caption="Fitted model for Prisoners Dilemma", label="table:pd-estimates", file="pd-estimates.tex", single.row=TRUE, fontsize="small")
+
+# %%
 
 # %%
 xtable(lme4::formatVC(summary(model.pd)$varcor$cond))
 
 # %%
+m <- coef(summary(model.pd.1))$cond
+m[, 1] <- exp(m[, 1])
+m[, 2] <- exp(m[, 2])
+colnames(m)[1] <- 'Estimate (Odds ratio)'
+m
+
+# %%
+m[m[, 4] <= 0.05, ]
+
+# %%
+
+# %%
 xtable(coef(summary(model.pd))$cond, digits=3)
 
 # %%
-options(repr.plot.height=10)
+plot(ggpredict(model.pd, c("Participant_group", "Model")))
+
+# %%
+plot(ggpredict(model.pd, c("Partner_condition", "Model")))
+
+# %%
+predicted <- ggpredict(model.pd.1, c("Participant_group", "Model", "Partner_condition"))
+predicted
+
+# %%
+plot(predicted)
+
+# %%
+predicted <- ggpredict(model.pd.1, "Temperature")
+predicted
+
+# %%
+plot(allEffects(model.pd))
+
+# %%
+options(repr.plot.height=12)
 simulationOutput <- simulateResiduals(fittedModel = model.pd, plot = TRUE, integerResponse=TRUE)
 
 # %%
+options(repr.plot.height=10)
+pdf("residuals-plots.pdf")
+simulationOutput <- simulateResiduals(fittedModel = model.pd, plot = TRUE, integerResponse=TRUE)
+dev.off()
+
+# %%
+pdf("residuals-hist.pdf")
 hist(residuals(simulationOutput))
+dev.off()
+
+# %%
+# Fit a GEE model with an interaction term
+gee_model <- geeglm(cbind(Num_cooperates, 6 - Num_cooperates) ~ Participant_group + Partner_condition + t + Model + Temperature +
+                 Partner_condition:Model + Participant_group:Model, 
+                    id = Participant_id, 
+                    data = results.pd, 
+                    family = binomial, 
+                    corstr = "exchangeable")
+
+# %%
+summary(gee_model)
+
+# %%
+residuals_gee <- residuals(gee_model, type = "pearson")
+# Plotting Pearson residuals against fitted values
+fitted_values <- fitted(gee_model)
+plot(fitted_values, residuals_gee, xlab = "Fitted Values", ylab = "Pearson Residuals")
+abline(h = 0, col = "red")
+
+
+# %%
+# Overdispersion check
+overdispersion_check <- sum(residuals_gee^2) / gee_model$df.residual
+overdispersion_check
 
 # %%
 model.pd.factorial <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
@@ -201,3 +285,69 @@ hist(residuals(simulationOutput.factorial))
 
 # %%
 plotResiduals(simulationOutput.factorial, results.clean$Participant_group)
+
+# %% [markdown]
+# ## Bayesian MCMC GLMM
+
+# %%
+# Set up a list for priors
+prior <- list(
+    R = list(V = 1, nu = 0.002), # Prior for the residual covariance matrix
+    G = list(G1 = list(V = 1, nu = 0.002)) # Prior for the random effects
+)
+
+estimate_glmm <- function() {
+# Fit the model with the specified priors
+    MCMCglmm(fixed=Num_cooperates ~ Participant_group + Partner_condition + t + Model + Model:Partner_condition:Participant_group, 
+                          random=~ us(1):Participant_id,
+                          prior = prior,
+                          data = results.pd,
+                          verbose = FALSE)
+}
+
+model.pd.mcmc <- estimate_glmm()
+
+# %%
+plot(model.pd.mcmc$Sol)
+
+# %%
+plot(model.pd.mcmc$VCV)
+
+# %%
+m6 <- mclapply(1:12, function(i) { estimate_glmm() }, mc.cores=12)
+m6 <- lapply(m6, function(m) m$Sol)
+m6 <- do.call(mcmc.list, m6)
+
+# %%
+par(mfrow=c(4,2), mar=c(2,2,1,2))
+gelman.plot(m6, auto.layout=F)
+
+# %%
+gelman.diag(m6)
+
+# %%
+par(mfrow=c(8,2), mar=c(2, 1, 1, 1))
+plot(m6, ask=F, auto.layout=F)
+
+# %%
+summary(m6)
+
+# %%
+plot.estimates <- function(x) {
+  if (class(x) != "summary.mcmc")
+    x <- summary(x)
+  n <- dim(x$statistics)[1]
+  par(mar=c(2, 7, 4, 1))
+  plot(x$statistics[,1], n:1,
+       yaxt="n", ylab="",
+       xlim=range(x$quantiles)*1.2,
+       pch=19,
+       main="Posterior means and 95% credible intervals")
+  grid()
+  axis(2, at=n:1, rownames(x$statistics), las=2)
+  arrows(x$quantiles[,1], n:1, x$quantiles[,5], n:1, code=0)
+  abline(v=0, lty=2)
+}
+
+options(repr.plot.height=24, repr.plot.width=20)
+plot.estimates(m6)

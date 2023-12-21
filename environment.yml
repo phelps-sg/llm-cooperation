@@ -42,6 +42,8 @@ dependencies:
   - r-modelsummary
   - r-texreg
   - r-MCMCglmm
+  - r-effects
+  - r-sjPlot
   - pip
   - pip:
     - -e ./
