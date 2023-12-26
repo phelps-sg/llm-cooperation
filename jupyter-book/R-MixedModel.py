@@ -209,6 +209,23 @@ m[m[, 4] <= 0.05, ]
 xtable(coef(summary(model.pd))$cond, digits=3)
 
 # %%
+predicted.plot <- ggpredict(model.pd, c("Partner_condition", "Participant_group"))
+plot(predicted.plot)
+
+# %%
+predicted.plot <- ggpredict(model.pd, c("Partner_condition", "Participant_group", "Model [gpt-3.5-turbo-1106]"))
+plot(predicted.plot)
+
+# %%
+predicted.plot <- ggpredict(model.pd, c("Partner_condition", "Participant_group", "Model"))
+plot(predicted.plot)
+
+# %%
+pdf("figs/glmm-predicted.pdf", width=24, height=12)
+plot(predicted.plot)
+dev.off()
+
+# %%
 plot(ggpredict(model.pd, c("Participant_group", "Model")))
 
 # %%
@@ -269,13 +286,13 @@ overdispersion_check <- sum(residuals_gee^2) / gee_model$df.residual
 overdispersion_check
 
 # %%
-model.pd.factorial <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
-                 Participant_group + Partner_condition + t + Model + Temperature +
-                 Partner_condition:Model + Participant_group:Model + Participant_labels_reversed:Participant_label + Participant_labels_reversed:Model +
-                 Participant_label + Participant_chain_of_thought + Participant_pronoun + Participant_defect_first + Participant_labels_reversed,
-               data = results.clean,
-               family = betabinomial)
-summary(model.pd.factorial)
+#model.pd.factorial <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
+#                 Participant_group + Partner_condition + t + Model + Temperature +
+#                 Partner_condition:Model + Participant_group:Model + Participant_labels_reversed:Participant_label + Participant_labels_reversed:Model +
+#                 Participant_label + Participant_chain_of_thought + Participant_pronoun + Participant_defect_first + Participant_labels_reversed,
+#               data = results.clean,
+#               family = betabinomial)
+#summary(model.pd.factorial)
 
 # %%
 simulationOutput.factorial<- simulateResiduals(fittedModel = model.factorial, plot = TRUE, integerResponse=TRUE)
