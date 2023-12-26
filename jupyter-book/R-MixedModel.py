@@ -229,16 +229,13 @@ interaction.plot <- function(model, participant.group) {
     model.term <- sprintf("Model [%s]", model)
     participant.group.term <- sprintf("Participant_group [%s]", participant.group)
     
-    predicted <- ggpredict(model.pd, c("Partner_condition", model.term, participant.group.term))
+    predicted <- ggpredict(model.pd.1, c("Partner_condition", model.term, participant.group.term))
 
     p <- plot(predicted) + geom_line(aes(x = x, y = predicted), color = "blue") + 
-      geom_point(aes(x = x, y = predicted), color = "red") +
+      geom_point(aes(x = x, y = predicted), color = "red") +      
+      scale_y_continuous(limits = c(0, 1)) +
       labs(title=participant.group)
 
-    # pdf(sprintf("figs/glmm-interaction-%s-%s.pdf", model,  participant.group))
-    # print(p)
-    # dev.off()
-    
     return(p)
 }
 
