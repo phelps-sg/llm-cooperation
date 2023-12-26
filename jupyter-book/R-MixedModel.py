@@ -31,6 +31,7 @@ library(parallel)
 library(coda)
 library(effects)
 library(ggeffects)
+library(gridExtra)
 
 # %%
 options(repr.plot.width = 20, repr.plot.height = 10)
@@ -189,8 +190,6 @@ summary(model.pd.1)
 texreg(model.pd, caption="Fitted model for Prisoners Dilemma", label="table:pd-estimates", file="pd-estimates.tex", single.row=TRUE, fontsize="small")
 
 # %%
-
-# %%
 xtable(lme4::formatVC(summary(model.pd)$varcor$cond))
 
 # %%
@@ -226,6 +225,61 @@ plot(predicted.plot)
 dev.off()
 
 # %%
+interaction.plot <- function(model, participant.group) {
+    model.term <- sprintf("Model [%s]", model)
+    participant.group.term <- sprintf("Participant_group [%s]", participant.group)
+    
+    predicted <- ggpredict(model.pd, c("Partner_condition", model.term, participant.group.term))
+
+    p <- plot(predicted) + geom_line(aes(x = x, y = predicted), color = "blue") + 
+      geom_point(aes(x = x, y = predicted), color = "red") +
+      labs(title=participant.group)
+
+    # pdf(sprintf("figs/glmm-interaction-%s-%s.pdf", model,  participant.group))
+    # print(p)
+    # dev.off()
+    
+    return(p)
+}
+
+interaction.plots <- function(model) {
+    do.call(grid.arrange, 
+            c(top=model, mclapply(
+                levels(results.pd$Participant_group), 
+                function(g) interaction.plot(model, g), 
+                mc.cores=6
+            ))
+    )
+}
+
+pdf.interaction.plots <- function(model) {
+    pdf(sprintf("figs/interaction-plots-%s", model))
+    result <- interaction.plots(model)
+    print(result)
+    dev.off()
+    return(result)
+}
+
+all.interaction.plots <- function() {
+    lapply(levels(results.pd$Model), pdf.interaction.plots)
+}
+
+# %%
+all.interaction.plots()
+
+# %%
+predicted <- ggpredict(model.pd, c("Participant_group", "Model [gpt-3.5-turbo-1106]", "Partner_condition [unconditional cooperate]"))
+
+# Plot with ggeffects and ggplot2
+p <- plot(predicted)
+
+# Modify the plot to use geom_line for straight lines
+p + geom_line(aes(x = x, y = predicted), color = "blue") + 
+  geom_point(aes(x = x, y = predicted), color = "red")  # Add points for actual data
+
+# %%
+
+# %%
 plot(ggpredict(model.pd, c("Participant_group", "Model")))
 
 # %%
@@ -241,6 +295,10 @@ plot(predicted)
 # %%
 predicted <- ggpredict(model.pd.1, "Temperature")
 predicted
+
+# %%
+#effects.1 <- allEffects(model.pd.1)
+#plot(effects.1)
 
 # %%
 plot(allEffects(model.pd))
