@@ -92,6 +92,9 @@ levels(results.clean$Participant_group)
 levels(results.clean$Partner_condition)
 
 # %%
+levels(results.clean$Partner_condition) <- c('T4TC', 'T4TD', 'C', 'D')
+
+# %%
 levels(results.clean$Participant_label)
 
 # %%
@@ -99,7 +102,7 @@ levels(results.clean$Participant_case)
 
 # %%
 results.clean$Participant_group <- relevel(results.clean$Participant_group, ref='Control')
-results.clean$Partner_condition <- relevel(results.clean$Partner_condition, ref='tit for tat D')
+results.clean$Partner_condition <- relevel(results.clean$Partner_condition, ref='T4TD')
 results.clean$Model <- relevel(results.clean$Model, ref='gpt-3.5-turbo-0613')
 results.clean$Participant_pronoun <- relevel(results.clean$Participant_pronoun, ref='they')
 results.clean$Participant_case <- relevel(results.clean$Participant_case, ref='standard')
@@ -250,7 +253,7 @@ interaction.plots <- function(model) {
 }
 
 pdf.interaction.plots <- function(model) {
-    pdf(sprintf("figs/interaction-plots-%s", model))
+    pdf(sprintf("figs/interaction-plots-%s", model), width=12, height=6)
     result <- interaction.plots(model)
     print(result)
     dev.off()
