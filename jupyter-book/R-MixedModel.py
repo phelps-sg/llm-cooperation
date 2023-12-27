@@ -209,20 +209,7 @@ m
 m[m[, 4] <= 0.05, ]
 
 # %%
-
-# %%
 xtable(coef(summary(model.pd))$cond, digits=3)
-
-# %%
-x <- c(0, 1, 2)
-x[-1]
-
-# %%
-r <- map(list(x), function(i) x+1)
-reduce(list(x), '+')
-
-# %%
-aes(x=x, y=predicted)
 
 # %%
 predictions.for <- function(model, participant.group) {
@@ -324,13 +311,13 @@ overdispersion_check
 #summary(model.pd.factorial)
 
 # %%
-simulationOutput.factorial<- simulateResiduals(fittedModel = model.factorial, plot = TRUE, integerResponse=TRUE)
+#simulationOutput.factorial<- simulateResiduals(fittedModel = model.factorial, plot = TRUE, integerResponse=TRUE)
 
 # %%
-hist(residuals(simulationOutput.factorial))
+#hist(residuals(simulationOutput.factorial))
 
 # %%
-plotResiduals(simulationOutput.factorial, results.clean$Participant_group)
+#plotResiduals(simulationOutput.factorial, results.clean$Participant_group)
 
 # %% [markdown]
 # ## Bayesian MCMC GLMM
