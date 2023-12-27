@@ -34,6 +34,7 @@ library(ggeffects)
 library(gridExtra)
 library(purrr)
 library(memoise)
+library(patchwork)
 
 # %%
 options(repr.plot.width = 20, repr.plot.height = 10)
@@ -232,120 +233,46 @@ predictions.for <- function(model, participant.group) {
 
 predictions.for.m <- memoise(predictions.for)
 
-interaction.plots <- function(participant.group) {    
+# %%
+interaction.plots <- function(participant.group, legend) {    
     predictions <- mclapply(levels(results.pd$Model), 
                             function(model) predictions.for.m(model, participant.group), 
                             mc.cores=12) 
+    combined <- reduce(predictions, rbind)
+    names(combined)[6] <- 'model'
     
-    ggplot(reduce(predictions, rbind)) + aes(x = x, y = predicted, group = group) + 
+    p <- ggplot(combined) +
+        aes(x = x, y = predicted, group = model) + 
         geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, position = position_dodge(0.06)) +
-        geom_line(aes(color=group), size = 1) + scale_y_continuous(limits = c(0.1, 1)) +
-        scale_color_brewer(palette = "Dark2", direction = -1) +
-        labs(title = participant.group)
+        geom_line(aes(color=model), size = 1) + scale_y_continuous(limits = c(0.1, 1)) +
+        scale_color_brewer(palette = "Dark2", direction = -1) +       
+        labs(title = sprintf("Group: %s", participant.group), 
+             x = "Partner condition", y = "Probability of cooperation")
+    if (!legend) {
+        p <- p + theme(legend.position = "none")
+    }
+    return(p)
 }
 
 all.interaction.plots <- function() {
-    do.call(grid.arrange, c(ncol=2,
-            mclapply(
-                levels(results.pd$Participant_group), 
-                function(g) interaction.plots(g), 
-                mc.cores=12
-            ))
-    ) 
+    groups <- levels(results.pd$Participant_group)
+    all.plots <- mclapply(1:length(groups),            
+                            function(g) interaction.plots(groups[g], legend = TRUE), 
+                            mc.cores=12)
+    result <- reduce(all.plots, function(x, y) x + y) + 
+           guide_area() + 
+           plot_layout(ncol=2) + 
+           plot_layout(guides = 'collect') 
+         
+    return(result)
 }
 
-
 # %%
-interaction.plots <- all.interaction.plots()
-interaction.plots
-
-# %%
-pdf("figs/interaction-plots-all.pdf", width=12, height=10)
-plot(interaction.plots)
+combined.plots <- all.interaction.plots()
+pdf("figs/interaction-plots-all.pdf", width=9, height=10)
+print(combined.plots)
 dev.off()
-
-# %%
-participant.group <- "Altruistic"
-participant.group.term <- sprintf("Participant_group [%s]", participant.group)    
-    
-    predictions <- mclapply(levels(results.pd$Model), 
-             function(model) ggpredict(model.pd.1, c("Partner_condition", sprintf("Model [%s]", model), participant.group.term)),
-             mc.cores=32
-    ) 
-    lines <- map(predictions[-1], 
-                 function(prediction) geom_line(aes.for(prediction)))
-    points <- map(predictions[-1], 
-                 function(prediction) geom_point(aes.for(prediction)))                
-    
-    p <- plot(predictions[[1]])
-    p <- reduce(lines, '+', .init=p)
-    p <- reduce(points, '+', .init=p)
-    p <- p + scale_y_continuous(limits = c(0, 1)) + labs(title=participant.group)
-
-p
-
-# %%
-predictions[[1]]
-
-# %%
-reduce(predictions, rbind)
-
-# %%
-ggplot(reduce(predictions, rbind)) + aes(x=x, y=predicted, group=group) + 
-geom_errorbar(aes(ymin=conf.low, ymax=conf.high), width=.1, position=position_dodge(0.03)) +
-geom_line(aes(color=group), size=1) + scale_y_continuous(limits = c(0, 1)) +
-   scale_color_brewer(palette="Dark2", direction=-1)
-
-# %%
-p <- plot(predictions[[1]])
-reduce(lines, '+', init=p)
-
-# %%
-prediction
-
-# %%
-p + lines + points[[1]] + points[[2]]
-
-# %%
-lines
-
-# %%
-r <- interaction.plot("Altruistic")
-r
-
-# %%
-all.interaction.plots()
-
-# %%
-predicted <- ggpredict(model.pd.1, c("Participant_group", "Model [gpt-3.5-turbo-1106]", "Partner_condition [C]"))
-predicted
-
-# %%
-predicted
-
-# %%
-plot(ggpredict(model.pd, c("Participant_group", "Model")))
-
-# %%
-plot(ggpredict(model.pd, c("Partner_condition", "Model")))
-
-# %%
-predicted <- ggpredict(model.pd.1, c("Participant_group", "Model", "Partner_condition"))
-predicted
-
-# %%
-plot(predicted)
-
-# %%
-predicted <- ggpredict(model.pd.1, "Temperature")
-predicted
-
-# %%
-#effects.1 <- allEffects(model.pd.1)
-#plot(effects.1)
-
-# %%
-plot(allEffects(model.pd))
+combined.plots
 
 # %%
 options(repr.plot.height=12)
