@@ -44,6 +44,7 @@ dependencies:
   - r-MCMCglmm
   - r-effects
   - r-sjPlot
+  - r-patchwork
   - pip
   - pip:
     - -e ./
