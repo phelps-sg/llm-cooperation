@@ -224,10 +224,6 @@ m[m[, 4] <= 0.05, ]
 xtable(coef(summary(model.pd))$cond, digits=3)
 
 # %%
-theoretical.altruistic <- list(D=1, C=1, T4TD=1, T4TC=1)
-theoretical.altruistic
-
-# %%
 theoretical.data <- function(group, frequencies) {
     result <- data.frame(x = as.factor(c('D', 'T4TD', 'T4TC', 'C')), 
                                       predicted = frequencies, 
