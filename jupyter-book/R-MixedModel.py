@@ -247,30 +247,9 @@ theoretical.df <- function(group) {
         group == 'Cooperative' ~ generate.data(c(1/6, 3/6, 1, 1)),
         group == 'Competitive' ~ generate.data(c(1/6, 1/6, 1/6, 1/6)),
         group == 'Altruistic'  ~ generate.data(c(1, 1, 1, 1)),
-        group == 'Control'     ~ generate.data('Control',     c(NA, NA, NA, NA))
+        group == 'Control'     ~ generate.data(c(NA, NA, NA, NA))
     )
 }
-
-# %%
-x.df <- theoretical.df("Selfish")
-x.df
-
-# %%
-y.df <- predictions.for.m("gpt-3.5-turbo-1106", "Selfish")
-y.df
-
-# %%
-names(x.df)
-
-# %%
-names(y.df)
-
-# %%
-merged.df <- rbind(x.df, y.df)
-levels(merged.df$group)
-
-# %%
-levels(merged.df$x)
 
 # %%
 predictions.for <- function(model, participant.group) {
