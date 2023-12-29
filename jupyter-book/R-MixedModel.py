@@ -241,12 +241,13 @@ theoretical.data <- function(group, frequencies) {
 }
 
 theoretical.df <- function(group) {
+    generate.data <- function(frequencies) theoretical.data(group, frequencies)
     case_when(
-        group == 'Selfish'     ~ theoretical.data('Selfish',     c(0, 0, 0, 0)),
-        group == 'Cooperative' ~ theoretical.data('Cooperative', c(1/6, 3/6, 1, 1)),
-        group == 'Competitive' ~ theoretical.data('Competitive', c(1/6, 1/6, 1/6, 1/6)),
-        group == 'Altruistic'  ~ theoretical.data('Altruistic',  c(1, 1, 1, 1)),
-        group == 'Control'     ~ theoretical.data('Control',     c(NA, NA, NA, NA))
+        group == 'Selfish'     ~ generate.data(c(0, 0, 0, 0)),
+        group == 'Cooperative' ~ generate.data(c(1/6, 3/6, 1, 1)),
+        group == 'Competitive' ~ generate.data(c(1/6, 1/6, 1/6, 1/6)),
+        group == 'Altruistic'  ~ generate.data(c(1, 1, 1, 1)),
+        group == 'Control'     ~ generate.data('Control',     c(NA, NA, NA, NA))
     )
 }
 
