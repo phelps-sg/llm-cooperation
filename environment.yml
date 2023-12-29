@@ -45,6 +45,7 @@ dependencies:
   - r-effects
   - r-sjPlot
   - r-patchwork
+  - r-R.cache
   - pip
   - pip:
     - -e ./

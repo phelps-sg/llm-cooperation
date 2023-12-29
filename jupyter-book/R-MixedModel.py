@@ -35,6 +35,7 @@ library(gridExtra)
 library(purrr)
 library(memoise)
 library(patchwork)
+library(R.cache)
 
 # %%
 options(repr.plot.width = 20, repr.plot.height = 10)
@@ -105,11 +106,22 @@ levels(results.clean$Participant_case)
 
 # %%
 results.clean$Participant_group <- relevel(results.clean$Participant_group, ref='Control')
-results.clean$Partner_condition <- relevel(results.clean$Partner_condition, ref='T4TD')
+results.clean$Partner_condition <- relevel(results.clean$Partner_condition, ref='D')
 results.clean$Model <- relevel(results.clean$Model, ref='gpt-3.5-turbo-0613')
 results.clean$Participant_pronoun <- relevel(results.clean$Participant_pronoun, ref='they')
 results.clean$Participant_case <- relevel(results.clean$Participant_case, ref='standard')
 results.clean$Particpant_label <- relevel(results.clean$Participant_label, ref='colors')
+
+# %%
+levels(results.clean$Partner_condition)
+
+# %%
+results.clean$Partner_condition <- 
+    factor(results.clean$Partner_condition, 
+           levels = c('D', 'T4TD', 'T4TC', 'C'))
+
+# %%
+levels(results.clean$Partner_condition)
 
 # %%
 names(results.clean)
@@ -212,13 +224,61 @@ m[m[, 4] <= 0.05, ]
 xtable(coef(summary(model.pd))$cond, digits=3)
 
 # %%
+theoretical.altruistic <- list(D=1, C=1, T4TD=1, T4TC=1)
+theoretical.altruistic
+
+# %%
+theoretical.data <- function(group, frequencies) {
+    result <- data.frame(x = as.factor(c('D', 'T4TD', 'T4TC', 'C')), 
+                                      predicted = frequencies, 
+                                      std.error = rep(0, 4),
+                                      conf.low = frequencies,
+                                      conf.high = frequencies,
+                                      group = as.factor(rep('theoretical', 4)),
+                                      facet = as.factor(rep(group, 4))
+                                     )
+    return(result)
+}
+
+theoretical.df <- function(group) {
+    case_when(
+        group == 'Selfish'     ~ theoretical.data('Selfish',     c(0, 0, 0, 0)),
+        group == 'Cooperative' ~ theoretical.data('Cooperative', c(1/6, 3/6, 1, 1)),
+        group == 'Competitive' ~ theoretical.data('Competitive', c(1/6, 1/6, 1/6, 1/6)),
+        group == 'Altruistic'  ~ theoretical.data('Altruistic',  c(1, 1, 1, 1)),
+        group == 'Control'     ~ theoretical.data('Control',     c(NA, NA, NA, NA))
+    )
+}
+
+# %%
+x.df <- theoretical.df("Selfish")
+x.df
+
+# %%
+y.df <- predictions.for.m("gpt-3.5-turbo-1106", "Selfish")
+y.df
+
+# %%
+names(x.df)
+
+# %%
+names(y.df)
+
+# %%
+merged.df <- rbind(x.df, y.df)
+levels(merged.df$group)
+
+# %%
+levels(merged.df$x)
+
+# %%
 predictions.for <- function(model, participant.group) {
     ggpredict(model.pd.1, c("Partner_condition", 
                             sprintf("Model [%s]", model), 
                             sprintf("Participant_group [%s]", participant.group)))
 }
 
-predictions.for.m <- memoise(predictions.for)
+predictions.for.m <- addMemoization(predictions.for)
 
 # %%
 interaction.plots <- function(participant.group, legend) {    
@@ -226,17 +286,23 @@ interaction.plots <- function(participant.group, legend) {
                             function(model) predictions.for.m(model, participant.group), 
                             mc.cores=12) 
     combined <- reduce(predictions, rbind)
-    names(combined)[6] <- 'model'
+    combined <- rbind(combined, theoretical.df(participant.group))
+    names(combined)[6] <- 'Model'
     
     p <- ggplot(combined) +
-        aes(x = x, y = predicted, group = model) + 
+        aes(x = x, y = predicted, group = Model) + 
         geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, position = position_dodge(0.06)) +
-        geom_line(aes(color=model), size = 1) + scale_y_continuous(limits = c(0.1, 1)) +
+        geom_line(aes(color=Model), size = 1) + scale_y_continuous(limits = c(0, 1)) +
         scale_color_brewer(palette = "Dark2", direction = -1) +       
         labs(title = sprintf("Group: %s", participant.group), 
-             x = "Partner condition", y = "Probability of cooperation")
+             x = "Partner condition", y = "Probability of cooperation") +
+         theme(legend.title = element_text(size=16), 
+                legend.text = element_text(size=14)) 
     if (!legend) {
         p <- p + theme(legend.position = "none")
+    } else {
+        p <- p + theme(legend.title = element_text(size=16), 
+                        legend.text = element_text(size=14))
     }
     return(p)
 }
@@ -256,7 +322,7 @@ all.interaction.plots <- function() {
 
 # %%
 combined.plots <- all.interaction.plots()
-pdf("figs/interaction-plots-all.pdf", width=9, height=10)
+pdf("figs/interaction-plots-all.pdf", width=8, height=11)
 print(combined.plots)
 dev.off()
 combined.plots
