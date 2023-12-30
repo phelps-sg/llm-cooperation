@@ -124,6 +124,14 @@ results.clean$Partner_condition <-
 levels(results.clean$Partner_condition)
 
 # %%
+results.clean$Participant_group <- 
+    factor(results.clean$Participant_group, 
+           levels = c('Control', 'Selfish', 'Competitive', 'Cooperative', 'Altruistic'))
+
+# %%
+levels(results.clean$Participant_group)
+
+# %%
 names(results.clean)
 
 # %%
@@ -215,29 +223,43 @@ m <- coef(summary(model.pd.1))$cond
 m[, 1] <- exp(m[, 1])
 m[, 2] <- exp(m[, 2])
 colnames(m)[1] <- 'Estimate (Odds ratio)'
-m
 
 # %%
 m[m[, 4] <= 0.05, ]
 
 # %%
+odds.ratios.significant <- xtable(m[m[, 4] < 0.05, ], caption="Model estimates for significant coefficients only ($p<0.05$) on odds ratio scale")
+print(odds.ratios.significant, type="latex")
+
+# %%
 xtable(coef(summary(model.pd))$cond, digits=3)
 
 # %%
+pd.predictions <- ggpredict(model.pd.1, c("Participant_group", "Model")) 
+
+# %%
+names(pd.predictions)[6] <- 'Model'
+names(pd.predictions)
+
+# %%
 theoretical.data <- function(group, frequencies) {
-    result <- data.frame(x = as.factor(c('D', 'T4TD', 'T4TC', 'C')), 
+    n = length(frequencies)
+    result <- data.frame(
                                       predicted = frequencies, 
-                                      std.error = rep(0, 4),
+                                      std.error = rep(0, n),
                                       conf.low = frequencies,
                                       conf.high = frequencies,
-                                      group = as.factor(rep('theoretical', 4)),
-                                      facet = as.factor(rep(group, 4))
+                                      group = as.factor(rep('hypothesized', n)),
+                                      facet = as.factor(rep(group, n))
                                      )
+    if (n > 1) {
+        result$x = as.factor(c('D', 'T4TD', 'T4TC', 'C'))
+    }
     return(result)
 }
 
-theoretical.df <- function(group) {
-    generate.data <- function(frequencies) theoretical.data(group, frequencies)
+theoretical.df <- function(group, fn = function(x) x) {
+    generate.data <- function(frequencies) theoretical.data(group, fn(frequencies))
     case_when(
         group == 'Selfish'     ~ generate.data(c(0, 0, 0, 0)),
         group == 'Cooperative' ~ generate.data(c(1/6, 3/6, 1, 1)),
@@ -246,6 +268,45 @@ theoretical.df <- function(group) {
         group == 'Control'     ~ generate.data(c(NA, NA, NA, NA))
     )
 }
+
+# %%
+groups <- levels(results.pd$Participant_group)
+dfs <- lapply(groups, function(g) theoretical.df(g, fn = mean))
+hypothesized <- reduce(dfs, rbind)
+hypothesized
+
+# %%
+names(hypothesized)
+
+# %%
+names(hypothesized)[5] <- 'Model'
+names(hypothesized)[6] <- 'x'
+
+# %%
+names(hypothesized)
+
+# %%
+names(pd.predictions)
+
+# %%
+c(2:6, 1)
+
+# %%
+pd.predictions.all <- rbind(pd.predictions, subset(hypothesized, select=c(6, 1:5)))
+
+# %%
+options(repr.plot.width = 20, repr.plot.height = 10)
+pdf("figs/pd-predictions.pdf", width=8, height=8)
+pd.predictions.plot <- ggplot(pd.predictions.all) + aes(x = x, y = predicted, group = Model) + 
+        geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, position = position_dodge(0.06)) +
+        geom_line(aes(color=Model), size = 1) + scale_y_continuous(limits = c(0, 1)) +
+        scale_color_brewer(palette = "Dark2", direction = -1) +
+        labs(title = "Prisoners Dilemma", 
+             x = "Participant group", y = "Probability of cooperation") +
+        theme(legend.position = "bottom")
+print(pd.predictions.plot)
+dev.off()
+pd.predictions.plot
 
 # %%
 predictions.for <- function(model, participant.group) {
@@ -297,6 +358,7 @@ all.interaction.plots <- function() {
 }
 
 # %%
+options(repr.plot.width = 20, repr.plot.height = 20)
 combined.plots <- all.interaction.plots()
 pdf("figs/interaction-plots-all.pdf", width=8, height=11)
 print(combined.plots)
