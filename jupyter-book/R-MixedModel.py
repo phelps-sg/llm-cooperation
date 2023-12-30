@@ -13,29 +13,34 @@
 # ---
 
 # %%
-library(reticulate)
-library(ggpubr)
-library(lme4)
-library(rstatix)
-library(glmmTMB)
-library(DHARMa)
-library(modelsummary)
-library(stargazer)
-library(repr)
-library(dplyr)
-library(xtable)
-library(texreg)
-library(geepack)
-library(MCMCglmm)
-library(parallel)
-library(coda)
-library(effects)
-library(ggeffects)
-library(gridExtra)
-library(purrr)
-library(memoise)
-library(patchwork)
-library(R.cache)
+libs <- c('ggpubr',
+'reticulate',
+'lme4',
+'rstatix',
+'glmmTMB',
+'DHARMa',
+'modelsummary',
+'stargazer',
+'repr',
+'dplyr',
+'xtable',
+'texreg',
+'geepack',
+'MCMCglmm',
+'parallel',
+'coda',
+'effects',
+'ggeffects',
+'gridExtra',
+'purrr',
+'memoise',
+'R.cache',
+'patchwork')
+
+lapply(libs, function(lib) library(lib, character.only=TRUE))
+
+# %%
+citations <- lapply(libs, function(lib) print(citation(lib), style="Bibtex"))
 
 # %%
 options(repr.plot.width = 20, repr.plot.height = 10)
