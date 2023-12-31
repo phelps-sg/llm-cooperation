@@ -27,6 +27,8 @@ dependencies:
   - pyppeteer
   - pingouin
   - r-base
+  - r-bh
+  - r-brms
   - r-tidyverse
   - r-ggpubr
   - r-lme4
