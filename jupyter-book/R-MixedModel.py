@@ -183,6 +183,10 @@ results.pd = results.clean[results.clean$Experiment == 'dilemma', ]
 results.pd
 
 # %%
+results.dictator <- results.clean[results.clean$Experiment == 'dictator', ]
+results.dictator
+
+# %%
 results.pd$Num_cooperates = round(results.pd$Cooperation_frequency * 6)
 
 # %%
@@ -196,6 +200,25 @@ verbatim <- function(x)
   txt <- c("\\begin{verbatim}", txt, "\\end{verbatim}")
   cat(txt, sep="\n")
 }
+
+# %%
+results.dictator %>% count(Cooperation_frequency == 1) %>% mutate(prop = n / sum(n))
+
+# %%
+results.dictator %>% count(Cooperation_frequency == 0) %>% mutate(prop = n / sum(n))
+
+# %%
+results.dictator <- results.dictator %>% 
+    mutate(Cooperation_frequency = ifelse(Cooperation_frequency == 0, 0.001, Cooperation_frequency)) %>%
+    mutate(Cooperation_frequency = ifelse(Cooperation_frequency == 1, 0.999, Cooperation_frequency))
+
+# %%
+model.dictator <- glmmTMB(Cooperation_frequency  ~
+                 Participant_group + Participant_group:Model + t + Model + Temperature +
+                 (1|Participant_id),
+               data = results.dictator,
+               family = beta_family)
+summary(model.dictator)
 
 # %%
 model.pd <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
@@ -312,6 +335,20 @@ pd.predictions.plot <- ggplot(pd.predictions.all) + aes(x = x, y = predicted, gr
 print(pd.predictions.plot)
 dev.off()
 pd.predictions.plot
+
+# %%
+options(repr.plot.width = 20, repr.plot.height = 10)
+dictator.predictions.plot <- 
+        ggplot(ggpredict(model.dictator, c("Participant_group", "Model"))) +
+        aes(x = x, y = predicted, group = group) + 
+        geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, 
+                          position = position_dodge(0.06)) +
+        geom_line(aes(color=group), size = 1) + scale_y_continuous(limits = c(0, 1)) +
+        scale_color_brewer(palette = "Dark2", direction = -1) +
+        labs(title = "Dictator", 
+             x = "Participant group", y = "Probability of cooperation") +
+        theme(legend.position = "bottom")
+dictator.predictions.plot
 
 # %%
 predictions.for <- function(model, participant.group) {
