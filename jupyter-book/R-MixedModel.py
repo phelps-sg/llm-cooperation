@@ -13,7 +13,9 @@
 # ---
 
 # %%
-libs <- c('ggpubr',
+libs <- c(
+'brms',
+'ggpubr',
 'reticulate',
 'lme4',
 'rstatix',
@@ -35,7 +37,9 @@ libs <- c('ggpubr',
 'purrr',
 'memoise',
 'R.cache',
-'patchwork')
+'patchwork',
+'ordinal',
+'cmdstanr')
 
 lapply(libs, function(lib) library(lib, character.only=TRUE))
 
@@ -62,7 +66,6 @@ config=llm.coop$Configuration(
 
 # %%
 results <- llm.coop$load_all(config)
-results
 
 # %%
 ggboxplot(results, x="Participant_group", y = "Cooperation frequency", color="Partner Condition")
@@ -81,9 +84,6 @@ results.clean <- results %>%
                       Participant_chain_of_thought, Participant_label, Participant_case, Participant_pronoun, 
                       Participant_defect_first, Participant_labels_reversed) %>% 
     filter(!is.na(Cooperation_frequency))
-
-# %%
-results.clean
 
 # %%
 levels(results.clean$Participant_pronoun)
@@ -149,6 +149,12 @@ names(results.clean)
 hist(results.clean$Cooperation_frequency)
 
 # %%
+hist(results.clean[results.clean$Experiment == "dictator", ]$Cooperation_frequency)
+
+# %%
+hist(results.clean[results.clean$Experiment == "dilemma", ]$Cooperation_frequency)
+
+# %%
 stargazer(results.clean)
 
 # %%
@@ -202,23 +208,36 @@ verbatim <- function(x)
 }
 
 # %%
-results.dictator %>% count(Cooperation_frequency == 1) %>% mutate(prop = n / sum(n))
+results.dictator$Num_cooperates <- results.dictator$Cooperation_frequency * 4
+results.dictator$Num_defects <- 4 - results.dictator$Cooperation_frequency * 4
+summary(results.dictator$Num_cooperates)
 
 # %%
-results.dictator %>% count(Cooperation_frequency == 0) %>% mutate(prop = n / sum(n))
+levels(results.dictator$Model)
 
 # %%
-results.dictator <- results.dictator %>% 
-    mutate(Cooperation_frequency = ifelse(Cooperation_frequency == 0, 0.001, Cooperation_frequency)) %>%
-    mutate(Cooperation_frequency = ifelse(Cooperation_frequency == 1, 0.999, Cooperation_frequency))
+hist(results.dictator$Num_cooperates)
 
 # %%
-model.dictator <- glmmTMB(Cooperation_frequency  ~
+results.dictator$Response <- as.factor(results.dictator$Num_cooperates)
+
+# %%
+
+model.dictator <- clmm(Response  ~
                  Participant_group + Participant_group:Model + t + Model + Temperature +
                  (1|Participant_id),
-               data = results.dictator,
-               family = beta_family)
+                       link="logit", threshold="equidistant",
+               data = results.dictator)
 summary(model.dictator)
+
+# %%
+model.pd.poisson <- model.pd <- glmmTMB(Num_cooperates ~
+                  Participant_group + Participant_group:Partner_condition + t + Model + Temperature +
+                 Participant_group:Partner_condition:Model +
+                 (1|Participant_id),
+               data = results.pd,
+               family = poisson)
+summary(model.pd.poisson)
 
 # %%
 model.pd <- glmmTMB(cbind(Num_cooperates, 6 - Num_cooperates)  ~
@@ -263,11 +282,12 @@ print(odds.ratios.significant, type="latex")
 xtable(coef(summary(model.pd))$cond, digits=3)
 
 # %%
-pd.predictions <- ggpredict(model.pd.1, c("Participant_group", "Model")) 
+predictions.by.group <- function(model) 
+    ggpredict(model, c("Participant_group", "Model")) %>% 
+        rename_at("group", ~"Model")
 
 # %%
-names(pd.predictions)[6] <- 'Model'
-names(pd.predictions)
+pd.predictions <- predictions.by.group(model.pd.1)
 
 # %%
 theoretical.data <- function(group, frequencies) {
@@ -320,40 +340,64 @@ names(pd.predictions)
 c(2:6, 1)
 
 # %%
-pd.predictions.all <- rbind(pd.predictions, subset(hypothesized, select=c(6, 1:5)))
+pd.predictions.poisson <- predictions.by.group(model.pd.poisson)
+pd.predictions.poisson$predicted <- pd.predictions.poisson$predicted / 6
+pd.predictions.poisson$conf.low <- pd.predictions.poisson$conf.low / 6
+pd.predictions.poisson$conf.high <- pd.predictions.poisson$conf.high / 6
+pd.predictions.poisson
+
+# %%
+pd_actual_and_theoretical <- function(predictions) 
+    rbind(predictions, subset(hypothesized, select=c(6, 1:5)))
+
+# %%
+predictions.plot <- function(predictions, title) {   
+    ggplot(predictions) + aes(x = x, y = predicted, group = Model) + 
+        geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, position = position_dodge(0.06)) +
+        geom_line(aes(color=Model), size = 1) + #scale_y_continuous(limits = c(0, 1)) +
+        scale_color_brewer(palette = "Dark2", direction = -1) +
+        labs(title = title, 
+             x = "Participant group", y = "Level of cooperation") +
+        theme(legend.position = "bottom")
+    }
 
 # %%
 options(repr.plot.width = 20, repr.plot.height = 10)
 pdf("figs/pd-predictions.pdf", width=8, height=8)
-pd.predictions.plot <- ggplot(pd.predictions.all) + aes(x = x, y = predicted, group = Model) + 
-        geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, position = position_dodge(0.06)) +
-        geom_line(aes(color=Model), size = 1) + scale_y_continuous(limits = c(0, 1)) +
-        scale_color_brewer(palette = "Dark2", direction = -1) +
-        labs(title = "Prisoners Dilemma", 
-             x = "Participant group", y = "Probability of cooperation") +
-        theme(legend.position = "bottom")
-print(pd.predictions.plot)
+pd.predictions.plot <- predictions.plot(pd_actual_and_theoretical(pd.predictions), "Prisoners Dilemma")
 dev.off()
 pd.predictions.plot
 
 # %%
-options(repr.plot.width = 20, repr.plot.height = 10)
-dictator.predictions.plot <- 
-        ggplot(ggpredict(model.dictator, c("Participant_group", "Model"))) +
-        aes(x = x, y = predicted, group = group) + 
-        geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, 
-                          position = position_dodge(0.06)) +
-        geom_line(aes(color=group), size = 1) + scale_y_continuous(limits = c(0, 1)) +
-        scale_color_brewer(palette = "Dark2", direction = -1) +
-        labs(title = "Dictator", 
-             x = "Participant group", y = "Probability of cooperation") +
-        theme(legend.position = "bottom")
+summary(model.dictator)
+
+# %% jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
+predictions.dictator <- predictions.by.group(model.dictator)
+
+# %%
+weighted.dictator <- predictions.dictator %>% 
+    group_by(x, Model) %>% 
+    summarise(predicted = weighted.mean(predicted, as.numeric(response.level) - 1),
+               conf.high =weighted.mean(conf.high, as.numeric(response.level) - 1),
+               conf.low = weighted.mean(conf.low, as.numeric(response.level) - 1),
+    )
+
+# %%
+xtable(weighted.dictator, digits = 3)
+
+# %%
+dictator.predictions.plot <- predictions.plot(pd_actual_and_theoretical(weighted.dictator), "Dictator Game")
 dictator.predictions.plot
 
 # %%
-predictions.for <- function(model, participant.group) {
-    ggpredict(model.pd.1, c("Partner_condition", 
-                            sprintf("Model [%s]", model), 
+options(repr.plot.width = 20, repr.plot.height = 10)
+dictator.predictions.plot + pd.predictions.plot + 
+           plot_layout(ncol=2) + plot_layout(guides = 'keep') 
+
+# %%
+predictions.for <- function(gpt_model, participant.group, model = model.pd.1) {
+    ggpredict(model, c("Partner_condition",
+                            sprintf("Model [%s]", gpt_model), 
                             sprintf("Participant_group [%s]", participant.group)))
 }
 
@@ -371,7 +415,7 @@ interaction.plots <- function(participant.group, legend) {
     p <- ggplot(combined) +
         aes(x = x, y = predicted, group = Model) + 
         geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, position = position_dodge(0.06)) +
-        geom_line(aes(color=Model), size = 1) + scale_y_continuous(limits = c(0, 1)) +
+        geom_line(aes(color=Model), size = 1) + scale_y_continuous(limits = c(0, 6)) +
         scale_color_brewer(palette = "Dark2", direction = -1) +       
         labs(title = sprintf("Group: %s", participant.group), 
              x = "Partner condition", y = "Probability of cooperation") +
@@ -409,7 +453,7 @@ combined.plots
 
 # %%
 options(repr.plot.height=12)
-simulationOutput <- simulateResiduals(fittedModel = model.pd, plot = TRUE, integerResponse=TRUE)
+simulationOutput <- simulateResiduals(fittedModel = model.pd.1, plot = TRUE, integerResponse=TRUE)
 
 # %%
 options(repr.plot.height=10)
@@ -467,6 +511,96 @@ overdispersion_check
 
 # %% [markdown]
 # ## Bayesian MCMC GLMM
+
+# %%
+# STEP 1: DEFINE the model
+bb_model <- "
+  data {
+    int<lower = 0, upper = 10> Y;
+  }
+  parameters {
+    real<lower = 0, upper = 1> pi;
+  }
+  model {
+    Y ~ binomial(10, pi);
+    pi ~ beta(2, 2);
+  }
+"
+
+# %%
+library(rstan)
+# STEP 2: SIMULATE the posterior
+bb_sim <- stan(model_code = bb_model, data = list(Y = 9), 
+               chains = 4, iter = 5000*2, seed = 84735)
+
+# %%
+library(bayesplot)
+# Histogram of the Markov chain values
+mcmc_hist(bb_sim, pars = "pi") + 
+  yaxis_text(TRUE) + 
+  ylab("count")
+
+
+# %%
+pr = prior(normal(0, 1), class = 'b')
+brm_model.dictator <- brm(
+  Num_cooperates | trials(4)  ~ 
+       Participant_group + t + Model + Model:Participant_group,
+       ~ (1|Participant_id),
+  data = results.dictator,
+  prior = NULL,  
+  family = mixture(beta_binomial, poisson), # Using beta binomial with logit link
+  chains = 8,          # The default number of chains in brms
+  cores = 8, 
+  iter = 4000,         # The default number of iterations per chain
+  #warmup = 1000,       # The default number of warmup iterations
+  #seed = 101,         # Set a seed for reproducibility 
+  #backend = "cmdstanr"
+)
+
+# %%
+summary(brm_model.dictator)
+
+# %%
+plot(brm_model.dictator)
+
+# %%
+pr = prior(normal(0, 1), class = 'b')
+brm_model <- brm(
+  Num_cooperates | trials(6) ~ 
+       Participant_group + Partner_condition + t + Model + Model:Partner_condition:Participant_group,
+       ~ (1|Participant_id),
+  data = results.pd,
+  prior = NULL,
+  #prior = pr,  
+  family = beta_binomial, # Using beta binomial with logit link
+  chains = 8,          # The default number of chains in brms
+  cores = 8, 
+  iter = 4000,         # The default number of iterations per chain
+  #warmup = 1000,       # The default number of warmup iterations
+  #seed = 101,         # Set a seed for reproducibility 
+  #backend = "cmdstanr"
+)
+
+# %%
+summary(brm_model)
+
+# %%
+
+# %%
+plot(brm_model)
+
+# %%
+brms::pp_check(brm_model.dictator, type = "ecdf_overlay", ndraws=100)
+
+# %%
+brms::conditional_effects(brm_model)
+
+# %%
+brms::pp_check(brm_model, type = "ecdf_overlay", ndraws=100)
+
+# %%
+posterior_summary(brm_model)
 
 # %%
 # Set up a list for priors
