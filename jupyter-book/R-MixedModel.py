@@ -53,7 +53,7 @@ options(repr.plot.width = 20, repr.plot.height = 10)
 llm.coop <- import("llm_cooperation.main")
 
 # %%
-config=llm.coop$Configuration(
+config <- lm.coop$Configuration(
     grid=dict(
         temperature=c(0.1, 0.6),
         model=c("gpt-3.5-turbo-0301", "gpt-3.5-turbo-0613", "gpt-3.5-turbo-1106"),
@@ -66,6 +66,21 @@ config=llm.coop$Configuration(
 
 # %%
 results <- llm.coop$load_all(config)
+
+# %%
+config.dictator.gpt4 <- llm.coop$Configuration(
+    grid=dict(
+        temperature=c(0.2, 0.6),
+        model=array("gpt-4"),
+        max_tokens=list(500)
+    ),
+    experiment_names=array("dictator"),
+    num_participant_samples=30,
+    num_replications=3
+)
+
+# %%
+results.dictator.gpt4 <- llm.coop$load_all(config.dictator.gpt4)
 
 # %%
 ggboxplot(results, x="Participant_group", y = "Cooperation frequency", color="Partner Condition")
@@ -391,8 +406,13 @@ dictator.predictions.plot
 
 # %%
 options(repr.plot.width = 20, repr.plot.height = 10)
-dictator.predictions.plot + pd.predictions.plot + 
+cooperation.by.group.plots <- 
+            dictator.predictions.plot + pd.predictions.plot + 
            plot_layout(ncol=2) + plot_layout(guides = 'keep') 
+pdf("figs/cooperation-by-group.pdf", width=16, height=8)
+print(cooperation.by.group.plots)
+dev.off()
+cooperation.by.group.plots
 
 # %%
 predictions.for <- function(gpt_model, participant.group, model = model.pd.1) {
@@ -415,7 +435,7 @@ interaction.plots <- function(participant.group, legend) {
     p <- ggplot(combined) +
         aes(x = x, y = predicted, group = Model) + 
         geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, position = position_dodge(0.06)) +
-        geom_line(aes(color=Model), size = 1) + scale_y_continuous(limits = c(0, 6)) +
+        geom_line(aes(color=Model), size = 1) + scale_y_continuous(limits = c(0, 1)) +
         scale_color_brewer(palette = "Dark2", direction = -1) +       
         labs(title = sprintf("Group: %s", participant.group), 
              x = "Partner condition", y = "Probability of cooperation") +
