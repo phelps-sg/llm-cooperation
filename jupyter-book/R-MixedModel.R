@@ -513,7 +513,10 @@ interaction_plots <- function(participant_group, legend) {
     mc.cores = 12
   )
   combined <- reduce(predictions, rbind)
-  combined <- rbind(combined, theoretical_df(participant_group))
+  combined <- rbind(
+    combined,
+    theoretical_df_for_group(participant_group, experiment = theoretical_dilemma)
+  )
   names(combined)[6] <- "Model"
 
   p <- ggplot(combined) +
