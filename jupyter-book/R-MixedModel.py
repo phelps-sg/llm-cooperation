@@ -342,9 +342,9 @@ print(odds_ratios_significant, type = "latex")
 # %%
 xtable(coef(summary(model_pd))$cond, digits = 3)
 
-# %%
-predictions_by_group <- function(model) {
+  # %%
   ggpredict(model, c("Participant_group", "Model")) %>%
+  predictions_by_group <- function(model) {
     rename_at("group", ~"Model")
 }
 
@@ -448,7 +448,7 @@ hypothesized
 
 # %%
 predictions_plot <- function(predictions, title) {
-  ggplot(predictions) +
+  gg  plot(predictions) +
     aes(x = x, y = predicted, group = Model) +
     geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, position = position_dodge(0.06)) +
     geom_line(aes(color = Model), size = 1) + # scale_y_continuous(limits = c(0, 1)) +
@@ -490,14 +490,12 @@ weighted_dictator <- predictions_dictator %>%
 xtable(weighted_dictator, digits = 3)
 
 # %%
-pd_actual_and_theoretical(weighted_dictator, h = hypothesized_dictator)
+predictions_dictator <- pd_actual_and_theoretical(weighted_dictator, h = hypothesized_dictator)
+predictions_dictator
 
 # %%
-dictator_predictions_plot <-
-  predictions_plot(
-    pd_actual_and_theoretical(weighted_dictator),
-    "Dictator Game"
-  )
+dictator_predictions_plot <- 
+  predictions_plot(predictions_dictator, "Dictator Game")
 dictator_predictions_plot
 
 # %%
