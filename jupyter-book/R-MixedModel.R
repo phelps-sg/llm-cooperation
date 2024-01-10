@@ -213,7 +213,7 @@ results_grouped <- results_clean %>%
     Model,
     Temperature
   )
-results_grouped
+head(results_grouped)
 
 # %%
 options(repr.plot.height = 24)
@@ -227,11 +227,11 @@ ggplot(results_clean, aes(x = Participant_group, y = Cooperation_frequency)) +
 
 # %%
 results_pd <- results_clean[results_clean$Experiment == "dilemma", ]
-results_pd
 
+head(results_pd)
 # %%
 results_dictator <- results_clean[results_clean$Experiment == "dictator", ]
-results_dictator
+head(results_dictator)
 
 # %%
 results_pd$Num_cooperates <- round(results_pd$Cooperation_frequency * 6)
@@ -343,10 +343,10 @@ print(odds_ratios_significant, type = "latex")
 # %%
 xtable(coef(summary(model_pd))$cond, digits = 3)
 
-  # %%
-  ggpredict(model, c("Participant_group", "Model")) %>%
-  predictions_by_group <- function(model) {
-    rename_at("group", ~"Model")
+# %%
+predictions_by_group <- function(model) {
+    ggpredict(model, c("Participant_group", "Model")) %>%
+      rename_at("group", ~"Model")
 }
 
 # %%
@@ -385,46 +385,36 @@ theoretical_dictator <- function(group) {
     group == "Cooperative" ~ 0.5,
     group == "Competitive" ~ 0,
     group == "Altruistic" ~ 1.0,
-    group == "Control" ~ 0.5
+    group == "Control" ~ NA
   )
 }
 
-theoretical_df <- function(
+theoretical_df_for_group <- function(
   group, fn = function(x) x, experiment = theoretical_dilemma
 ) {
   d <- experiment(group)
   theoretical_data(group, fn(d))
 }
 
-# %%
-groups <- levels(results_pd$Participant_group)
-dfs <- lapply(groups, function(g) theoretical_df(g, fn = mean))
-hypothesized <- reduce(dfs, rbind)
-hypothesized
+theoretical_df <- function(experiment) {
+  groups <- levels(results_pd$Participant_group)
+  dfs <- lapply(
+    groups,
+    function(g) theoretical_df_for_group(g, fn = mean, experiment = experiment)
+  )
+  hypothesized <- reduce(dfs, rbind)
+  names(hypothesized)[5] <- "Model"
+  names(hypothesized)[6] <- "x"
+  return(hypothesized)
+}
 
 # %%
-dfs <- lapply(
-  groups,
-  function(g) theoretical_df(g, fn = mean, experiment = theoretical_dictator)
-)
-hypothesized_dictator <- reduce(dfs, rbind)
+hypothesized_dilemma <- theoretical_df(experiment = theoretical_dilemma)
+hypothesized_dilemma
+
+# %%
+hypothesized_dictator <- theoretical_df(experiment = theoretical_dictator)
 hypothesized_dictator
-
-# %%
-names(hypothesized)
-
-# %%
-names(hypothesized)[5] <- "Model"
-names(hypothesized)[6] <- "x"
-
-# %%
-names(hypothesized)
-
-# %%
-names(pd_predictions)
-
-# %%
-c(2:6, 1)
 
 # %%
 pd_predictions_poisson <- predictions_by_group(model_pd_poisson)
@@ -434,19 +424,15 @@ pd_predictions_poisson$conf.high <- pd_predictions_poisson$conf.high / 6
 pd_predictions_poisson
 
 # %%
-pd_actual_and_theoretical <- function(predictions, h = hypothesized) {
+actual_and_theoretical <- function(predictions, h = hypothesized_dilemma) {
   rbind(predictions, subset(h, select = c(6, 1:5)))
 }
 
 # %%
-pd_actual_and_theoretical(pd_predictions)
+actual_and_theoretical(pd_predictions)
 
 # %%
 pd_predictions
-
-# %%
-hypothesized
-
 # %%
 predictions_plot <- function(predictions, title) {
   ggplot(predictions) +
@@ -466,7 +452,7 @@ options(repr.plot.width = 20, repr.plot.height = 10)
 pdf("figs/pd-predictions.pdf", width = 8, height = 8)
 pd_predictions_plot <-
   predictions_plot(
-    pd_actual_and_theoretical(pd_predictions),
+    actual_and_theoretical(pd_predictions),
     "Prisoners Dilemma"
   )
 dev.off()
@@ -491,7 +477,7 @@ weighted_dictator <- predictions_dictator %>%
 xtable(weighted_dictator, digits = 3)
 
 # %%
-predictions_dictator <- pd_actual_and_theoretical(weighted_dictator, h = hypothesized_dictator)
+predictions_dictator <- actual_and_theoretical(weighted_dictator, h = hypothesized_dictator)
 predictions_dictator
 
 # %%
@@ -527,7 +513,10 @@ interaction_plots <- function(participant_group, legend) {
     mc.cores = 12
   )
   combined <- reduce(predictions, rbind)
-  combined <- rbind(combined, theoretical_df(participant_group))
+  combined <- rbind(
+    combined,
+    theoretical_df_for_group(participant_group, experiment = theoretical_dilemma)
+  )
   names(combined)[6] <- "Model"
 
   p <- ggplot(combined) +
