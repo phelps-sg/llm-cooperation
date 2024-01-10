@@ -126,7 +126,7 @@ dependencies:
   - importlib_resources=6.1.1=pyhd8ed1ab_0
   - iniconfig=2.0.0=pyhd8ed1ab_0
   - ipykernel=6.26.0=pyhf8b6a83_0
-  - ipython=8.19.0=pyh707e725_0
+  - ipython=8.20.0=pyh707e725_0
   - ipywidgets=8.1.1=pyhd8ed1ab_0
   - isoduration=20.11.0=pyhd8ed1ab_0
   - isort=5.12.0=pyhd8ed1ab_1
@@ -270,7 +270,7 @@ dependencies:
   - nspr=4.35=h27087fc_0
   - nss=3.95=h1d7d5a4_0
   - numpy=1.26.3=py311h64a7726_0
-  - openai=1.6.1=pyhd8ed1ab_0
+  - openai=1.7.0=pyhd8ed1ab_0
   - openjpeg=2.5.0=h488ebb8_3
   - openssl=3.2.0=hd590300_1
   - orc=1.8.4=h2f23424_0
@@ -360,6 +360,7 @@ dependencies:
   - r-bit64=4.0.5=r43h57805ef_2
   - r-blob=1.2.4=r43hc72bb7e_1
   - r-boot=1.3_28.1=r43hc72bb7e_1
+  - r-brew=1.0_10=r43hc72bb7e_0
   - r-bridgesampling=1.1_2=r43hc72bb7e_2
   - r-brms=2.20.1=r43ha503ecb_0
   - r-brobdingnag=1.2_9=r43hc72bb7e_1
@@ -376,9 +377,10 @@ dependencies:
   - r-cli=3.6.1=r43ha503ecb_1
   - r-clipr=0.8.0=r43hc72bb7e_2
   - r-clock=0.7.0=r43ha503ecb_1
-  - r-cmdstanr=0.7.0=r43ha770c72_0
+  - r-cmdstanr=0.7.1=r43ha770c72_0
   - r-coda=0.19_4=r43hc72bb7e_2
   - r-codetools=0.2_19=r43hc72bb7e_1
+  - r-collections=0.3.7=r43h57805ef_1
   - r-colorspace=2.1_0=r43h57805ef_1
   - r-colourpicker=1.3.0=r43hc72bb7e_0
   - r-commonmark=1.9.0=r43h57805ef_1
@@ -392,6 +394,7 @@ dependencies:
   - r-crosstalk=1.2.1=r43hc72bb7e_0
   - r-cubature=2.0.4.6=r43hcf54a89_1
   - r-curl=5.1.0=r43hf9611b0_0
+  - r-cyclocomp=1.1.1=r43hc72bb7e_0
   - r-data.table=1.14.8=r43h029312a_2
   - r-datawizard=0.9.0=r43hc72bb7e_0
   - r-dbi=1.1.3=r43hc72bb7e_2
@@ -470,11 +473,13 @@ dependencies:
   - r-kernsmooth=2.23_22=r43h13b3f57_0
   - r-knitr=1.45=r43hc72bb7e_0
   - r-labeling=0.4.3=r43hc72bb7e_0
+  - r-languageserver=0.3.16=r43h57805ef_0
   - r-later=1.3.2=r43ha503ecb_0
   - r-lattice=0.22_5=r43h57805ef_0
   - r-lava=1.7.3=r43hc72bb7e_0
   - r-lazyeval=0.2.2=r43h57805ef_4
   - r-lifecycle=1.0.4=r43hc72bb7e_0
+  - r-lintr=3.1.1=r43hc72bb7e_0
   - r-listenv=0.9.0=r43hc72bb7e_1
   - r-lme4=1.1_35.1=r43ha503ecb_0
   - r-lmtest=0.9_40=r43h61816a4_2
@@ -511,13 +516,14 @@ dependencies:
   - r-packrat=0.9.2=r43hc72bb7e_0
   - r-parallelly=1.36.0=r43hc72bb7e_1
   - r-parameters=0.21.3=r43h785f33e_0
-  - r-patchwork=1.1.3=r43hc72bb7e_0
+  - r-patchwork=1.2.0=r43hc72bb7e_0
   - r-pbdzmq=0.3_10=r43hc2df49b_1
   - r-pbkrtest=0.5.2=r43hc72bb7e_1
   - r-performance=0.10.8=r43hc72bb7e_0
   - r-pillar=1.9.0=r43hc72bb7e_1
   - r-pkgbuild=1.4.2=r43hc72bb7e_0
   - r-pkgconfig=2.0.3=r43hc72bb7e_3
+  - r-pkgload=1.3.3=r43hc72bb7e_0
   - r-plotly=4.10.3=r43hc72bb7e_0
   - r-plyr=1.8.9=r43ha503ecb_0
   - r-png=0.1_8=r43h81d01c5_1
@@ -554,14 +560,17 @@ dependencies:
   - r-recipes=1.0.8=r43hc72bb7e_0
   - r-rematch=2.0.0=r43hc72bb7e_0
   - r-rematch2=2.1.2=r43hc72bb7e_3
+  - r-remotes=2.4.2.1=r43hc72bb7e_0
   - r-renv=1.0.3=r43hc72bb7e_0
   - r-repr=1.1.6=r43h785f33e_1
   - r-reprex=2.0.2=r43hc72bb7e_2
   - r-reshape2=1.4.4=r43ha503ecb_3
   - r-reticulate=1.34.0=r43ha503ecb_0
+  - r-rex=1.2.1=r43hc72bb7e_2
   - r-rio=1.0.1=r43hc72bb7e_0
   - r-rlang=1.1.2=r43ha503ecb_0
   - r-rmarkdown=2.25=r43hc72bb7e_0
+  - r-roxygen2=7.2.3=r43ha503ecb_1
   - r-rpart=4.1.23=r43h57805ef_0
   - r-rprojroot=2.0.4=r43hc72bb7e_0
   - r-rsconnect=1.2.0=r43hc72bb7e_0
@@ -592,6 +601,7 @@ dependencies:
   - r-statmod=1.5.0=r43hd8f1df9_1
   - r-stringi=1.8.2=r43h9facbd6_0
   - r-stringr=1.5.1=r43h785f33e_0
+  - r-styler=1.10.2=r43hc72bb7e_0
   - r-survey=4.2_1=r43hc72bb7e_1
   - r-survival=3.5_7=r43h57805ef_0
   - r-svglite=2.1.3=r43h329214f_0
@@ -623,6 +633,7 @@ dependencies:
   - r-writexl=1.4.2=r43h57805ef_1
   - r-xfun=0.41=r43ha503ecb_0
   - r-xml2=1.3.6=r43h1ad5fc0_0
+  - r-xmlparsedata=1.0.5=r43hc72bb7e_2
   - r-xtable=1.8_4=r43hc72bb7e_5
   - r-xts=0.13.1=r43h57805ef_1
   - r-yaml=2.3.7=r43h57805ef_1

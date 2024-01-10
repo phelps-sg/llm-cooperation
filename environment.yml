@@ -50,6 +50,7 @@ dependencies:
   - r-patchwork
   - r-R.cache
   - r-cmdstanr
+  - r-languageserver
   - pip
   - pip:
     - -e ./
