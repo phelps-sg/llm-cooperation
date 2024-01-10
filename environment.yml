@@ -26,7 +26,10 @@ dependencies:
   - python-kaleido
   - pyppeteer
   - pingouin
+  - qtconsole
   - r-base
+  - r-bh
+  - r-brms
   - r-tidyverse
   - r-ggpubr
   - r-lme4
@@ -46,6 +49,8 @@ dependencies:
   - r-sjPlot
   - r-patchwork
   - r-R.cache
+  - r-cmdstanr
+  - r-languageserver
   - pip
   - pip:
     - -e ./
