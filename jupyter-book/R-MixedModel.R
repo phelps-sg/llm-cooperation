@@ -449,7 +449,7 @@ hypothesized
 
 # %%
 predictions_plot <- function(predictions, title) {
-  gg  plot(predictions) +
+  ggplot(predictions) +
     aes(x = x, y = predicted, group = Model) +
     geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, position = position_dodge(0.06)) +
     geom_line(aes(color = Model), size = 1) + # scale_y_continuous(limits = c(0, 1)) +
