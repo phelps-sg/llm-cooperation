@@ -213,7 +213,7 @@ results_grouped <- results_clean %>%
     Model,
     Temperature
   )
-results_grouped
+head(results_grouped)
 
 # %%
 options(repr.plot.height = 24)
@@ -227,11 +227,11 @@ ggplot(results_clean, aes(x = Participant_group, y = Cooperation_frequency)) +
 
 # %%
 results_pd <- results_clean[results_clean$Experiment == "dilemma", ]
-results_pd
 
+head(results_pd)
 # %%
 results_dictator <- results_clean[results_clean$Experiment == "dictator", ]
-results_dictator
+head(results_dictator)
 
 # %%
 results_pd$Num_cooperates <- round(results_pd$Cooperation_frequency * 6)
@@ -343,10 +343,10 @@ print(odds_ratios_significant, type = "latex")
 # %%
 xtable(coef(summary(model_pd))$cond, digits = 3)
 
-  # %%
-  ggpredict(model, c("Participant_group", "Model")) %>%
-  predictions_by_group <- function(model) {
-    rename_at("group", ~"Model")
+# %%
+predictions_by_group <- function(model) {
+    ggpredict(model, c("Participant_group", "Model")) %>%
+      rename_at("group", ~"Model")
 }
 
 # %%
