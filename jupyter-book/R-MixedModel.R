@@ -272,6 +272,19 @@ model_dictator <- clmm(
 )
 summary(model_dictator)
 
+#f%%
+
+model_dictator_hess <- clmm(
+  Response ~
+    Participant_group + Participant_group:Model + t + Model + Temperature +
+      (1 | Participant_id),
+  link = "logit", threshold = "equidistant",
+  data = results_dictator,
+  Hess = TRUE,
+  nAGQ = 10
+)
+summary(model_dictator_hess)
+
 # %%
 model_pd_poisson <- glmmTMB(
   Num_cooperates ~
@@ -311,7 +324,8 @@ summary(model_pd_1)
 
 # %%
 texreg(
-  model_pd,
+
+  model_pd_1,
   caption = "Fitted model for Prisoners Dilemma",
   label = "table:pd-estimates",
   file = "pd-estimates.tex",
@@ -319,6 +333,25 @@ texreg(
   fontsize = "small"
 )
 
+# %%
+texreg(
+  model_dictator,
+  caption = "Fitted model for Dictator",
+  label = "table:dictator-estimates",
+  file = "dictator-estimates.tex",
+  single.row = TRUE,
+  fontsize = "small"
+)
+
+# %%
+pdf("figs/ranef_hist_pd.pdf")
+hist(ranef(model_pd_1)$cond$Participant_id[, 1])
+dev.off()
+
+# %%
+pdf("figs/ranef_hist_dictator.pdf")
+hist(ranef(model_dictator)$Participant_id[, 1])
+dev.off()
 # %%
 xtable(lme4::formatVC(summary(model_pd)$varcor$cond))
 
