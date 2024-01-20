@@ -42,7 +42,8 @@ libs <- c(
   "R.cache",
   "patchwork",
   "ordinal",
-  "cmdstanr"
+  "cmdstanr",
+  "checkmate"
 )
 
 lapply(libs, function(lib) library(lib, character.only = TRUE))
@@ -256,7 +257,18 @@ summary(results_dictator$Num_cooperates)
 levels(results_dictator$Model)
 
 # %%
-hist(results_dictator$Num_cooperates)
+dictator_counts <- results_dictator %>% count(Num_cooperates)
+
+# %%
+pdf("figs/dictator-num-cooperates-hist.pdf")
+ggplot(dictator_counts, aes(x = Num_cooperates, y = n)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Histogram of Dictator Game responses",
+    x = "Donation amount",
+    y = "Frequency"
+  )
+dev.off()
 
 # %%
 results_dictator$Response <- as.factor(results_dictator$Num_cooperates)
@@ -266,18 +278,18 @@ results_dictator$Response <- as.factor(results_dictator$Num_cooperates)
 model_dictator <- clmm(
   Response ~
     Participant_group + Participant_group:Model + t + Model + Temperature +
-      (1 | Participant_id),
+    (1 | Participant_id),
   link = "logit", threshold = "equidistant",
   data = results_dictator
 )
 summary(model_dictator)
 
-#f%%
+# f%%
 
 model_dictator_hess <- clmm(
   Response ~
     Participant_group + Participant_group:Model + t + Model + Temperature +
-      (1 | Participant_id),
+    (1 | Participant_id),
   link = "logit", threshold = "equidistant",
   data = results_dictator,
   Hess = TRUE,
@@ -285,13 +297,32 @@ model_dictator_hess <- clmm(
 )
 summary(model_dictator_hess)
 
+# %% [markdown]
+
+# Remove t parameter from the model since it had insigicant estimate and is not expected to have any causal effect.
+
+# %%
+model_dictator_1 <- clmm(
+  Response ~
+    Participant_group + Participant_group:Model + Model + Temperature +
+    (1 | Participant_id),
+  link = "logit", threshold = "equidistant",
+  data = results_dictator
+)
+
+# %%
+summary(model_dictator_1)
+
+# %%
+print(odds_ratios_significant(model_dictator_1), type = "latex")
+
 # %%
 model_pd_poisson <- glmmTMB(
   Num_cooperates ~
     Participant_group + Participant_group:Partner_condition + t +
-      Model + Temperature +
-      Participant_group:Partner_condition:Model +
-      (1 | Participant_id),
+    Model + Temperature +
+    Participant_group:Partner_condition:Model +
+    (1 | Participant_id),
   data = results_pd,
   family = poisson
 )
@@ -301,8 +332,8 @@ summary(model_pd_poisson)
 model_pd <- glmmTMB(
   cbind(Num_cooperates, 6 - Num_cooperates) ~
     Participant_group + Participant_group:Partner_condition +
-      t + Model + Temperature +
-      (1 | Participant_id),
+    t + Model + Temperature +
+    (1 | Participant_id),
   data = results_pd,
   family = betabinomial
 )
@@ -314,13 +345,26 @@ summary(model_pd)
 model_pd_1 <- glmmTMB(
   cbind(Num_cooperates, 6 - Num_cooperates) ~
     Participant_group + Participant_group:Partner_condition +
-      t + Model + Temperature +
-      Participant_group:Partner_condition:Model +
-      (1 | Participant_id),
+    t + Model + Temperature +
+    Participant_group:Partner_condition:Model +
+    (1 | Participant_id),
   data = results_pd,
   family = betabinomial
 )
 summary(model_pd_1)
+
+# %%
+model_pd_2 <- glmmTMB(
+  cbind(Num_cooperates, 6 - Num_cooperates) ~
+    Participant_group + Participant_group:Partner_condition +
+    Model + Temperature +
+    Participant_group:Partner_condition:Model +
+    (1 | Participant_id),
+  data = results_pd,
+  family = betabinomial
+)
+summary(model_pd_2)
+
 
 # %%
 texreg(
@@ -349,41 +393,55 @@ hist(ranef(model_pd_1)$cond$Participant_id[, 1])
 dev.off()
 
 # %%
+hist(ranef(model_dictator_1)$Participant_id[, 1])
 pdf("figs/ranef_hist_dictator.pdf")
-hist(ranef(model_dictator)$Participant_id[, 1])
 dev.off()
 # %%
 xtable(lme4::formatVC(summary(model_pd)$varcor$cond))
 
 # %%
-m <- coef(summary(model_pd_1))$cond
-m[, 1] <- exp(m[, 1])
-m[, 2] <- exp(m[, 2])
-colnames(m)[1] <- "Estimate (Odds ratio)"
+as_odds <- function(model) {
+  m <- coef(summary(model))
+  if (testClass(m, "list")) {
+    m <- m$cond
+  }
+  m[, 1] <- exp(m[, 1])
+  m[, 2] <- exp(m[, 2])
+  colnames(m)[1] <- "Estimate (Odds ratio)"
+  return(m)
+}
 
 # %%
-m[m[, 4] <= 0.05, ]
+as_odds(model_pd_1)
 
 # %%
-odds_ratios_significant <-
+odds_ratios_significant <- function(model) {
+  m <- as_odds(model)
   xtable(
     m[m[, 4] < 0.05, ],
     caption =
       "Model estimates for significant coefficients only ($p<0.05$) on odds ratio scale"
   )
-print(odds_ratios_significant, type = "latex")
+}
+
+# %%
+
+odds_ratios_significant(model_pd_1)
+
+# %%
+print(odds_ratios_significant(model_pd_1), type = "latex")
 
 # %%
 xtable(coef(summary(model_pd))$cond, digits = 3)
 
 # %%
 predictions_by_group <- function(model) {
-    ggpredict(model, c("Participant_group", "Model")) %>%
-      rename_at("group", ~"Model")
+  ggpredict(model, c("Participant_group", "Model")) %>%
+    rename_at("group", ~"Model")
 }
 
 # %%
-pd_predictions <- predictions_by_group(model_pd_1)
+pd_predictions <- predictions_by_group(model_pd_2)
 
 # %%
 theoretical_data <- function(group, frequencies) {
@@ -423,8 +481,7 @@ theoretical_dictator <- function(group) {
 }
 
 theoretical_df_for_group <- function(
-  group, fn = function(x) x, experiment = theoretical_dilemma
-) {
+    group, fn = function(x) x, experiment = theoretical_dilemma) {
   d <- experiment(group)
   theoretical_data(group, fn(d))
 }
@@ -470,9 +527,17 @@ pd_predictions
 predictions_plot <- function(predictions, title) {
   ggplot(predictions) +
     aes(x = x, y = predicted, group = Model) +
-    geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, position = position_dodge(0.06)) +
+    geom_errorbar(
+      aes(ymin = conf.low, ymax = conf.high),
+      width = .1, position = position_dodge(0.06)
+    ) +
+    geom_ribbon(
+      aes(x = x, y = predicted, ymax = conf.high, ymin = conf.low, fill = Model),
+      alpha = 0.2
+    ) +
     geom_line(aes(color = Model), size = 1) + # scale_y_continuous(limits = c(0, 1)) +
     scale_color_brewer(palette = "Dark2", direction = -1) +
+    scale_fill_brewer(palette = "Dark2", direction = -1, guide = "none") +
     labs(
       title = title,
       x = "Participant group", y = "Level of cooperation"
@@ -488,14 +553,11 @@ pd_predictions_plot <-
     actual_and_theoretical(pd_predictions),
     "Prisoners Dilemma"
   )
+print(pd_predictions_plot)
 dev.off()
-pd_predictions_plot
-
-# %%
-summary(model_dictator)
 
 # %% jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-predictions_dictator <- predictions_by_group(model_dictator)
+predictions_dictator <- predictions_by_group(model_dictator_1)
 
 # %%
 weighted_dictator <- predictions_dictator %>%
@@ -514,7 +576,7 @@ predictions_dictator <- actual_and_theoretical(weighted_dictator, h = hypothesiz
 predictions_dictator
 
 # %%
-dictator_predictions_plot <- 
+dictator_predictions_plot <-
   predictions_plot(predictions_dictator, "Dictator Game")
 dictator_predictions_plot
 
@@ -554,10 +616,15 @@ interaction_plots <- function(participant_group, legend) {
 
   p <- ggplot(combined) +
     aes(x = x, y = predicted, group = Model) +
-    geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, position = position_dodge(0.06)) +
+    geom_ribbon(
+      aes(x = x, y = predicted, ymax = conf.high, ymin = conf.low, fill = Model),
+      alpha = 0.2
+    ) +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1, position = position_dodge(0.16)) +
     geom_line(aes(color = Model), size = 1) +
     scale_y_continuous(limits = c(0, 1)) +
     scale_color_brewer(palette = "Dark2", direction = -1) +
+    scale_fill_brewer(palette = "Dark2", direction = -1, guide = "none") +
     labs(
       title = sprintf("Group: %s", participant_group),
       x = "Partner condition", y = "Probability of cooperation"
@@ -602,7 +669,7 @@ combined.plots
 # %%
 options(repr.plot.height = 12)
 pdf("figs/residuals-plots.pdf")
-simulationOutput <- 
+simulationOutput <-
   simulateResiduals(fittedModel = model_pd_1, plot = TRUE, integerResponse = TRUE)
 dev.off()
 
@@ -718,7 +785,7 @@ pr <- prior(normal(0, 1), class = "b")
 brm_model <- brm(
   Num_cooperates | trials(6) ~
     Participant_group + Partner_condition + t + Model +
-      Model:Partner_condition:Participant_group,
+    Model:Partner_condition:Participant_group,
   ~ (1 | Participant_id),
   data = results_pd,
   prior = NULL,
@@ -764,7 +831,7 @@ estimate_glmm <- function() {
   MCMCglmm(
     fixed =
       Num_cooperates ~ Participant_group + Partner_condition + t +
-      Model + Model:Partner_condition:Participant_group,
+        Model + Model:Partner_condition:Participant_group,
     random = ~ us(1):Participant_id,
     prior = prior,
     data = results_pd,
@@ -821,4 +888,3 @@ summary(m6)
 
 # options(repr.plot.height = 24, repr.plot.width = 20)
 # plot_estimates(m6)
-
