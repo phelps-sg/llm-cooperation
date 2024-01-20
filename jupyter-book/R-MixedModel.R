@@ -1,12 +1,10 @@
-# ---
-# jupyter:
-#   jupytext:
+# :  jupytext:
 #     formats: ipynb,R:percent
 #     text_representation:
 #       extension: .R
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.16.0
+#       jupytext_version: 1.16.1
 #   kernelspec:
 #     display_name: R
 #     language: R
@@ -312,6 +310,28 @@ model_dictator_1 <- clmm(
 summary(model_dictator_1)
 
 # %%
+as_odds <- function(model) {
+  m <- coef(summary(model))
+  if (testClass(m, "list")) {
+    m <- m$cond
+  }
+  m[, 1] <- exp(m[, 1])
+  m[, 2] <- exp(m[, 2])
+  colnames(m)[1] <- "Estimate (Odds ratio)"
+  return(m)
+}
+
+# %%
+odds_ratios_significant <- function(model) {
+  m <- as_odds(model)
+  xtable(
+    m[m[, 4] < 0.05, ],
+    caption =
+      "Model estimates for significant coefficients only ($p<0.05$) on odds ratio scale"
+  )
+}
+
+# %%
 print(odds_ratios_significant(model_dictator_1), type = "latex")
 
 # %%
@@ -398,29 +418,7 @@ dev.off()
 xtable(lme4::formatVC(summary(model_pd)$varcor$cond))
 
 # %%
-as_odds <- function(model) {
-  m <- coef(summary(model))
-  if (testClass(m, "list")) {
-    m <- m$cond
-  }
-  m[, 1] <- exp(m[, 1])
-  m[, 2] <- exp(m[, 2])
-  colnames(m)[1] <- "Estimate (Odds ratio)"
-  return(m)
-}
-
-# %%
 as_odds(model_pd_1)
-
-# %%
-odds_ratios_significant <- function(model) {
-  m <- as_odds(model)
-  xtable(
-    m[m[, 4] < 0.05, ],
-    caption =
-      "Model estimates for significant coefficients only ($p<0.05$) on odds ratio scale"
-  )
-}
 
 # %%
 
