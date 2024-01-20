@@ -59,7 +59,19 @@ llm_coop <- import("llm_cooperation.main")
 # %%
 config <- llm_coop$Configuration(
   grid = dict(
-    temperature = c(0.1, 0.6),
+    temperature = list(0.1),
+    model = list("gpt-3.5-turbo-1106"),
+    max_tokens = list(500)
+  ),
+  experiment_names = list("dilemma"),
+  num_participant_samples = 30,
+  num_replications = 3
+)
+
+# %%
+config <- llm_coop$Configuration(
+  grid = dict(
+    temperature = list(0.1),
     model = c("gpt-3.5-turbo-0301", "gpt-3.5-turbo-0613", "gpt-3.5-turbo-1106"),
     max_tokens = list(500)
   ),
@@ -225,6 +237,28 @@ ggplot(results_clean, aes(x = Participant_group, y = Cooperation_frequency)) +
   )
 
 # %%
+
+interaction_pairwise <- function(x, y) {
+  results_clean %>% 
+    group_by_at(c(x, y)) %>%
+    summarise(coop_groups = mean(Cooperation_frequency)) -> results_grouped
+    return(
+      results_grouped %>% ggplot() +
+      aes(x = .data[[x]], y = coop_groups, color = .data[[y]]) +
+      geom_line(aes(group = .data[[y]])) +
+      geom_point()
+    )
+}
+
+# %%
+
+result <- interaction_pairwise("Participant_chain_of_thought", "Participant_defect_first")
+
+# %%
+all_vars <- c("Participant_defect_first", "Participant_chain_of_thought", "Participant_case", "Participant_defect_first", "Participant_label", "Participant_pronoun", "Participant_labels_reversed")
+result <- sapply(all_vars, function(x) lapply(all_vars, function(i) interaction_pairwise(x, i)))
+
+# %%
 results_pd <- results_clean[results_clean$Experiment == "dilemma", ]
 
 head(results_pd)
@@ -345,6 +379,22 @@ model_pd_poisson <- glmmTMB(
   family = poisson
 )
 summary(model_pd_poisson)
+ %%
+model_pd_ff <- glmmTMB(
+  cbind(Num_cooperates, 6 - Num_cooperates) ~
+    Partner_condition *
+    Participant_group *
+    Participant_label *
+    Participant_chain_of_thought *
+    Participant_case *
+    Participant_defect_first *
+    Participant_labels_reversed *
+    Participant_pronoun,
+  data = results_pd,
+  family = betabinomial,
+  control = glmmTMBControl(optCtrl = list(eval.max = 5000), profile = TRUE, parallel=6)
+)
+
 
 # %%
 model_pd <- glmmTMB(
