@@ -274,7 +274,6 @@ dev.off()
 results_dictator$Response <- as.factor(results_dictator$Num_cooperates)
 
 # %%
-
 model_dictator <- clmm(
   Response ~
     Participant_group + Participant_group:Model + t + Model + Temperature +
@@ -284,8 +283,7 @@ model_dictator <- clmm(
 )
 summary(model_dictator)
 
-# f%%
-
+# %%
 model_dictator_hess <- clmm(
   Response ~
     Participant_group + Participant_group:Model + t + Model + Temperature +
@@ -298,7 +296,7 @@ model_dictator_hess <- clmm(
 summary(model_dictator_hess)
 
 # %% [markdown]
-
+#
 # Remove t parameter from the model since it had insigicant estimate and is not expected to have any causal effect.
 
 # %%
