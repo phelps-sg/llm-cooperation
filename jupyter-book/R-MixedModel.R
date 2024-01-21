@@ -41,7 +41,8 @@ libs <- c(
   "patchwork",
   "ordinal",
   "cmdstanr",
-  "checkmate"
+  "checkmate",
+  "emmeans"
 )
 
 lapply(libs, function(lib) library(lib, character.only = TRUE))
@@ -379,29 +380,32 @@ model_pd_poisson <- glmmTMB(
   family = poisson
 )
 summary(model_pd_poisson)
- %%
+
+# %%
 model_pd_ff <- glmmTMB(
   cbind(Num_cooperates, 6 - Num_cooperates) ~
-    Partner_condition *
-    Participant_group *
-    Participant_label *
-    Participant_chain_of_thought *
-    Participant_case *
-    Participant_defect_first *
-    Participant_labels_reversed *
-    Participant_pronoun,
+    Participant_group  * Partner_condition +
+      (Participant_label *
+         Participant_chain_of_thought *
+         Participant_case *
+         Participant_defect_first *
+         Participant_labels_reversed *
+         Participant_pronoun),
   data = results_pd,
   family = betabinomial,
-  control = glmmTMBControl(optCtrl = list(eval.max = 5000), profile = TRUE, parallel=6)
+  control = glmmTMBControl(
+    optCtrl = list(
+      iter.max = 3000, eval.max = 10000
+    ), profile = FALSE, parallel = 30
+  )
 )
-
 
 # %%
 model_pd <- glmmTMB(
   cbind(Num_cooperates, 6 - Num_cooperates) ~
     Participant_group + Participant_group:Partner_condition +
-    t + Model + Temperature +
-    (1 | Participant_id),
+      t + Model + Temperature +
+      (1 | Participant_id),
   data = results_pd,
   family = betabinomial
 )
@@ -413,9 +417,9 @@ summary(model_pd)
 model_pd_1 <- glmmTMB(
   cbind(Num_cooperates, 6 - Num_cooperates) ~
     Participant_group + Participant_group:Partner_condition +
-    t + Model + Temperature +
-    Participant_group:Partner_condition:Model +
-    (1 | Participant_id),
+      t + Model + Temperature +
+      Participant_group:Partner_condition:Model +
+      (1 | Participant_id),
   data = results_pd,
   family = betabinomial
 )
@@ -425,9 +429,9 @@ summary(model_pd_1)
 model_pd_2 <- glmmTMB(
   cbind(Num_cooperates, 6 - Num_cooperates) ~
     Participant_group + Participant_group:Partner_condition +
-    Model + Temperature +
-    Participant_group:Partner_condition:Model +
-    (1 | Participant_id),
+      Model + Temperature +
+      Participant_group:Partner_condition:Model +
+      (1 | Participant_id),
   data = results_pd,
   family = betabinomial
 )
@@ -637,12 +641,15 @@ dev.off()
 cooperation_by_group_plots
 
 # %%
-predictions_for <- function(gpt_model, participant_group, model = model_pd_1) {
+predictions_for <- function(gpt_model, participant_group, model = model_pd_2) {
   ggpredict(model, c(
     "Partner_condition",
+    "Temperature",
     sprintf("Model [%s]", gpt_model),
     sprintf("Participant_group [%s]", participant_group)
-  ))
+  ),
+  type = "random"
+  )
 }
 
 predictions_for_m <- addMemoization(predictions_for)
