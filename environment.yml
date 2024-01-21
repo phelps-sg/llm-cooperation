@@ -51,6 +51,7 @@ dependencies:
   - r-R.cache
   - r-cmdstanr
   - r-languageserver
+  - r-marginaleffects
   - pip
   - pip:
     - -e ./
