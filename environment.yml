@@ -52,6 +52,7 @@ dependencies:
   - r-cmdstanr
   - r-languageserver
   - r-marginaleffects
+  - r-multcomp
   - pip
   - pip:
     - -e ./

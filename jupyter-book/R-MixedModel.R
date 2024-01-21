@@ -58,16 +58,16 @@ use_condaenv("llm-cooperation")
 llm_coop <- import("llm_cooperation.main")
 
 # %%
-config <- llm_coop$Configuration(
-  grid = dict(
-    temperature = list(0.1),
-    model = list("gpt-3.5-turbo-1106"),
-    max_tokens = list(500)
-  ),
-  experiment_names = list("dilemma"),
-  num_participant_samples = 30,
-  num_replications = 3
-)
+# config <- llm_coop$Configuration(
+#   grid = dict(
+#     temperature = list(0.1),
+#     model = list("gpt-3.5-turbo-1106"),
+#     max_tokens = list(500)
+#   ),
+#   experiment_names = list("dilemma"),
+#   num_participant_samples = 30,
+#   num_replications = 3
+# )
 
 # %%
 config <- llm_coop$Configuration(
@@ -440,8 +440,7 @@ summary(model_pd_2)
 
 # %%
 texreg(
-
-  model_pd_1,
+  model_pd_2,
   caption = "Fitted model for Prisoners Dilemma",
   label = "table:pd-estimates",
   file = "pd-estimates.tex",
@@ -461,7 +460,7 @@ texreg(
 
 # %%
 pdf("figs/ranef_hist_pd.pdf")
-hist(ranef(model_pd_1)$cond$Participant_id[, 1])
+hist(ranef(model_pd_2)$cond$Participant_id[, 1])
 dev.off()
 
 # %%
@@ -723,7 +722,7 @@ combined.plots
 options(repr.plot.height = 12)
 pdf("figs/residuals-plots.pdf")
 simulationOutput <-
-  simulateResiduals(fittedModel = model_pd_1, plot = TRUE, integerResponse = TRUE)
+  simulateResiduals(fittedModel = model_pd_2, plot = TRUE, integerResponse = TRUE)
 dev.off()
 
 # %%
