@@ -435,8 +435,24 @@ model_pd_2 <- glmmTMB(
   data = results_pd,
   family = betabinomial
 )
+
+# %%
 summary(model_pd_2)
 
+# %%
+posthoc_pd_by_model <-
+  emmeans(model_pd_2, ~ Participant_group * Partner_condition * Model)
+summary(posthoc_pd_by_model)
+
+# %%
+contrast(posthoc_pd_by_model)
+
+# %%
+posthoc_pd <-
+  emmeans(model_pd_2, ~ Participant_group * Partner_condition)
+
+# %%
+contrast(posthoc_pd)
 
 # %%
 texreg(
@@ -471,14 +487,14 @@ dev.off()
 xtable(lme4::formatVC(summary(model_pd)$varcor$cond))
 
 # %%
-as_odds(model_pd_1)
+as_odds(model_pd_2)
 
 # %%
 
-odds_ratios_significant(model_pd_1)
+odds_ratios_significant(model_pd_2)
 
 # %%
-print(odds_ratios_significant(model_pd_1), type = "latex")
+print(odds_ratios_significant(model_pd_2), type = "latex")
 
 # %%
 xtable(coef(summary(model_pd))$cond, digits = 3)
