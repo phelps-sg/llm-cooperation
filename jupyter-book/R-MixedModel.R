@@ -437,11 +437,27 @@ model_pd_2 <- glmmTMB(
 )
 
 # %%
+model_pd_3 <- glmmTMB(
+  cbind(Num_cooperates, 6 - Num_cooperates) ~
+    Temperature +
+      Participant_group * Partner_condition * Model +
+      (1 | Participant_id),
+  data = results_pd,
+  family = betabinomial
+)
+
+
+# %%
 summary(model_pd_2)
 
 # %%
 posthoc_pd_by_model <-
-  emmeans(model_pd_2, ~ Participant_group * Partner_condition * Model)
+  emmeans(
+    model_pd_3,
+    pairwise ~ Partner_condition | Model * Participant_group,
+    nesting = NULL,
+    type = "response"
+  )
 summary(posthoc_pd_by_model)
 
 # %%
