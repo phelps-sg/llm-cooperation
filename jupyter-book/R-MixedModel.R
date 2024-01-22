@@ -72,7 +72,7 @@ llm_coop <- import("llm_cooperation.main")
 # %%
 config <- llm_coop$Configuration(
   grid = dict(
-    temperature = list(0.1),
+    temperature = c(0.1, 0.6),
     model = c("gpt-3.5-turbo-0301", "gpt-3.5-turbo-0613", "gpt-3.5-turbo-1106"),
     max_tokens = list(500)
   ),
@@ -261,14 +261,12 @@ result <- sapply(all_vars, function(x) lapply(all_vars, function(i) interaction_
 
 # %%
 results_pd <- results_clean[results_clean$Experiment == "dilemma", ]
-
+results_pd$Num_cooperates <- round(results_pd$Cooperation_frequency * 6)
 head(results_pd)
+
 # %%
 results_dictator <- results_clean[results_clean$Experiment == "dictator", ]
 head(results_dictator)
-
-# %%
-results_pd$Num_cooperates <- round(results_pd$Cooperation_frequency * 6)
 
 # %%
 num_defects <- 6 - results_pd$Num_cooperates
@@ -439,13 +437,25 @@ model_pd_2 <- glmmTMB(
 # %%
 model_pd_3 <- glmmTMB(
   cbind(Num_cooperates, 6 - Num_cooperates) ~
-    Temperature +
       Participant_group * Partner_condition * Model +
       (1 | Participant_id),
   data = results_pd,
   family = betabinomial
 )
 
+# %%
+model_pd_4 <- glmmTMB(
+  cbind(Num_cooperates, 6 - Num_cooperates) ~
+    Participant_group * Partner_condition * Model +
+      (1 | Participant_id) +
+      (0 + Partner_condition * Partner_condition * Model | Participant_id),
+  data = results_pd,
+  family = betabinomial,
+  control = glmmTMBControl(
+    optimizer = optim,
+    optCtrl = list(method = "BFGS")
+  )
+)
 
 # %%
 summary(model_pd_2)
