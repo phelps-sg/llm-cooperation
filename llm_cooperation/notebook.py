@@ -24,13 +24,9 @@ def save_table(df: pd.DataFrame, name: str, caption: str) -> pd.DataFrame:
 def _repeated_to_long_row(row: pd.Series) -> pd.DataFrame:
     df = pd.DataFrame(row).transpose()
     choices = df.Choices.values[0]
-    n = 6
-    user_choices = [None] * 6
-    ai_choices = [None] * 6
-    if choices is not None:
-        n = len(choices)
-        user_choices = [c.user for c in choices]
-        ai_choices = [c.ai for c in choices]
+    n = len(choices)
+    user_choices = [c.user.as_int for c in choices]
+    ai_choices = [c.ai.as_int for c in choices]
     df_long = pd.concat([df] * n, axis=0)
     df_long["User_choice"] = user_choices
     df_long["AI_choice"] = ai_choices
@@ -39,4 +35,10 @@ def _repeated_to_long_row(row: pd.Series) -> pd.DataFrame:
 
 
 def repeated_to_long_format(df: pd.DataFrame) -> pd.DataFrame:
-    return pd.concat([_repeated_to_long_row(df.iloc[i]) for i in range(len(df))])
+    return pd.concat(
+        [
+            _repeated_to_long_row(df.iloc[i])
+            for i in range(len(df))
+            if df.iloc[i]["Choices"] is not None
+        ]
+    )
