@@ -19,3 +19,24 @@ def save_table(df: pd.DataFrame, name: str, caption: str) -> pd.DataFrame:
     renderer = df.style.format(decimal=".", thousands=",", precision=2)
     renderer.to_latex(f"../latex/{name}.tex", caption=caption)
     return df
+
+
+def repeated_to_long(row: pd.Series) -> pd.DataFrame:
+    df = pd.DataFrame(row).transpose()
+    choices = df.Choices.values[0]
+    n = 6
+    user_choices = [None] * 6
+    ai_choices = [None] * 6
+    if choices is not None:
+        n = len(choices)
+        user_choices = [c.user for c in choices]
+        ai_choices = [c.ai for c in choices]
+    df_long = pd.concat([df] * n, axis=0)
+    df_long["User_choice"] = user_choices
+    df_long["AI_choice"] = ai_choices
+    df_long["Round"] = range(n)
+    return df_long
+
+
+def repeated_to_long_format(df: pd.DataFrame) -> pd.DataFrame:
+    return pd.concat([repeated_to_long(df.iloc[i]) for i in range(len(df))])
