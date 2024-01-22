@@ -21,7 +21,7 @@ def save_table(df: pd.DataFrame, name: str, caption: str) -> pd.DataFrame:
     return df
 
 
-def repeated_to_long(row: pd.Series) -> pd.DataFrame:
+def _repeated_to_long_row(row: pd.Series) -> pd.DataFrame:
     df = pd.DataFrame(row).transpose()
     choices = df.Choices.values[0]
     n = 6
@@ -39,4 +39,4 @@ def repeated_to_long(row: pd.Series) -> pd.DataFrame:
 
 
 def repeated_to_long_format(df: pd.DataFrame) -> pd.DataFrame:
-    return pd.concat([repeated_to_long(df.iloc[i]) for i in range(len(df))])
+    return pd.concat([_repeated_to_long_row(df.iloc[i]) for i in range(len(df))])
