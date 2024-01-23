@@ -254,7 +254,7 @@ model_pd_ordinal <- clmm(
   AI_choice ~
     Participant_group * Model * Partner_condition +
       (1 | Participant_id) +
-    (0 + Partner_condition | Round),
+      (0 + Partner_condition | Round),
   link = "logit",
   data = results_pd_rounds
 )
