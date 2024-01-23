@@ -41,4 +41,4 @@ def repeated_to_long_format(df: pd.DataFrame) -> pd.DataFrame:
             for i in range(len(df))
             if df.iloc[i]["Choices"] is not None
         ]
-    )
+    ).reset_index()
