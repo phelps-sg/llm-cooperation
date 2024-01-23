@@ -94,91 +94,60 @@ ggboxplot(results,
 names(results)
 
 # %%
-names(results)[1] <- "Participant_condition"
-names(results)[2] <- "Partner_condition"
-names(results)[4] <- "Cooperation_frequency"
+clean_results <- function(results) {
+  results_clean <- results %>%
+    rename_with(~ gsub(" ", "_", .x)) %>%
+    rename(
+      Partner_condition = Partner_Condition,
+      Participant_condition = Participant_Condition
+    ) %>%
+    convert_as_factor(
+      Experiment, Participant_group, Partner_condition,
+      t, Model, Participant_id, Participant_prompt_index,
+      Participant_chain_of_thought, Participant_label,
+      Participant_case, Participant_pronoun,
+      Participant_defect_first, Participant_labels_reversed
+    )  %>%
+    filter(!is.na(Cooperation_frequency))
+
+    levels(results_clean$Partner_condition) <- c("T4TC", "T4TD", "C", "D")
+
+    results_clean$Participant_group <-
+      relevel(results_clean$Participant_group, ref = "Control")
+
+  results_clean$Partner_condition <-
+    relevel(results_clean$Partner_condition, ref = "D")
+
+  results_clean$Model <-
+    relevel(results_clean$Model, ref = "gpt-3.5-turbo-0613")
+
+  results_clean$Participant_pronoun <-
+    relevel(results_clean$Participant_pronoun, ref = "they")
+
+  results_clean$Participant_case <-
+    relevel(results_clean$Participant_case, ref = "standard")
+
+  results_clean$Particpant_label <-
+    relevel(results_clean$Participant_label, ref = "colors")
+
+  results_clean$Partner_condition <-
+    factor(results_clean$Partner_condition,
+      levels = c("D", "T4TD", "T4TC", "C")
+    )
+
+  results_clean$Participant_group <-
+    factor(results_clean$Participant_group,
+      levels = c("Control", "Selfish", "Competitive", "Cooperative", "Altruistic")
+    )
+
+  results_clean <- results_clean %>%
+    select(-Choices, -Transcript, -Participant_condition)
+
+  return(results_clean)
+}
 
 # %%
-results_clean <- results %>%
-  convert_as_factor(
-    Experiment, Participant_group, Partner_condition,
-    t, Model, Participant_id, Participant_prompt_index,
-    Participant_chain_of_thought, Participant_label,
-    Participant_case, Participant_pronoun,
-    Participant_defect_first, Participant_labels_reversed
-  ) %>%
-  filter(!is.na(Cooperation_frequency))
-
-# %%
-levels(results_clean$Participant_pronoun)
-
-# %%
-levels(results_clean$Experiment)
-
-# %%
-levels(results_clean$Model)
-
-# %%
-levels(results_clean$Participant_group)
-
-# %%
-levels(results_clean$Partner_condition)
-
-# %%
-levels(results_clean$Partner_condition) <- c("T4TC", "T4TD", "C", "D")
-
-# %%
-levels(results_clean$Participant_label)
-
-# %%
-levels(results_clean$Participant_case)
-
-# %%
-results_clean$Participant_group <-
-  relevel(results_clean$Participant_group, ref = "Control")
-
-results_clean$Partner_condition <-
-  relevel(results_clean$Partner_condition, ref = "D")
-
-results_clean$Model <-
-  relevel(results_clean$Model, ref = "gpt-3.5-turbo-0613")
-
-results_clean$Participant_pronoun <-
-  relevel(results_clean$Participant_pronoun, ref = "they")
-
-results_clean$Participant_case <-
-  relevel(results_clean$Participant_case, ref = "standard")
-
-results_clean$Particpant_label <-
-  relevel(results_clean$Participant_label, ref = "colors")
-
-# %%
-levels(results_clean$Partner_condition)
-
-# %%
-results_clean$Partner_condition <-
-  factor(results_clean$Partner_condition,
-    levels = c("D", "T4TD", "T4TC", "C")
-  )
-
-# %%
-levels(results_clean$Partner_condition)
-
-# %%
-results_clean$Participant_group <-
-  factor(results_clean$Participant_group,
-    levels = c("Control", "Selfish", "Competitive", "Cooperative", "Altruistic")
-  )
-
-# %%
-levels(results_clean$Participant_group)
-
-# %%
-names(results_clean)
-
-# %%
-results_clean <- results_clean %>%
-  select(-Choices, -Transcript, -Participant_condition)
+results_clean <- clean_results(results)
 
 # %%
 names(results_clean)
@@ -264,6 +233,33 @@ results_pd <- results_clean[results_clean$Experiment == "dilemma", ]
 results_pd$Num_cooperates <- round(results_pd$Cooperation_frequency * 6)
 head(results_pd)
 
+# %%
+notebook <- import("llm_cooperation.notebook")
+results_pd_rounds <-
+  notebook$repeated_to_long_format(results[results$Experiment == "dilemma", ])
+
+# %%
+results_pd_rounds <- clean_results(results_pd_rounds)
+
+# %%
+results_pd_rounds <- results_pd_rounds %>%
+  convert_as_factor(AI_choice, User_choice)
+
+# %%
+head(results_pd_rounds)
+
+# %%
+
+model_pd_ordinal <- clmm(
+  AI_choice ~
+    Participant_group * Model * Partner_condition +
+      (1 | Participant_id) +
+    (0 + Partner_condition | Round),
+  link = "logit",
+  data = results_pd_rounds
+)
+
+#
 # %%
 results_dictator <- results_clean[results_clean$Experiment == "dictator", ]
 head(results_dictator)
