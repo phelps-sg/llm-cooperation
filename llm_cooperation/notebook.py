@@ -21,8 +21,7 @@ def save_table(df: pd.DataFrame, name: str, caption: str) -> pd.DataFrame:
     return df
 
 
-def _repeated_to_long_row(row: pd.DataFrame) -> pd.DataFrame:
-    df = pd.DataFrame(row).transpose()
+def _repeated_to_long_row(df: pd.DataFrame) -> pd.DataFrame:
     choices = df.Choices.values[0]
     n = len(choices)
     user_choices = [c.user.as_int for c in choices]
