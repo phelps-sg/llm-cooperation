@@ -236,14 +236,12 @@ head(results_pd)
 # %%
 notebook <- import("llm_cooperation.notebook")
 results_pd_rounds <-
-  notebook$repeated_to_long_format(results[results$Experiment == "dilemma", ])
-
-# %%
-results_pd_rounds <- clean_results(results_pd_rounds)
-
-# %%
-results_pd_rounds <- results_pd_rounds %>%
-  convert_as_factor(AI_choice, User_choice)
+  notebook$repeated_to_long_format(
+    results[results$Experiment == "dilemma", ]
+  ) %>%
+  clean_results() %>%
+  convert_as_factor(AI_choice, User_choice) %>%
+  mutate(Num_cooperates = round(Cooperation_frequency) * 6)
 
 # %%
 head(results_pd_rounds)
@@ -258,6 +256,21 @@ model_pd_ordinal <- clmm(
   link = "logit",
   data = results_pd_rounds
 )
+
+# %%
+
+model_pd_rounds <- glmmTMB(
+  AI_choice ~
+    Participant_group * Partner_condition * Model * Round +
+      (1 | Participant_id) +
+      (0 + Partner_condition * Round | Participant_id),
+  data = results_pd_rounds,
+  family = betabinomial,
+  control = glmmTMBControl(
+    optCtrl = list(iter.max = 3000, evalmax = 4000)
+  )
+)
+
 
 #
 # %%
@@ -433,8 +446,8 @@ model_pd_2 <- glmmTMB(
 # %%
 model_pd_3 <- glmmTMB(
   cbind(Num_cooperates, 6 - Num_cooperates) ~
-      Participant_group * Partner_condition * Model +
-      (1 | Participant_id),
+        Participant_group * Partner_condition * Model +
+        (1 | Participant_id),
   data = results_pd,
   family = betabinomial
 )
@@ -444,7 +457,7 @@ model_pd_4 <- glmmTMB(
   cbind(Num_cooperates, 6 - Num_cooperates) ~
     Participant_group * Partner_condition * Model +
       (1 | Participant_id) +
-      (0 + Partner_condition * Partner_condition * Model | Participant_id),
+      (0 + Partner_condition * Model | Participant_id),
   data = results_pd,
   family = betabinomial,
   control = glmmTMBControl(
@@ -464,17 +477,25 @@ posthoc_pd_by_model <-
     nesting = NULL,
     type = "response"
   )
-summary(posthoc_pd_by_model)
 
 # %%
-contrast(posthoc_pd_by_model)
+pd_contrasts <- contrast(posthoc_pd_by_model, interaction = "pairwise")
+pd_contrasts
+
+# %%
+xtable(pd_contrasts)
 
 # %%
 posthoc_pd <-
   emmeans(model_pd_2, ~ Participant_group * Partner_condition)
 
 # %%
-contrast(posthoc_pd)
+pd_contrasts <- contrast(posthoc_pd_by_model, interaction = "pairwise")
+pd_contrasts
+
+# %%
+pd_contrasts_table <- xtable(pd_contrasts, type = "latex")
+print(pd_contrasts_table)
 
 # %%
 texreg(
@@ -528,7 +549,7 @@ predictions_by_group <- function(model) {
 }
 
 # %%
-pd_predictions <- predictions_by_group(model_pd_2)
+pd_predictions <- predictions_by_group(model_pd_3)
 
 # %%
 theoretical_data <- function(group, frequencies) {
@@ -678,14 +699,15 @@ dev.off()
 cooperation_by_group_plots
 
 # %%
-predictions_for <- function(gpt_model, participant_group, model = model_pd_2) {
+predictions_for <- function(gpt_model, participant_group, model = model_pd_3) {
   ggpredict(model, c(
     "Partner_condition",
-    "Temperature",
+    # "Temperature",
     sprintf("Model [%s]", gpt_model),
     sprintf("Participant_group [%s]", participant_group)
   ),
-  type = "random"
+  type = "random",
+  interval = "confidence"
   )
 }
 
